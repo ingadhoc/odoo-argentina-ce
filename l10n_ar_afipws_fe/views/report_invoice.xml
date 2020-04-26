@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <template id="report_invoice_document" inherit_id="account_document.report_invoice_document">
-        <p name="comment" position="after">
-            <span t-if="o.journal_id.afip_ws == 'wsbfe'">
-                EL ADQUIRENTE ASUME EL COMPROMISO, EN CARÁCTER DE DECLARACION JURADA, DE NO EXPORTAR EL BIEN DURANTE EL PLAZO DE TRES 3 AÑOS CONTADOS A PARTIR DE SU ADQUISICION
-            </span>
-            <div t-if="o.journal_id.afip_ws" style="text-align: center; vertical-align: middle;" class="col-8">
-                <span>
-                    CAE: <t t-esc="o.afip_auth_code"/> - Fecha Vto. CAE: <t t-esc="o.afip_auth_code"/>
-                </span>
-                <div t-if="o.l10n_ar_afip_barcode">
-                    <img t-if="o.l10n_ar_afip_barcode" t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;humanreadable=1' % ('I2of5', o.l10n_ar_afip_barcode)" alt="Barcode" style="width:100%;height:=70px"/>
-                </div>
-            </div>
+    <template id="report_invoice_document" inherit_id="l10n_ar.report_invoice_document">
+        <p name="comment" position="before">
+            <p t-if="o.journal_id.afip_ws == 'wsbfe'" >
+                THE PURCHASER ASSUMES THE COMMITMENT, IN THE NATURE OF AN AFFECTED DECLARATION, OF NOT EXPORTING THE PROPERTY DURING THE TERM OF THREE 3 YEARS FROM THE ACQUISITION<br/>
+            </p>
         </p>
+        <div name="footer_left_column" position="inside">
+            <img t-if="o.l10n_ar_afip_barcode" t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;humanreadable=1' % ('I2of5', o.l10n_ar_afip_barcode)" alt="Barcode"  style="height:80px"/>
+        </div>
+        <div name="pager" position="before">
+            <div>
+                CAE: <span t-field="o.afip_auth_code"/>
+            </div>
+            <div>
+                CAE Due Date: <span t-field="o.afip_auth_code_due"/>
+            </div>
+        </div>
     </template>
+
 
 </odoo>

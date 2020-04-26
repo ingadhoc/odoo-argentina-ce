@@ -3,8 +3,11 @@
     <record id="view_account_journal_form" model="ir.ui.view">
         <field name="name">account.journal.form</field>
         <field name="model">account.journal</field>
-        <field name="inherit_id" ref="l10n_ar_account.view_account_journal_form"/>
+        <field name="inherit_id" ref="account.view_account_journal_form"/>
         <field name="arch" type="xml">
+            <form>
+                <field name="afip_ws" invisible="1"/>
+            </form>
             <sheet position="before">
                 <header>
                     <button name="action_get_connection" string="Get Connection" help="Get Connection For this webservice and create it if no valid" type="object" attrs="{'invisible':[('afip_ws', '=', False)]}"/>
@@ -16,12 +19,8 @@
                     <button name="get_pyafipws_currencies" string="Get Currencies" help="Get valid currencies classes for this webservice" type="object" attrs="{'invisible':[('afip_ws', '=', False)]}"/>
                     <button name="check_document_local_remote_number" string="Check Remote/Local Numbers" help="Check documents local next number against remote Numbers" type="object" attrs="{'invisible':[('afip_ws', '=', False)]}"/>
                     <button name="sync_document_local_remote_number" string="Sync Remote/Local Numbers" help="Sync documents local next number against remote Numbers" type="object" confirm="Warning! this operation can not be undone, all sequences will be syncronized with remote numbers" attrs="{'invisible':[('afip_ws', '=', False)]}"/>
-                    <button name="%(action_afip_ws_currency_rate_wizard)d" string="Get Currency Rate" type="action" attrs="{'invisible':[('afip_ws', '=', False)]}"/>
                 </header>
             </sheet>
-            <field name="point_of_sale_type" position="after">
-                <field name="afip_ws" attrs="{'invisible':[('point_of_sale_type', '!=', 'electronic')], 'required':[('point_of_sale_type', '=', 'electronic')]}"/>
-            </field>
         </field>
     </record>
 </odoo>

@@ -150,7 +150,7 @@ class AfipwsCertificateAlias(models.Model):
             self.country_id = self.company_id.country_id.id
             self.state_id = self.company_id.state_id.id
             self.city = self.company_id.city
-            self.company_cuit = self.company_id.cuit
+            self.company_cuit = self.company_id.vat
 
     def action_confirm(self):
         if not self.key:
