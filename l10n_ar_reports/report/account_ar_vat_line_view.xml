@@ -40,6 +40,8 @@
                 <field name="date"/>
                 <field name="move_id"/>
                 <field name="partner_id"/>
+                <field name="afip_responsibility_type_id"/>
+                <field name="cuit"/>
                 <field name="not_taxed" sum="Total"/>
                 <field name="base_25" sum="Total"/>
                 <field name="vat_25" sum="Total"/>
@@ -85,7 +87,7 @@
     </record>
 
     <record id="action_account_ar_vat_line" model="ir.actions.act_window">
-        <field name="name">VAT Summary</field>
+        <field name="name">Análisis de IVA</field>
         <field name="res_model">account.ar.vat.line</field>
         <field name="view_mode">pivot,tree</field>
         <field name="context">{'search_default_posted': 1, 'time_ranges': {'field': 'date', 'range': 'last_month'}}</field>

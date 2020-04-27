@@ -1,9 +1,9 @@
 .. image:: https://img.shields.io/badge/licence-AGPL--3-blue.svg
     :alt: License
 
-Argentinian CITI Reports
+Argentinian Reports (CE)
 ========================
-Argentinian CITI Reportsto comply with RG3685
+Creates Sale and Purchase VAT report menus in "Accounting/Reporting/Argentina Statements"
 
 Configuration
 =============

@@ -1,5 +1,4 @@
-from odoo import tools, models, fields, api, _
-# from ast import literal_eval
+from odoo import tools, models, fields
 
 
 class AccountArVatLine(models.Model):
@@ -25,14 +24,14 @@ class AccountArVatLine(models.Model):
     partner_name = fields.Char(readonly=True)
     move_name = fields.Char(readonly=True)
     type = fields.Selection(selection=[
-            ('entry', 'Journal Entry'),
-            ('out_invoice', 'Customer Invoice'),
-            ('out_refund', 'Customer Credit Note'),
-            ('in_invoice', 'Vendor Bill'),
-            ('in_refund', 'Vendor Credit Note'),
-            ('out_receipt', 'Sales Receipt'),
-            ('in_receipt', 'Purchase Receipt'),
-        ], readonly=True)
+        ('entry', 'Journal Entry'),
+        ('out_invoice', 'Customer Invoice'),
+        ('out_refund', 'Customer Credit Note'),
+        ('in_invoice', 'Vendor Bill'),
+        ('in_refund', 'Vendor Credit Note'),
+        ('out_receipt', 'Sales Receipt'),
+        ('in_receipt', 'Purchase Receipt'),
+    ], readonly=True)
     base_21 = fields.Monetary(readonly=True, string='Grav. 21%', currency_field='company_currency_id')
     vat_21 = fields.Monetary(readonly=True, string='VAT 21%', currency_field='company_currency_id')
     base_27 = fields.Monetary(readonly=True, string='Grav. 27%', currency_field='company_currency_id')
@@ -44,13 +43,11 @@ class AccountArVatLine(models.Model):
     base_5 = fields.Monetary(readonly=True, string='Grav. 5%', currency_field='company_currency_id')
     vat_5 = fields.Monetary(readonly=True, string='VAT 5%', currency_field='company_currency_id')
     vat_per = fields.Monetary(
-        readonly=True, string='VAT Perc.', help='VAT Perception', currency_field='company_currency_id')
+        readonly=True, string='VAT Perc.', currency_field='company_currency_id')
     not_taxed = fields.Monetary(
-        readonly=True, string='Not taxed/ex', help='Not Taxed / Exempt.\All lines that have VAT 0, Exempt, Not Taxed'
-        ' or Not Applicable', currency_field='company_currency_id')
+        readonly=True, string='Not taxed/ex', currency_field='company_currency_id')
     other_taxes = fields.Monetary(
-        readonly=True, string='Other Taxes', help='All the taxes tat ar not VAT taxes or iibb perceptions and that'
-        ' are realted to documents that have VAT', currency_field='company_currency_id')
+        readonly=True, string='Other Taxes', currency_field='company_currency_id')
     total = fields.Monetary(readonly=True, currency_field='company_currency_id')
     state = fields.Selection([('draft', 'Unposted'), ('posted', 'Posted')], 'Status', readonly=True)
     journal_id = fields.Many2one('account.journal', 'Journal', readonly=True, auto_join=True)
@@ -68,9 +65,7 @@ class AccountArVatLine(models.Model):
     def init(self):
         cr = self._cr
         tools.drop_view_if_exists(cr, self._table)
-        # we use tax_ids for base amount instead of tax_base_amount for two reasons:
-        # * zero taxes do not create any aml line so we can't get base for them with tax_base_amount
-        # * we use same method as in odoo tax report to avoid any possible discrepancy with the computed tax_base_amount
+        # pylint: disable=sql-injection
         query = """
 SELECT
     am.id,
@@ -101,7 +96,8 @@ SELECT
     sum(CASE WHEN ntg.l10n_ar_vat_afip_code = '8' THEN aml.balance ELSE Null END) as vat_5,
     sum(CASE WHEN btg.l10n_ar_vat_afip_code in ('0', '1', '2', '3', '7') THEN aml.balance ELSE Null END) as not_taxed,
     sum(CASE WHEN ntg.l10n_ar_tribute_afip_code = '06' THEN aml.balance ELSE Null END) as vat_per,
-    sum(CASE WHEN ntg.l10n_ar_vat_afip_code is null and ntg.l10n_ar_tribute_afip_code != '06' THEN aml.balance ELSE Null END) as other_taxes,
+    sum(CASE WHEN ntg.l10n_ar_vat_afip_code is null and ntg.l10n_ar_tribute_afip_code != '06'
+        THEN aml.balance ELSE Null END) as other_taxes,
     sum(aml.balance) as total
 FROM
     account_move_line aml

@@ -1,5 +1,5 @@
 {
-    "name": "Argentinian VAT Ledger Management",
+    "name": "Argentinian Reports (CE)",
     'version': '13.0.1.0.0',
     'category': 'Localization/Argentina',
     'sequence': 14,
@@ -7,25 +7,23 @@
     'license': 'AGPL-3',
     'summary': '',
     "depends": [
-        # TODO we should try to get this report with another tool, not aeroo
         "report_aeroo",
-        "l10n_ar_account",
+        "l10n_ar",
     ],
     'external_dependencies': {
     },
     "data": [
-        'data/l10n_ar_account_vat_ledger_data.xml',
+        'report/account_ar_vat_line_view.xml',
         'report/account_vat_ledger_report.xml',
         'views/account_vat_report_views.xml',
-        'wizards/res_config_settings_views.xml',
-        'security/security.xml',
         'security/ir.model.access.csv',
+        'security/security.xml',
     ],
     'demo': [
     ],
     'images': [
     ],
     'installable': True,
-    'auto_install': True,
+    'auto_install': False,
     'application': False,
 }

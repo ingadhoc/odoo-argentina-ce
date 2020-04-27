@@ -2,4 +2,5 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-# import parser
+from . import models
+from . import report
