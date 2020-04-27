@@ -133,7 +133,6 @@ class AccountVatLedger(models.Model):
             # ('Perc. IVA', tg_per_iva),
         ]
 
-    @api.multi
     @api.depends('journal_ids', 'date_from', 'date_to')
     def _compute_data(self):
         for rec in self:
@@ -164,7 +163,6 @@ class AccountVatLedger(models.Model):
             rec.other_tax_ids = invoices.mapped(
                 'not_vat_tax_ids.tax_id')
 
-    @api.multi
     @api.depends(
         'type',
         'reference',
@@ -188,7 +186,6 @@ class AccountVatLedger(models.Model):
                 name = "%s - %s" % (name, rec.reference)
             rec.name = name
 
-    @api.multi
     @api.constrains('presented_ledger', 'last_page', 'state')
     def _check_state(self):
         require_file_and_page = safe_eval(self.env[
@@ -238,19 +235,15 @@ class AccountVatLedger(models.Model):
     #     self.period_id = next_period
     #     self.first_page = self.last_page
 
-    @api.multi
     def action_present(self):
         self.state = 'presented'
 
-    @api.multi
     def action_cancel(self):
         self.state = 'cancel'
 
-    @api.multi
     def action_to_draft(self):
         self.state = 'draft'
 
-    @api.multi
     def action_print(self):
         self.ensure_one()
         return self.env['ir.actions.report'].search(

@@ -20,7 +20,6 @@ class AccountInvoiceTax(models.Model):
         compute="_compute_currency_values",
     )
 
-    @api.multi
     @api.depends('currency_id')
     def _compute_currency_values(self):
         # TODO si traer el rate de esta manera no resulta (por ej. porque

@@ -48,7 +48,6 @@ class AccountInvoice(models.Model):
         string='Company Cur. VAT Taxable Amount'
     )
 
-    @api.multi
     @api.depends('currency_id')
     def _compute_currency_values(self):
         # TODO si traer el rate de esta manera no resulta (por ej. porque
@@ -90,7 +89,6 @@ class AccountInvoice(models.Model):
                 rec.cc_vat_taxable_amount = rec.currency_id.round(
                     rec.vat_taxable_amount * currency_rate)
 
-    @api.multi
     def check_vat_ledger_presented(self):
         AccountVatLedger = self.env['account.vat.ledger']
         for invoice in self:
@@ -106,7 +104,6 @@ class AccountInvoice(models.Model):
                     "VAT Ledger Report for this month has already been "
                     "presented."))
 
-    @api.multi
     def action_move_create(self):
         """ Chequeamos en este metodo y no en invoice_validate porque queremos
         que invoice_validate sea siempre el ultimo y que sea el que valida
@@ -117,7 +114,6 @@ class AccountInvoice(models.Model):
         self.check_vat_ledger_presented()
         return res
 
-    @api.multi
     def action_invoice_cancel(self):
         self.check_vat_ledger_presented()
         return super(AccountInvoice, self).action_invoice_cancel()

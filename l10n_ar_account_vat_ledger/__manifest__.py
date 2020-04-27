@@ -1,6 +1,6 @@
 {
     "name": "Argentinian VAT Ledger Management",
-    'version': '12.0.1.0.0',
+    'version': '13.0.1.0.0',
     'category': 'Localization/Argentina',
     'sequence': 14,
     'author': 'ADHOC SA,Moldeo Interactive,Odoo Community Association (OCA)',
@@ -25,7 +25,7 @@
     ],
     'images': [
     ],
-    'installable': False,
+    'installable': True,
     'auto_install': True,
     'application': False,
 }

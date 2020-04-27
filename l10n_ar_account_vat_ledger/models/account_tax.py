@@ -25,7 +25,6 @@ class AccountTax(models.Model):
         compute='_compute_amounts',
     )
 
-    @api.multi
     def _compute_amounts(self):
         vat_ledger_id = self._context.get('vat_ledger_id', False)
         if not vat_ledger_id:

@@ -29,7 +29,6 @@ class AcountDocumentType(models.Model):
         compute='_compute_amounts'
     )
 
-    @api.multi
     def _compute_amounts(self):
         """
         """
