@@ -5,6 +5,8 @@
 from odoo import fields, models, api, _
 import logging
 from odoo.exceptions import UserError
+import dateutil.parser
+import pytz
 import odoo.tools as tools
 import os
 import hashlib
@@ -159,6 +161,12 @@ class ResCompany(models.Model):
             'afip_ws': afip_ws,
             'type': environment_type,
         })
+
+        auth_data['generationtime'] = dateutil.parser.parse(
+            auth_data['generationtime']).astimezone(pytz.utc).replace(tzinfo=None)
+        auth_data['expirationtime'] = dateutil.parser.parse(
+            auth_data['expirationtime']).astimezone(pytz.utc).replace(tzinfo=None)
+
         _logger.info("Successful Connection to AFIP.")
         return self.connection_ids.create(auth_data)
 

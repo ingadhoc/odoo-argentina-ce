@@ -7,7 +7,7 @@
             <field eval="True" name="perm_write"/>
             <field eval="True" name="perm_create"/>
             <field eval="True" name="perm_unlink"/>
-            <field name="domain_force">[('company_id','child_of',[user.company_id.id])]</field>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
     </record>
 
     <record id="afipws_certificate_multi_company_rule" model="ir.rule">
@@ -17,6 +17,6 @@
             <field eval="True" name="perm_write"/>
             <field eval="True" name="perm_create"/>
             <field eval="True" name="perm_unlink"/>
-            <field name="domain_force">[('alias_id.company_id','child_of',[user.company_id.id])]</field>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
     </record>
 </odoo>

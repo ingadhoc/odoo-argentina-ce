@@ -20,7 +20,7 @@
                 <field name="afip_fce_es_anulacion"/>
             </field>
             <notebook>
-                <page string="AFIP" name="afip" attrs="{'invisible': [('type', 'in', ['out_invoice', 'out_refund'])]}">
+                <page string="AFIP" name="afip" attrs="{'invisible': [('type', 'not in', ['out_invoice', 'out_refund'])]}">
                     <group>
                         <field name='validation_type' invisible="1"/>
                         <label for="afip_auth_code" string="AFIP authorization"/>
@@ -39,18 +39,4 @@
         </field>
     </record>
 
-    <!-- record id="invoice_form_cancel_inherit" model="ir.ui.view">
-        <field name="model">account.invoice</field>
-        <field name="name">account.invoice.afip.form</field>
-        <field name="inherit_id" ref="account_cancel.invoice_form_cancel_inherit"/>
-        <field name="arch" type="xml">
-                <button name="action_invoice_cancel" position="attributes">
-                <attribute name="attrs">{'invisible': ['|', ('state', 'not in', ['draft', 'open', 'in_payment', 'paid']), ('afip_auth_code', '!=', False)]}</attribute>
-                <attribute name="states"></attribute>
-            </button>
-                <button name="action_invoice_cancel" position="after">
-                <button name="action_invoice_cancel" type="object" string="Cancel Invoicel" attrs="{'invisible': ['|', ('state', 'not in', ['draft', 'open', 'in_payment', 'paid']), ('afip_auth_code', '=', False)]}" groups="base.group_no_one" confirm="Esta factura tiene número de CAE asignado lo cual significa que fue validad contra AFIP. No recomendamos que la cancele ya que podría generar inconsistencia de datos. Desea continuar?"/>
-            </button>
-        </field>
-    </record -->
 </odoo>
