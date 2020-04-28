@@ -27,7 +27,6 @@ class L10nArAfipwsUploadCertificate(models.TransientModel):
         required=True
     )
 
-    @api.multi
     def action_confirm(self):
         """
         """

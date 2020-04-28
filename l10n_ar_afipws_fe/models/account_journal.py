@@ -5,47 +5,39 @@
 from odoo import models, api, fields, _
 import logging
 from odoo.exceptions import UserError
-from odoo.addons.l10n_ar_account.models import account_journal
 
 _logger = logging.getLogger(__name__)
-
-old_selection = account_journal.AccountJournal._point_of_sale_types_selection
-new_selection = old_selection.append(('electronic', 'Electronic'))
-account_journal.AccountJournal._point_of_sale_types_selection = new_selection
 
 
 class AccountJournal(models.Model):
     _inherit = 'account.journal'
 
-    _afip_ws_selection = (
-        lambda self, *args, **kwargs: self._get_afip_ws_selection(
-            *args, **kwargs))
+    afip_ws = fields.Selection(selection='_get_afip_ws', compute='_compute_afip_ws', string='AFIP WS')
 
-    @api.model
-    def _get_afip_ws_selection(self):
-        return [
-            ('wsfe', 'Mercado interno -sin detalle- RG2485 (WSFEv1)'),
-            ('wsmtxca', 'Mercado interno -con detalle- RG2904 (WSMTXCA)'),
-            ('wsfex', 'Exportación -con detalle- RG2758 (WSFEXv1)'),
-            ('wsbfe', 'Bono Fiscal -con detalle- RG2557 (WSBFE)'),
-        ]
+    def _get_afip_ws(self):
+        return [('wsfe', _('Domestic market -without detail- RG2485 (WSFEv1)')),
+                ('wsfex', _('Export -with detail- RG2758 (WSFEXv1)')),
+                ('wsbfe', _('Fiscal Bond -with detail- RG2557 (WSBFE)'))]
 
-    afip_ws = fields.Selection(
-        _afip_ws_selection,
-        'AFIP WS',
-    )
+    def _get_l10n_ar_afip_pos_types_selection(self):
+        res = super()._get_l10n_ar_afip_pos_types_selection()
+        res.insert(0, ('RAW_MAW', _('Electronic Invoice - Web Service')))
+        res.insert(3, ('BFEWS', _('Electronic Fiscal Bond - Web Service')))
+        res.insert(5, ('FEEWS', _('Export Voucher - Web Service')))
+        return res
 
-    @api.multi
-    def get_name_and_code_suffix(self):
-        name = super(AccountJournal, self).get_name_and_code_suffix()
-        if self.afip_ws == 'wsfex':
-            name += ' Exportación'
-        return name
+    @api.depends('l10n_ar_afip_pos_system')
+    def _compute_afip_ws(self):
+        """ Depending on AFIP POS System selected set the proper AFIP WS """
+        type_mapping = {'RAW_MAW': 'wsfe', 'FEEWS': 'wsfex', 'BFEWS': 'wsbfe'}
+        for rec in self:
+            rec.afip_ws = type_mapping.get(rec.l10n_ar_afip_pos_system, False)
+
 
     @api.model
     def create(self, vals):
         journal = super(AccountJournal, self).create(vals)
-        if journal.point_of_sale_type == 'electronic' and journal.afip_ws:
+        if self.afip_ws:
             try:
                 journal.sync_document_local_remote_number()
             except Exception:
@@ -53,70 +45,83 @@ class AccountJournal(models.Model):
                     'Could not sincronize local and remote numbers')
         return journal
 
-    # @api.model
-    # def _get_point_of_sale_types(self):
-    #     types = super(AccountJournal, self)._get_point_of_sale_types()
-    #     types.append(['electronic', _('Electronic')])
-    #     return types
-
-    @api.multi
-    @api.constrains('point_of_sale_type', 'afip_ws')
-    def check_afip_ws_and_type(self):
-        for rec in self:
-            if rec.point_of_sale_type != 'electronic' and rec.afip_ws:
-                raise UserError(_(
-                    'You can only use an AFIP WS if type is "Electronic"'))
-
-    @api.multi
-    def get_journal_letter(self, counterpart_partner=False):
-        """Function to be inherited by afip ws fe"""
-        letters = super(AccountJournal, self).get_journal_letter(
-            counterpart_partner=counterpart_partner)
-        # filter only for sales journals
-
-        if self.type != 'sale':
-            return letters
-        if self.afip_ws == 'wsfe':
-            letters = letters.filtered(
-                lambda r: r.name != 'E')
-        elif self.afip_ws == 'wsfex':
-            letters = letters.filtered(
-                lambda r: r.name == 'E')
-        return letters
-
-    @api.multi
     def sync_document_local_remote_number(self):
         if self.type != 'sale':
             return True
-        for journal_document_type in self.journal_document_type_ids:
-            next_by_ws = int(
-                journal_document_type.get_pyafipws_last_invoice(
-                )['result']) + 1
-            journal_document_type.sequence_id.number_next_actual = next_by_ws
+        for sequence in self.l10n_ar_sequence_ids:
+            last = self.get_pyafipws_last_invoice(sequence.l10n_latam_document_type_id)['result']
+            sequence.sudo().number_next_actual = last + 1
+            # next_by_ws = int(
+            #     journal_document_type.get_pyafipws_last_invoice(
+            #     )['result']) + 1
+            # journal_document_type.sequence_id.number_next_actual = next_by_ws
 
-    @api.multi
-    def check_document_local_remote_number(self):
-        msg = ''
-        if self.type != 'sale':
-            return True
-        for journal_document_type in self.journal_document_type_ids:
-            next_by_ws = int(
-                journal_document_type.get_pyafipws_last_invoice(
-                )['result']) + 1
-            next_by_seq = journal_document_type.sequence_id.number_next_actual
-            if next_by_ws != next_by_seq:
-                msg += _(
-                    '* Document Type %s, Local %i, Remote %i\n' % (
-                        journal_document_type.document_type_id.name,
-                        next_by_seq,
-                        next_by_ws))
-        if msg:
-            msg = _('There are some doument desynchronized:\n') + msg
-            raise UserError(msg)
+    def get_pyafipws_last_invoice(self, document_type):
+        self.ensure_one()
+        company = self.journal_id.company_id
+        afip_ws = self.journal_id.afip_ws
+
+        if not afip_ws:
+            return (_('No AFIP WS selected on point of sale %s') % (
+                self.journal_id.name))
+        ws = company.get_connection(afip_ws).connect()
+        # call the webservice method to get the last invoice at AFIP:
+
+        try:
+            if afip_ws in ("wsfe", "wsmtxca"):
+                last = ws.CompUltimoAutorizado(
+                    document_type, self.journal_id.l10n_ar_afip_pos_number)
+            elif afip_ws in ["wsfex", 'wsbfe']:
+                last = ws.GetLastCMP(
+                    document_type, self.journal_id.l10n_ar_afip_pos_number)
+            else:
+                return(_('AFIP WS %s not implemented') % afip_ws)
+        except ValueError as error:
+            _logger.warning('exception in get_pyafipws_last_invoice: %s' % (
+                str(error)))
+            if 'The read operation timed out' in str(error):
+                raise UserError(_(
+                    'Servicio AFIP Ocupado reintente en unos minutos'))
+            else:
+                raise UserError(_(
+                    'Hubo un error al conectarse a AFIP, contacte a su'
+                    ' proveedor de Odoo para mas información'))
+
+        msg = " - ".join([ws.Excepcion, ws.ErrMsg, ws.Obs])
+
+        next_ws = int(last or 0) + 1
+        next_local = self.sequence_id.number_next_actual
+        if next_ws != next_local:
+            msg = _(
+                'ERROR! Local (%i) and remote (%i) next number '
+                'mismatch!\n') % (next_local, next_ws) + msg
         else:
-            raise UserError(_('All documents are synchronized'))
+            msg = _('OK! Local and remote next number match!') + msg
+        title = _('Last Invoice %s\n' % last)
+        return {'msg': (title + msg), 'result': last}
 
-    @api.multi
+    # TODO implementar
+    # def check_document_local_remote_number(self):
+    #     msg = ''
+    #     if self.type != 'sale':
+    #         return True
+    #     for journal_document_type in self.journal_document_type_ids:
+    #         next_by_ws = int(
+    #             journal_document_type.get_pyafipws_last_invoice(
+    #             )['result']) + 1
+    #         next_by_seq = journal_document_type.sequence_id.number_next_actual
+    #         if next_by_ws != next_by_seq:
+    #             msg += _(
+    #                 '* Document Type %s, Local %i, Remote %i\n' % (
+    #                     journal_document_type.document_type_id.name,
+    #                     next_by_seq,
+    #                     next_by_ws))
+    #     if msg:
+    #         msg = _('There are some doument desynchronized:\n') + msg
+    #         raise UserError(msg)
+    #     else:
+    #         raise UserError(_('All documents are synchronized'))
+
     def test_pyafipws_dummy(self):
         """
         AFIP Description: Método Dummy para verificación de funcionamiento de
@@ -136,7 +141,6 @@ class AccountJournal(models.Model):
                 ws.AuthServerStatus))
         raise UserError(title + msg)
 
-    @api.multi
     def test_pyafipws_point_of_sales(self):
         self.ensure_one()
         afip_ws = self.afip_ws
@@ -156,7 +160,6 @@ class AccountJournal(models.Model):
         title = _('Enabled Point Of Sales on AFIP\n')
         raise UserError(title + msg)
 
-    @api.multi
     def get_pyafipws_cuit_document_classes(self):
         self.ensure_one()
         afip_ws = self.afip_ws
@@ -178,7 +181,6 @@ class AccountJournal(models.Model):
             '\n '.join(ret), ".\n".join([ws.Excepcion, ws.ErrMsg, ws.Obs])))
         raise UserError(msg)
 
-    @api.multi
     def get_pyafipws_zonas(self):
         self.ensure_one()
         afip_ws = self.afip_ws
@@ -196,7 +198,6 @@ class AccountJournal(models.Model):
             '\n '.join(ret), ".\n".join([ws.Excepcion, ws.ErrMsg, ws.Obs])))
         raise UserError(msg)
 
-    @api.multi
     def get_pyafipws_NCM(self):
         self.ensure_one()
         afip_ws = self.afip_ws
@@ -214,13 +215,11 @@ class AccountJournal(models.Model):
             '\n '.join(ret), ".\n".join([ws.Excepcion, ws.ErrMsg, ws.Obs])))
         raise UserError(msg)
 
-    @api.multi
     def get_pyafipws_currencies(self):
         self.ensure_one()
         return self.env['res.currency'].get_pyafipws_currencies(
             afip_ws=self.afip_ws, company=self.company_id)
 
-    @api.multi
     def action_get_connection(self):
         self.ensure_one()
         afip_ws = self.afip_ws
@@ -228,7 +227,6 @@ class AccountJournal(models.Model):
             raise UserError(_('No AFIP WS selected'))
         self.company_id.get_connection(afip_ws).connect()
 
-    @api.multi
     def get_pyafipws_currency_rate(self, currency):
         raise UserError(currency.get_pyafipws_currency_rate(
             afip_ws=self.afip_ws,

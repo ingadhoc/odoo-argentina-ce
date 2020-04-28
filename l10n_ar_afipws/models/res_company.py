@@ -60,7 +60,6 @@ class ResCompany(models.Model):
             'Running arg electronic invoice on %s mode' % environment_type)
         return environment_type
 
-    @api.multi
     def get_key_and_certificate(self, environment_type):
         """
         Funcion que busca para el environment_type definido,
@@ -119,7 +118,6 @@ class ResCompany(models.Model):
             raise UserError(msg)
         return (pkey, cert)
 
-    @api.multi
     def get_connection(self, afip_ws):
         self.ensure_one()
         _logger.info('Getting connection for company %s and ws %s' % (
@@ -138,7 +136,6 @@ class ResCompany(models.Model):
             connection = self._create_connection(afip_ws, environment_type)
         return connection
 
-    @api.multi
     def _create_connection(self, afip_ws, environment_type):
         """
         This function should be called from get_connection. Not to be used

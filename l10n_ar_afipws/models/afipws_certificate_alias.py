@@ -136,7 +136,6 @@ class AfipwsCertificateAlias(models.Model):
                 self.type, self.company_id.name)
             self.common_name = common_name[:50]
 
-    @api.multi
     @api.depends('company_cuit', 'service_provider_cuit', 'service_type')
     def _compute_cuit(self):
         for rec in self:
@@ -151,16 +150,14 @@ class AfipwsCertificateAlias(models.Model):
             self.country_id = self.company_id.country_id.id
             self.state_id = self.company_id.state_id.id
             self.city = self.company_id.city
-            self.company_cuit = self.company_id.cuit
+            self.company_cuit = self.company_id.vat
 
-    @api.multi
     def action_confirm(self):
         if not self.key:
             self.generate_key()
         self.write({'state': 'confirmed'})
         return True
 
-    @api.multi
     def generate_key(self, key_length=2048):
         """
         """
@@ -170,18 +167,15 @@ class AfipwsCertificateAlias(models.Model):
             k.generate_key(crypto.TYPE_RSA, key_length)
             rec.key = crypto.dump_privatekey(crypto.FILETYPE_PEM, k)
 
-    @api.multi
     def action_to_draft(self):
         self.write({'state': 'draft'})
         return True
 
-    @api.multi
     def action_cancel(self):
         self.write({'state': 'cancel'})
         self.certificate_ids.write({'state': 'cancel'})
         return True
 
-    @api.multi
     def action_create_certificate_request(self):
         """
         TODO agregar descripcion y ver si usamos pyafipsw para generar esto

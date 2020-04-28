@@ -2,7 +2,6 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from .pyi25 import PyI25
 from odoo import fields, models, api, _
 from odoo.exceptions import UserError
 import base64
@@ -19,28 +18,9 @@ except ImportError:
     _logger.debug('Can not `from pyafipws.soap import SoapFault`.')
 
 
-class AccountInvoice(models.Model):
-    _inherit = "account.invoice"
+class AccountMove(models.Model):
+    _inherit = "account.move"
 
-    afip_auth_verify_type = fields.Selection(
-        related='company_id.afip_auth_verify_type',
-    )
-    afip_batch_number = fields.Integer(
-        copy=False,
-        string='Batch Number',
-        readonly=True
-    )
-    afip_auth_verify_result = fields.Selection([
-        ('A', 'Aprobado'), ('O', 'Observado'), ('R', 'Rechazado')],
-        string='AFIP authorization verification result',
-        copy=False,
-        readonly=True,
-    )
-    afip_auth_verify_observation = fields.Char(
-        string='AFIP authorization verification observation',
-        copy=False,
-        readonly=True,
-    )
     afip_auth_mode = fields.Selection([
         ('CAE', 'CAE'), ('CAI', 'CAI'), ('CAEA', 'CAEA')],
         string='AFIP authorization mode',
@@ -52,41 +32,18 @@ class AccountInvoice(models.Model):
         copy=False,
         string='CAE/CAI/CAEA Code',
         readonly=True,
-        oldname='afip_cae',
         size=24,
         states={'draft': [('readonly', False)]},
     )
     afip_auth_code_due = fields.Date(
         copy=False,
         readonly=True,
-        oldname='afip_cae_due',
         string='CAE/CAI/CAEA due Date',
         states={'draft': [('readonly', False)]},
     )
-    # for compatibility
-    afip_cae = fields.Char(
-        related='afip_auth_code',
-        readonly=False,
-        string='CAE (only for backward compatibility)'
-    )
-    afip_cae_due = fields.Date(
-        related='afip_auth_code_due',
-        readonly=False,
-        string='CAE due date (only for backward compatibility)'
-    )
-
     afip_barcode = fields.Char(
         compute='_compute_barcode',
         string='AFIP Barcode (for backward compatibility)'
-    )
-    # backport of v13 for qweb report
-    l10n_ar_afip_barcode = fields.Char(
-        compute='_compute_barcode',
-        string='AFIP Barcode',
-    )
-    afip_barcode_img = fields.Binary(
-        compute='_compute_barcode',
-        string='AFIP Barcode Image'
     )
     afip_message = fields.Text(
         string='AFIP Message',
@@ -137,7 +94,6 @@ class AccountInvoice(models.Model):
                         validation_type = False
                 rec.validation_type = validation_type
 
-    @api.multi
     @api.depends('afip_auth_code')
     def _compute_barcode(self):
         for rec in self:
@@ -149,104 +105,31 @@ class AccountInvoice(models.Model):
                 barcode = ''.join(
                     [str(rec.company_id.cuit),
                         "%03d" % int(rec.document_type_id.code),
-                        "%05d" % int(rec.journal_id.point_of_sale_number),
+                        "%05d" % int(rec.journal_id.l10n_ar_afip_pos_number),
                         str(rec.afip_auth_code), cae_due])
-                rec.l10n_ar_afip_barcode = barcode
-                barcode = barcode + rec.verification_digit_modulo10(barcode)
-            rec.afip_barcode = barcode
-            rec.afip_barcode_img = rec._make_image_I25(barcode)
+                rec.afip_barcode = barcode
 
-    @api.model
-    def _make_image_I25(self, barcode):
-        "Generate the required barcode Interleaved of 7 image using PIL"
-        image = False
-        if barcode:
-            # create the helper:
-            pyi25 = PyI25()
-            output = BytesIO()
-            # call the helper:
-            bars = ''.join([c for c in barcode if c.isdigit()])
-            if not bars:
-                bars = "00"
-            pyi25.GenerarImagen(bars, output, extension="PNG")
-            # get the result and encode it for openerp binary field:
-            image = base64.b64encode(output.getvalue())
-            output.close()
-        return image
-
-    @api.model
-    def verification_digit_modulo10(self, code):
-        "Calculate the verification digit 'modulo 10'"
-        # Step 1: sum all digits in odd positions, left to right
-        code = code.strip()
-        if not code or not code.isdigit():
-            return ''
-        etapa1 = sum([int(c) for i, c in enumerate(code) if not i % 2])
-        # Step 2: multiply the step 1 sum by 3
-        etapa2 = etapa1 * 3
-        # Step 3: start from the left, sum all the digits in even positions
-        etapa3 = sum([int(c) for i, c in enumerate(code) if i % 2])
-        # Step 4: sum the results of step 2 and 3
-        etapa4 = etapa2 + etapa3
-        # Step 5: the minimun value that summed to step 4 is a multiple of 10
-        digito = 10 - (etapa4 - (int(etapa4 // 10) * 10))
-        if digito == 10:
-            digito = 0
-        return str(digito)
-
-    @api.multi
     def get_related_invoices_data(self):
         """
         List related invoice information to fill CbtesAsoc.
         """
         self.ensure_one()
-        # for now we only get related document for debit and credit notes
-        # because, for eg, an invoice can not be related to an invocie and
-        # that happens if you choose the modify option of the credit note
-        # wizard. A mapping of which documents can be reported as related
-        # documents would be a better solution
-        code_rules = [
-            ([2, 3], [1, 2, 3, 4, 5, 34, 39, 60, 63, 88, 991]),
-            ([7, 8], [6, 7, 8, 9, 10, 35, 40, 61, 64, 88, 991]),
-            ([12, 13], [11, 12, 13, 15]),
-            ([19], [88, 89]),
-            ([20, 21], [88, 89, 19, 20, 21]),
-            ([52, 53], [51, 52, 53, 54, 88, 991]),
-            ([1, 6, 51], [88, 991]),
-            ([201, 206, 211], [91, 990, 991, 993, 994, 995]),
-            ([202, 203], [201, 202, 203]),
-            ([207, 208], [206, 207, 208]),
-            ([212, 213], [211, 212, 213])
-        ]
-        available_codes = list(filter(lambda x: int(self.document_type_id.code) in x[0], code_rules))
-        available_codes = available_codes[0][1] if available_codes else []
-        if self.document_type_internal_type in ['debit_note', 'credit_note'] \
-                and self.origin:
-            return self.search([
-                ('commercial_partner_id', '=', self.commercial_partner_id.id),
-                ('company_id', '=', self.company_id.id),
-                ('document_number', '=', self.origin),
-                ('id', '!=', self.id),
-                ('document_type_id.document_letter_id', '=', self.document_type_id.document_letter_id.id),
-                ('document_type_id', '!=', self.document_type_id.id),
-                ('document_type_id.code', 'in', available_codes),
-                ('state', 'not in', ['draft', 'cancel'])],
-                limit=1)
+        if self.l10n_latam_document_type_id.internal_type == 'credit_note':
+            return self.reversed_entry_id
+        elif self.l10n_latam_document_type_id.internal_type == 'debit_note':
+            return self.debit_origin_id
         else:
             return self.browse()
 
-    @api.multi
-    def invoice_validate(self):
+    def post(self):
         """
         The last thing we do is request the cae because if an error occurs
         after cae requested, the invoice has been already validated on afip
         """
-        res = super(AccountInvoice, self).invoice_validate()
-        self.check_afip_auth_verify_required()
+        res = super().post()
         self.do_pyafipws_request_cae()
         return res
 
-    @api.multi
     # para cuando se crea, por ej, desde ventas o contratos
     @api.constrains('partner_id')
     # para cuando se crea manualmente la factura
@@ -288,126 +171,6 @@ class AccountInvoice(models.Model):
             if journal:
                 rec.journal_id = journal.id
 
-    @api.multi
-    def check_afip_auth_verify_required(self):
-        verify_codes = [
-            "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
-            "13", "15", "19", "20", "21", "49", "51", "52", "53",
-            "54", "60", "61", "63", "64"
-        ]
-        verification_required = self.filtered(
-            lambda inv: inv.type in ['in_invoice', 'in_refund'] and
-            inv.afip_auth_verify_type == 'required' and
-            (inv.document_type_id and
-             inv.document_type_id.code in verify_codes) and
-            not inv.afip_auth_verify_result)
-        if verification_required:
-            raise UserError(_(
-                'You can not validate invoice as AFIP authorization '
-                'verification is required'))
-
-    @api.multi
-    def verify_on_afip(self):
-        """
-cbte_modo = "CAE"                    # modalidad de emision: CAI, CAE,
-CAEA
-cuit_emisor = "20267565393"          # proveedor
-pto_vta = 4002                       # punto de venta habilitado en AFIP
-cbte_tipo = 1                        # 1: factura A (ver tabla de parametros)
-cbte_nro = 109                       # numero de factura
-cbte_fch = "20131227"                # fecha en formato aaaammdd
-imp_total = "121.0"                  # importe total
-cod_autorizacion = "63523178385550"  # numero de CAI, CAE o CAEA
-doc_tipo_receptor = 80               # CUIT (obligatorio Facturas A o M)
-doc_nro_receptor = "30628789661"     # numero de CUIT del cliente
-
-ok = wscdc.ConstatarComprobante(
-    cbte_modo, cuit_emisor, pto_vta, cbte_tipo,
-    cbte_nro, cbte_fch, imp_total, cod_autorizacion,
-    doc_tipo_receptor, doc_nro_receptor)
-
-print "Resultado:", wscdc.Resultado
-print "Mensaje de Error:", wscdc.ErrMsg
-print "Observaciones:", wscdc.Obs
-        """
-        afip_ws = "wscdc"
-        ws = self.company_id.get_connection(afip_ws).connect()
-        for inv in self:
-            cbte_modo = inv.afip_auth_mode
-            cod_autorizacion = inv.afip_auth_code
-            if not cbte_modo or not cod_autorizacion:
-                raise UserError(_(
-                    'AFIP authorization mode and Code are required!'))
-
-            # get issuer and receptor depending on supplier or customer invoice
-            if inv.type in ['in_invoice', 'in_refund']:
-                issuer = inv.commercial_partner_id
-                receptor = inv.company_id.partner_id
-            else:
-                issuer = inv.company_id.partner_id
-                receptor = inv.commercial_partner_id
-
-            cuit_emisor = issuer.cuit_required()
-
-            receptor_doc_code = str(receptor.main_id_category_id.afip_code)
-            doc_tipo_receptor = receptor_doc_code or '99'
-            doc_nro_receptor = (
-                receptor_doc_code and receptor.main_id_number or "0")
-            doc_type = inv.document_type_id
-            if (
-                    doc_type.document_letter_id.name in ['A', 'M'] and
-                    doc_tipo_receptor != '80' or not doc_nro_receptor):
-                raise UserError(_(
-                    'Para Comprobantes tipo A o tipo M:\n'
-                    '*  el documento del receptor debe ser CUIT\n'
-                    '*  el documento del Receptor es obligatorio\n'
-                ))
-
-            cbte_nro = inv.invoice_number
-            pto_vta = inv.point_of_sale_number
-            cbte_tipo = doc_type.code
-            if not pto_vta or not cbte_nro or not cbte_tipo:
-                raise UserError(_(
-                    'Point of sale and document number and document type '
-                    'are required!'))
-            cbte_fch = inv.date_invoice
-            if not cbte_fch:
-                raise UserError(_('Invoice Date is required!'))
-            cbte_fch = cbte_fch.strftime('%Y%m%d')
-            imp_total = str("%.2f" % inv.amount_total)
-
-            _logger.info('Constatando Comprobante en afip')
-
-            # atrapado de errores en afip
-            msg = False
-            try:
-                ws.ConstatarComprobante(
-                    cbte_modo, cuit_emisor, pto_vta, cbte_tipo, cbte_nro,
-                    cbte_fch, imp_total, cod_autorizacion, doc_tipo_receptor,
-                    doc_nro_receptor)
-            except SoapFault as fault:
-                msg = 'Falla SOAP %s: %s' % (
-                    fault.faultcode, fault.faultstring)
-            except Exception as e:
-                msg = e
-            except Exception:
-                if ws.Excepcion:
-                    # get the exception already parsed by the helper
-                    msg = ws.Excepcion
-                else:
-                    # avoid encoding problem when raising error
-                    msg = traceback.format_exception_only(
-                        sys.exc_type,
-                        sys.exc_value)[0]
-            if msg:
-                raise UserError(_('AFIP Verification Error. %s' % msg))
-
-            inv.write({
-                'afip_auth_verify_result': ws.Resultado,
-                'afip_auth_verify_observation': '%s%s' % (ws.Obs, ws.ErrMsg)
-            })
-
-    @api.multi
     def do_pyafipws_request_cae(self):
         "Request to AFIP the invoices' Authorization Electronic Code (CAE)"
         for inv in self:
@@ -415,9 +178,10 @@ print "Observaciones:", wscdc.Obs
             if inv.afip_auth_code:
                 continue
 
-            if inv.journal_id.point_of_sale_type != 'electronic':
-                continue
             afip_ws = inv.journal_id.afip_ws
+            if not afip_ws:
+                continue
+
             # Ignore invoice if not ws on point of sale
             if not afip_ws:
                 raise UserError(_(
@@ -434,7 +198,7 @@ print "Observaciones:", wscdc.Obs
                 inv.write({
                     'afip_auth_mode': 'CAE',
                     'afip_auth_code': '68448767638166',
-                    'afip_auth_code_due': inv.date_invoice,
+                    'afip_auth_code_due': inv.invoice_date,
                     'afip_result': '',
                     'afip_message': msg,
                 })
@@ -445,8 +209,8 @@ print "Observaciones:", wscdc.Obs
             commercial_partner = inv.commercial_partner_id
             country = commercial_partner.country_id
             journal = inv.journal_id
-            pos_number = journal.point_of_sale_number
-            doc_afip_code = inv.document_type_id.code
+            pos_number = journal.l10n_ar_afip_pos_number
+            doc_afip_code = inv.l10n_latam_document_type_id.code
 
             # authenticate against AFIP:
             ws = inv.company_id.get_connection(afip_ws).connect()
@@ -461,40 +225,30 @@ print "Observaciones:", wscdc.Obs
                         'For WS "%s" country code is mandatory'
                         'Country: %s' % (
                             afip_ws, country.name)))
-                elif not country.afip_code:
+                elif not country.l10n_ar_afip_code:
                     raise UserError(_(
                         'For WS "%s" country afip code is mandatory'
                         'Country: %s' % (
                             afip_ws, country.name)))
 
             ws_next_invoice_number = int(
-                inv.journal_document_type_id.get_pyafipws_last_invoice(
-                )['result']) + 1
-            # verify that the invoice is the next one to be registered in AFIP
-            if inv.invoice_number != ws_next_invoice_number:
-                raise UserError(_(
-                    'Error!'
-                    'Invoice id: %i'
-                    'Next invoice number should be %i and not %i' % (
-                        inv.id,
-                        ws_next_invoice_number,
-                        inv.invoice_number)))
+                inv.journal_id.get_pyafipws_last_invoice(inv.l10n_latam_document_type_id)['result']) + 1
 
-            partner_id_code = commercial_partner.main_id_category_id.afip_code
+            partner_id_code = commercial_partner.l10n_latam_identification_type_id.l10n_ar_afip_code
             tipo_doc = partner_id_code or '99'
             nro_doc = \
-                partner_id_code and commercial_partner.main_id_number or "0"
-            cbt_desde = cbt_hasta = cbte_nro = inv.invoice_number
-            concepto = tipo_expo = int(inv.afip_concept)
+                partner_id_code and commercial_partner.vat or "0"
+            cbt_desde = cbt_hasta = cbte_nro = ws_next_invoice_number
+            concepto = tipo_expo = int(inv.l10n_ar_afip_concept)
 
-            fecha_cbte = inv.date_invoice
+            fecha_cbte = inv.invoice_date
             if afip_ws != 'wsmtxca':
-                fecha_cbte = inv.date_invoice.strftime('%Y%m%d')
+                fecha_cbte = inv.invoice_date.strftime('%Y%m%d')
 
             mipyme_fce = int(doc_afip_code) in [201, 206, 211]
             # due date only for concept "services" and mipyme_fce
             if int(concepto) != 1 and int(doc_afip_code) not in [202, 203, 207, 208, 212, 213] or mipyme_fce:
-                fecha_venc_pago = inv.date_due or inv.date_invoice
+                fecha_venc_pago = inv.invoice_date_due or inv.invoice_date
                 if afip_ws != 'wsmtxca':
                     fecha_venc_pago = fecha_venc_pago.strftime('%Y%m%d')
             else:
@@ -502,15 +256,15 @@ print "Observaciones:", wscdc.Obs
 
             # fecha de servicio solo si no es 1
             if int(concepto) != 1:
-                fecha_serv_desde = inv.afip_service_start
-                fecha_serv_hasta = inv.afip_service_end
+                fecha_serv_desde = inv.l10n_ar_afip_service_start
+                fecha_serv_hasta = inv.l10n_ar_afip_service_end
                 if afip_ws != 'wsmtxca':
                     fecha_serv_desde = fecha_serv_desde.strftime('%Y%m%d')
                     fecha_serv_hasta = fecha_serv_hasta.strftime('%Y%m%d')
             else:
                 fecha_serv_desde = fecha_serv_hasta = None
 
-            # # invoice amount totals:
+            # invoice amount totals:
             imp_total = str("%.2f" % inv.amount_total)
             # ImpTotConc es el iva no gravado
             imp_tot_conc = str("%.2f" % inv.vat_untaxed_base_amount)
@@ -518,7 +272,7 @@ print "Observaciones:", wscdc.Obs
             # no se pasa iva. Probamos hacer que vat_taxable_amount
             # incorpore a los imp cod 0, pero en ese caso termina reportando
             # iva y no lo queremos
-            if inv.document_type_id.document_letter_id.name == 'C':
+            if inv.l10n_latam_document_type_id.l10n_ar_letter == 'C':
                 imp_neto = str("%.2f" % inv.amount_untaxed)
             else:
                 imp_neto = str("%.2f" % inv.vat_taxable_amount)
@@ -527,8 +281,8 @@ print "Observaciones:", wscdc.Obs
             # imp_subtotal = str("%.2f" % inv.amount_untaxed)
             imp_trib = str("%.2f" % inv.other_taxes_amount)
             imp_op_ex = str("%.2f" % inv.vat_exempt_base_amount)
-            moneda_id = inv.currency_id.afip_code
-            moneda_ctz = inv.currency_rate
+            moneda_id = inv.currency_id.l10n_ar_afip_code
+            moneda_ctz = inv.l10n_ar_currency_rate
 
             CbteAsoc = inv.get_related_invoices_data()
 
@@ -555,9 +309,9 @@ print "Observaciones:", wscdc.Obs
             #     )
             elif afip_ws == 'wsfex':
                 # # foreign trade data: export permit, country code, etc.:
-                if inv.incoterm_id:
-                    incoterms = inv.incoterm_id.code
-                    incoterms_ds = inv.incoterm_id.name
+                if inv.invoice_incoterm_id:
+                    incoterms = inv.invoice_incoterm_id.code
+                    incoterms_ds = inv.invoice_incoterm_id.name
                     # máximo de 20 caracteres admite
                     incoterms_ds = incoterms_ds and incoterms_ds[:20]
                 else:
@@ -570,11 +324,11 @@ print "Observaciones:", wscdc.Obs
                     permiso_existente = "N"
                 else:
                     permiso_existente = ""
-                obs_generales = inv.comment
+                obs_generales = inv.narration
 
-                if inv.payment_term_id:
-                    forma_pago = inv.payment_term_id.name
-                    obs_comerciales = inv.payment_term_id.name
+                if inv.invoice_payment_term_id:
+                    forma_pago = inv.invoice_payment_term_id.name
+                    obs_comerciales = inv.invoice_payment_term_id.name
                 else:
                     forma_pago = obs_comerciales = None
 
@@ -582,7 +336,7 @@ print "Observaciones:", wscdc.Obs
                 # 1672 Is required only doc_type 19. concept (2,4)
                 # 1673 If doc_type != 19 should not be reported.
                 # 1674 doc_type 19 concept (2,4). date should be >= invoice date
-                fecha_pago = datetime.strftime(inv.date_due, '%Y%m%d') \
+                fecha_pago = datetime.strftime(inv.invoice_date_due, '%Y%m%d') \
                     if int(doc_afip_code) == 19 and tipo_expo in [2, 4] and inv.date_due else ''
 
                 idioma_cbte = 1     # invoice language: spanish / español
@@ -613,7 +367,7 @@ print "Observaciones:", wscdc.Obs
                     commercial_partner.zip or '',
                     commercial_partner.city or '',
                 ])
-                pais_dst_cmp = commercial_partner.country_id.afip_code
+                pais_dst_cmp = commercial_partner.country_id.l10n_ar_afip_code
                 ws.CrearFactura(
                     doc_afip_code, pos_number, cbte_nro, fecha_cbte,
                     imp_total, tipo_expo, permiso_existente, pais_dst_cmp,
@@ -656,7 +410,7 @@ print "Observaciones:", wscdc.Obs
                     # agregamos cbu para factura de credito electronica
                     ws.AgregarOpcional(
                         opcional_id=2101,
-                        valor=inv.partner_bank_id.cbu)
+                        valor=inv.invoice_partner_bank_id.cbu)
                 elif int(doc_afip_code) in [202, 203, 207, 208, 212, 213]:
                     valor = inv.afip_fce_es_anulacion and 'S' or 'N'
                     ws.AgregarOpcional(
@@ -695,17 +449,17 @@ print "Observaciones:", wscdc.Obs
                 # fex no acepta fecha
                 if afip_ws == 'wsfex':
                     ws.AgregarCmpAsoc(
-                        CbteAsoc.document_type_id.code,
-                        CbteAsoc.point_of_sale_number,
-                        CbteAsoc.invoice_number,
-                        self.company_id.cuit,
+                        CbteAsoc.l10n_latam_document_type_id.document_type_id.code,
+                        CbteAsoc.journal_id.l10n_ar_afip_pos_number,
+                        CbteAsoc.document_number[5:],
+                        self.company_id.vat,
                     )
                 else:
                     ws.AgregarCmpAsoc(
-                        CbteAsoc.document_type_id.code,
-                        CbteAsoc.point_of_sale_number,
-                        CbteAsoc.invoice_number,
-                        self.company_id.cuit,
+                        CbteAsoc.l10n_latam_document_type_id.code,
+                        CbteAsoc.journal_id.l10n_ar_afip_pos_number,
+                        CbteAsoc.document_number[5:],
+                        self.company_id.vat,
                         afip_ws != 'wsmtxca' and self.date.strftime('%Y%m%d') or self.date.strftime('%Y-%m-%d'),
                     )
 
@@ -717,14 +471,14 @@ print "Observaciones:", wscdc.Obs
                     # unidad de referencia del producto si se comercializa
                     # en una unidad distinta a la de consumo
                     # uom is not mandatory, if no UOM we use "unit"
-                    if not line.uom_id:
+                    if not line.product_uom_id:
                         umed = '7'
-                    elif not line.uom_id.afip_code:
+                    elif not line.product_uom_id.l10n_ar_afip_code:
                         raise UserError(_(
                             'Not afip code con producto UOM %s' % (
-                                line.uom_id.name)))
+                                line.product_uom_id.name)))
                     else:
-                        umed = line.uom_id.afip_code
+                        umed = line.product_uom_id.l10n_ar_afip_code
                     # cod_mtx = line.uom_id.afip_code
                     ds = line.name
                     qty = line.quantity

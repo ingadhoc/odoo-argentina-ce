@@ -66,7 +66,6 @@ class AfipwsConnection(models.Model):
         required=True,
     )
 
-    @api.multi
     @api.depends('type', 'afip_ws')
     def _compute_afip_urls(self):
         for rec in self:
@@ -115,7 +114,6 @@ class AfipwsConnection(models.Model):
                     "personaServiceA5?wsdl")
         return afip_ws_url
 
-    @api.multi
     def check_afip_ws(self, afip_ws):
         # TODO tal vez cambiar nombre cuando veamos si devuelve otra cosa
         self.ensure_one()
@@ -125,7 +123,6 @@ class AfipwsConnection(models.Model):
                 ' %s connection') % (
                 afip_ws, self.afip_ws))
 
-    @api.multi
     def connect(self):
         """
         Method to be called

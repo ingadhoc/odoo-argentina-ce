@@ -65,32 +65,30 @@ class AfipwsCertificate(models.Model):
         compute='_compute_request_file',
     )
 
-    @api.multi
     @api.depends('csr')
     def _compute_request_file(self):
-        for rec in self.filtered('csr'):
+        for rec in self:
             rec.request_filename = 'request.csr'
-            rec.request_file = base64.encodestring(self.csr.encode('utf-8'))
+            if rec.csr:
+                rec.request_file = base64.encodestring(self.csr.encode('utf-8'))
+            else:
+                rec.request_file = False
 
-    @api.multi
     def action_to_draft(self):
         if self.alias_id.state != 'confirmed':
             raise UserError(_('Certificate Alias must be confirmed first!'))
         self.write({'state': 'draft'})
         return True
 
-    @api.multi
     def action_cancel(self):
         self.write({'state': 'cancel'})
         return True
 
-    @api.multi
     def action_confirm(self):
         self.verify_crt()
         self.write({'state': 'confirmed'})
         return True
 
-    @api.multi
     def verify_crt(self):
         """
         Verify if certificate is well formed
@@ -113,7 +111,6 @@ class AfipwsCertificate(models.Model):
                 raise UserError(msg)
         return True
 
-    @api.multi
     def get_certificate(self):
         """
         Return Certificate object.
