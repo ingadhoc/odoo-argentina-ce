@@ -32,14 +32,12 @@ class AccountMove(models.Model):
         copy=False,
         string='CAE/CAI/CAEA Code',
         readonly=True,
-        oldname='afip_cae',
         size=24,
         states={'draft': [('readonly', False)]},
     )
     afip_auth_code_due = fields.Date(
         copy=False,
         readonly=True,
-        oldname='afip_cae_due',
         string='CAE/CAI/CAEA due Date',
         states={'draft': [('readonly', False)]},
     )
