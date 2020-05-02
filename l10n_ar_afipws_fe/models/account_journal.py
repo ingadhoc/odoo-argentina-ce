@@ -33,7 +33,6 @@ class AccountJournal(models.Model):
         for rec in self:
             rec.afip_ws = type_mapping.get(rec.l10n_ar_afip_pos_system, False)
 
-
     @api.model
     def create(self, vals):
         journal = super(AccountJournal, self).create(vals)
@@ -58,22 +57,19 @@ class AccountJournal(models.Model):
 
     def get_pyafipws_last_invoice(self, document_type):
         self.ensure_one()
-        company = self.journal_id.company_id
-        afip_ws = self.journal_id.afip_ws
+        company = self.company_id
+        afip_ws = self.afip_ws
 
         if not afip_ws:
-            return (_('No AFIP WS selected on point of sale %s') % (
-                self.journal_id.name))
+            return (_('No AFIP WS selected on point of sale %s') % (self.name))
         ws = company.get_connection(afip_ws).connect()
         # call the webservice method to get the last invoice at AFIP:
 
         try:
             if afip_ws in ("wsfe", "wsmtxca"):
-                last = ws.CompUltimoAutorizado(
-                    document_type, self.journal_id.l10n_ar_afip_pos_number)
+                last = ws.CompUltimoAutorizado(document_type.code, self.l10n_ar_afip_pos_number)
             elif afip_ws in ["wsfex", 'wsbfe']:
-                last = ws.GetLastCMP(
-                    document_type, self.journal_id.l10n_ar_afip_pos_number)
+                last = ws.GetLastCMP(document_type.code, self.l10n_ar_afip_pos_number)
             else:
                 return(_('AFIP WS %s not implemented') % afip_ws)
         except ValueError as error:
@@ -98,29 +94,7 @@ class AccountJournal(models.Model):
         else:
             msg = _('OK! Local and remote next number match!') + msg
         title = _('Last Invoice %s\n' % last)
-        return {'msg': (title + msg), 'result': last}
-
-    # TODO implementar
-    # def check_document_local_remote_number(self):
-    #     msg = ''
-    #     if self.type != 'sale':
-    #         return True
-    #     for journal_document_type in self.journal_document_type_ids:
-    #         next_by_ws = int(
-    #             journal_document_type.get_pyafipws_last_invoice(
-    #             )['result']) + 1
-    #         next_by_seq = journal_document_type.sequence_id.number_next_actual
-    #         if next_by_ws != next_by_seq:
-    #             msg += _(
-    #                 '* Document Type %s, Local %i, Remote %i\n' % (
-    #                     journal_document_type.document_type_id.name,
-    #                     next_by_seq,
-    #                     next_by_ws))
-    #     if msg:
-    #         msg = _('There are some doument desynchronized:\n') + msg
-    #         raise UserError(msg)
-    #     else:
-    #         raise UserError(_('All documents are synchronized'))
+        return {'msg': (title + msg), 'result': int(last)}
 
     def test_pyafipws_dummy(self):
         """
@@ -214,11 +188,6 @@ class AccountJournal(models.Model):
             "Zonas on AFIP\n%s\n. \nObservations: %s") % (
             '\n '.join(ret), ".\n".join([ws.Excepcion, ws.ErrMsg, ws.Obs])))
         raise UserError(msg)
-
-    def get_pyafipws_currencies(self):
-        self.ensure_one()
-        return self.env['res.currency'].get_pyafipws_currencies(
-            afip_ws=self.afip_ws, company=self.company_id)
 
     def action_get_connection(self):
         self.ensure_one()

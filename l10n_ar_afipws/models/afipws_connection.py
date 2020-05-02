@@ -164,7 +164,7 @@ class AfipwsConnection(models.Model):
             raise UserError(
                 'There was a connection problem to AFIP. Contact your Odoo Provider. Error\n\n%s' % repr(error))
 
-        cuit = self.company_id.cuit_required()
+        cuit = self.company_id.partner_id.ensure_vat()
         ws.Cuit = cuit
         ws.Token = self.token
         ws.Sign = self.sign

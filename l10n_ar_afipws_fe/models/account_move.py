@@ -4,8 +4,6 @@
 ##############################################################################
 from odoo import fields, models, api, _
 from odoo.exceptions import UserError
-import base64
-from io import BytesIO
 import logging
 import sys
 import traceback
@@ -79,12 +77,41 @@ class AccountMove(models.Model):
         '- NO: sí el comprobante asociado (original) NO se encuentra rechazado por el comprador'
     )
 
+    def _l10n_ar_get_amounts(self):
+        # TODO check if already on l10n_ar and we can remove from here
+        self.ensure_one()
+        tax_lines = self.line_ids.filtered('tax_line_id')
+        vat_taxes = tax_lines.filtered(lambda r: r.tax_line_id.tax_group_id.l10n_ar_vat_afip_code)
+
+        vat_taxable = self.env['account.move.line']
+        for line in self.invoice_line_ids:
+            if any(tax.tax_group_id.l10n_ar_vat_afip_code and tax.tax_group_id.l10n_ar_vat_afip_code not in [
+                    '0', '1', '2'] for tax in line.tax_ids):
+                vat_taxable |= line
+
+        return {'vat_amount': sum(vat_taxes.mapped('price_subtotal')),
+                # For invoices of letter C should not pass VAT
+                'vat_taxable_amount': sum(vat_taxable.mapped('price_subtotal'))
+                if self.l10n_latam_document_type_id.l10n_ar_letter != 'C' else self.amount_untaxed,
+                'vat_exempt_base_amount': sum(self.invoice_line_ids.filtered(lambda x: x.tax_ids.filtered(
+                    lambda y: y.tax_group_id.l10n_ar_vat_afip_code == '2')).mapped('price_subtotal')),
+                'vat_untaxed_base_amount': sum(self.invoice_line_ids.filtered(lambda x: x.tax_ids.filtered(
+                    lambda y: y.tax_group_id.l10n_ar_vat_afip_code == '1')).mapped('price_subtotal')),
+                'other_taxes_amount': sum((tax_lines - vat_taxes).mapped('price_subtotal')),
+                'iibb_perc_amount': sum(tax_lines.filtered(
+                    lambda r: r.tax_line_id.tax_group_id.l10n_ar_tribute_afip_code == '07').mapped('price_subtotal')),
+                'mun_perc_amount': sum(tax_lines.filtered(
+                    lambda r: r.tax_line_id.tax_group_id.l10n_ar_tribute_afip_code == '08').mapped('price_subtotal')),
+                'intern_tax_amount': sum(tax_lines.filtered(
+                    lambda r: r.tax_line_id.tax_group_id.l10n_ar_tribute_afip_code == '04').mapped('price_subtotal')),
+                'other_perc_amount': sum(tax_lines.filtered(
+                    lambda r: r.tax_line_id.tax_group_id.l10n_ar_tribute_afip_code == '09').mapped('price_subtotal'))}
+
     @api.depends('journal_id', 'afip_auth_code')
     def _compute_validation_type(self):
         for rec in self:
             if rec.journal_id.afip_ws and not rec.afip_auth_code:
-                validation_type = self.env[
-                    'res.company']._get_environment_type()
+                validation_type = self.env['res.company']._get_environment_type()
                 # if we are on homologation env and we dont have certificates
                 # we validate only locally
                 if validation_type == 'homologation':
@@ -93,6 +120,8 @@ class AccountMove(models.Model):
                     except Exception:
                         validation_type = False
                 rec.validation_type = validation_type
+            else:
+                rec.validation_type = False
 
     @api.depends('afip_auth_code')
     def _compute_barcode(self):
@@ -129,47 +158,6 @@ class AccountMove(models.Model):
         res = super().post()
         self.do_pyafipws_request_cae()
         return res
-
-    # para cuando se crea, por ej, desde ventas o contratos
-    @api.constrains('partner_id')
-    # para cuando se crea manualmente la factura
-    @api.onchange('partner_id')
-    def _set_afip_journal(self):
-        """
-        Si es factura electrónica y es del exterior, buscamos diario
-        para exportación
-        TODO: implementar similar para elegir bono fiscal o factura con detalle
-        """
-        for rec in self.filtered(lambda x: (
-                x.journal_id.point_of_sale_type == 'electronic' and
-                x.journal_id.type == 'sale')):
-
-            res_code = rec.commercial_partner_id.afip_responsability_type_id.\
-                code
-            ws = rec.journal_id.afip_ws
-            journal = self.env['account.journal']
-            domain = [
-                ('company_id', '=', rec.company_id.id),
-                ('point_of_sale_type', '=', 'electronic'),
-                ('type', '=', 'sale'),
-            ]
-            # TODO mejorar que aca buscamos por codigo de resp mientras que
-            # el mapeo de tipo de documentos es configurable por letras y,
-            # por ejemplo, si se da letra e de RI a RI y se genera factura
-            # para un RI queriendo forzar diario de expo, termina dando error
-            # porque los ws y los res_code son incompatibles para esta logica.
-            # El error lo da el metodo check_journal_document_type_journal
-            # porque este metodo trata de poner otro diario sin actualizar
-            # el tipo de documento
-            if ws == 'wsfe' and res_code in ['8', '9', '10']:
-                domain.append(('afip_ws', '=', 'wsfex'))
-                journal = journal.search(domain, limit=1)
-            elif ws == 'wsfex' and res_code not in ['8', '9', '10']:
-                domain.append(('afip_ws', '=', 'wsfe'))
-                journal = journal.search(domain, limit=1)
-
-            if journal:
-                rec.journal_id = journal.id
 
     def do_pyafipws_request_cae(self):
         "Request to AFIP the invoices' Authorization Electronic Code (CAE)"
@@ -264,10 +252,11 @@ class AccountMove(models.Model):
             else:
                 fecha_serv_desde = fecha_serv_hasta = None
 
+            amounts = self._l10n_ar_get_amounts()
             # invoice amount totals:
             imp_total = str("%.2f" % inv.amount_total)
             # ImpTotConc es el iva no gravado
-            imp_tot_conc = str("%.2f" % inv.vat_untaxed_base_amount)
+            imp_tot_conc = str("%.2f" % amounts['vat_untaxed_base_amount'])
             # tal vez haya una mejor forma, la idea es que para facturas c
             # no se pasa iva. Probamos hacer que vat_taxable_amount
             # incorpore a los imp cod 0, pero en ese caso termina reportando
@@ -275,12 +264,12 @@ class AccountMove(models.Model):
             if inv.l10n_latam_document_type_id.l10n_ar_letter == 'C':
                 imp_neto = str("%.2f" % inv.amount_untaxed)
             else:
-                imp_neto = str("%.2f" % inv.vat_taxable_amount)
-            imp_iva = str("%.2f" % inv.vat_amount)
+                imp_neto = str("%.2f" % amounts['vat_taxable_amount'])
+            imp_iva = str("%.2f" % amounts['vat_amount'])
             # se usaba para wsca..
             # imp_subtotal = str("%.2f" % inv.amount_untaxed)
-            imp_trib = str("%.2f" % inv.other_taxes_amount)
-            imp_op_ex = str("%.2f" % inv.vat_exempt_base_amount)
+            imp_trib = str("%.2f" % amounts['other_taxes_amount'])
+            imp_op_ex = str("%.2f" % amounts['vat_exempt_base_amount'])
             moneda_id = inv.currency_id.l10n_ar_afip_code
             moneda_ctz = inv.l10n_ar_currency_rate
 
@@ -337,7 +326,7 @@ class AccountMove(models.Model):
                 # 1673 If doc_type != 19 should not be reported.
                 # 1674 doc_type 19 concept (2,4). date should be >= invoice date
                 fecha_pago = datetime.strftime(inv.invoice_date_due, '%Y%m%d') \
-                    if int(doc_afip_code) == 19 and tipo_expo in [2, 4] and inv.date_due else ''
+                    if int(doc_afip_code) == 19 and tipo_expo in [2, 4] and inv.invoice_date_due else ''
 
                 idioma_cbte = 1     # invoice language: spanish / español
 
@@ -380,22 +369,10 @@ class AccountMove(models.Model):
                 zona = 1  # Nacional (la unica devuelta por afip)
                 # los responsables no inscriptos no se usan mas
                 impto_liq_rni = 0.0
-                imp_iibb = sum(inv.tax_line_ids.filtered(lambda r: (
-                    r.tax_id.tax_group_id.type == 'perception' and
-                    r.tax_id.tax_group_id.application == 'provincial_taxes')
-                ).mapped('amount'))
-                imp_perc_mun = sum(inv.tax_line_ids.filtered(lambda r: (
-                    r.tax_id.tax_group_id.type == 'perception' and
-                    r.tax_id.tax_group_id.application == 'municipal_taxes')
-                ).mapped('amount'))
-                imp_internos = sum(inv.tax_line_ids.filtered(
-                    lambda r: r.tax_id.tax_group_id.application == 'others'
-                ).mapped('amount'))
-                imp_perc = sum(inv.tax_line_ids.filtered(lambda r: (
-                    r.tax_id.tax_group_id.type == 'perception' and
-                    # r.tax_id.tax_group_id.tax != 'vat' and
-                    r.tax_id.tax_group_id.application == 'national_taxes')
-                ).mapped('amount'))
+                imp_iibb = amounts['iibb_perc_amount']
+                imp_perc_mun = amounts['mun_perc_amount']
+                imp_internos = amounts['intern_tax_amount']
+                imp_perc = amounts['other_perc_amount']
 
                 ws.CrearFactura(
                     tipo_doc, nro_doc, zona, doc_afip_code, pos_number,
@@ -420,45 +397,55 @@ class AccountMove(models.Model):
             # TODO ver si en realidad tenemos que usar un vat pero no lo
             # subimos
             if afip_ws not in ['wsfex', 'wsbfe']:
-                for vat in inv.vat_taxable_ids:
-                    _logger.info(
-                        'Adding VAT %s' % vat.tax_id.tax_group_id.name)
+                vat_taxable = self.env['account.move.line']
+                for line in self.line_ids:
+                    if any(
+                            tax.tax_group_id.l10n_ar_vat_afip_code and tax.tax_group_id.l10n_ar_vat_afip_code
+                            not in ['0', '1', '2'] for tax in line.tax_line_id) and line.price_subtotal:
+                        vat_taxable |= line
+                for vat in vat_taxable:
                     ws.AgregarIva(
-                        vat.tax_id.tax_group_id.afip_code,
-                        "%.2f" % vat.base,
+                        vat.tax_line_id.tax_group_id.l10n_ar_vat_afip_code,
+                        "%.2f" % sum(self.invoice_line_ids.filtered(lambda x: x.tax_ids.filtered(
+                            lambda y: y.tax_group_id.l10n_ar_vat_afip_code ==
+                            vat.tax_line_id.tax_group_id.l10n_ar_vat_afip_code)).mapped('price_subtotal')),
                         # "%.2f" % abs(vat.base_amount),
-                        "%.2f" % vat.amount,
+                        "%.2f" % vat.price_subtotal,
                     )
 
-                for tax in inv.not_vat_tax_ids:
-                    _logger.info(
-                        'Adding TAX %s' % tax.tax_id.tax_group_id.name)
+                not_vat_taxes = self.line_ids.filtered(
+                    lambda x: x.tax_line_id and x.tax_line_id.tax_group_id.l10n_ar_tribute_afip_code)
+                for tax in not_vat_taxes:
                     ws.AgregarTributo(
-                        tax.tax_id.tax_group_id.application_code,
-                        tax.tax_id.tax_group_id.name,
-                        "%.2f" % tax.base,
+                        tax.tax_line_id.tax_group_id.l10n_ar_tribute_afip_code,
+                        tax.tax_line_id.tax_group_id.name,
+                        "%.2f" % sum(self.invoice_line_ids.filtered(lambda x: x.tax_ids.filtered(
+                            lambda y: y.tax_group_id.l10n_ar_tribute_afip_code ==
+                            tax.tax_line_id.tax_group_id.l10n_ar_tribute_afip_code)).mapped('price_subtotal')),
                         # "%.2f" % abs(tax.base_amount),
                         # TODO pasar la alicuota
                         # como no tenemos la alicuota pasamos cero, en v9
                         # podremos pasar la alicuota
                         0,
-                        "%.2f" % tax.amount,
+                        "%.2f" % tax.price_subtotal,
                     )
 
             if CbteAsoc:
                 # fex no acepta fecha
+                doc_number_parts = self._l10n_ar_get_document_number_parts(
+                    CbteAsoc.l10n_latam_document_number, CbteAsoc.l10n_latam_document_type_id.code)
                 if afip_ws == 'wsfex':
                     ws.AgregarCmpAsoc(
                         CbteAsoc.l10n_latam_document_type_id.document_type_id.code,
-                        CbteAsoc.journal_id.l10n_ar_afip_pos_number,
-                        CbteAsoc.document_number[5:],
+                        doc_number_parts['point_of_sale'],
+                        doc_number_parts['invoice_number'],
                         self.company_id.vat,
                     )
                 else:
                     ws.AgregarCmpAsoc(
                         CbteAsoc.l10n_latam_document_type_id.code,
-                        CbteAsoc.journal_id.l10n_ar_afip_pos_number,
-                        CbteAsoc.document_number[5:],
+                        doc_number_parts['point_of_sale'],
+                        doc_number_parts['invoice_number'],
                         self.company_id.vat,
                         afip_ws != 'wsmtxca' and self.date.strftime('%Y%m%d') or self.date.strftime('%Y-%m-%d'),
                     )
@@ -479,7 +466,7 @@ class AccountMove(models.Model):
                                 line.product_uom_id.name)))
                     else:
                         umed = line.product_uom_id.l10n_ar_afip_code
-                    # cod_mtx = line.uom_id.afip_code
+                    # cod_mtx = line.uom_id.l10n_ar_afip_code
                     ds = line.name
                     qty = line.quantity
                     precio = line.price_unit
@@ -489,14 +476,14 @@ class AccountMove(models.Model):
                         "%.2f" % (precio * qty - importe)) or None
                     if afip_ws in ['wsmtxca', 'wsbfe']:
                         # TODO No lo estamos usando. Borrar?
-                        # if not line.product_id.uom_id.afip_code:
+                        # if not line.product_id.uom_id.l10n_ar_afip_code:
                         #     raise UserError(_(
                         #         'Not afip code con producto UOM %s' % (
                         #             line.product_id.uom_id.name)))
                         # u_mtx = (
-                        #     line.product_id.uom_id.afip_code or
-                        #     line.uom_id.afip_code)
-                        iva_id = line.vat_tax_id.tax_group_id.afip_code
+                        #     line.product_id.uom_id.l10n_ar_afip_code or
+                        #     line.uom_id.l10n_ar_afip_code)
+                        iva_id = line.vat_tax_id.tax_group_id.l10n_ar_vat_afip_code
                         vat_taxes_amounts = line.vat_tax_id.compute_all(
                             line.price_unit, inv.currency_id, line.quantity,
                             product=line.product_id,
@@ -560,11 +547,9 @@ class AccountMove(models.Model):
                 raise UserError(_('AFIP Validation Error. %s' % msg))
             # TODO ver que algunso campos no tienen sentido porque solo se
             # escribe aca si no hay errores
-            _logger.info('CAE solicitado con exito. CAE: %s. Resultado %s' % (
-                ws.CAE, ws.Resultado))
-            if afip_ws == 'wsbfe':
-                vto = datetime.strftime(
-                    datetime.strptime(vto, '%d/%m/%Y'), '%Y%m%d')
+            if vto:
+                vto = datetime.strptime(vto, '%Y%m%d').date()
+            _logger.info('CAE solicitado con exito. CAE: %s. Resultado %s' % (ws.CAE, ws.Resultado))
             inv.write({
                 'afip_auth_mode': 'CAE',
                 'afip_auth_code': ws.CAE,
