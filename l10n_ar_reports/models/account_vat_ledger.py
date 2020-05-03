@@ -89,7 +89,7 @@ class AccountVatLedger(models.Model):
         string="Invoices",
         compute="_compute_invoices"
     )
-    # CITI / libro iva fields
+    # txt / libro iva fields
     REGINFO_CV_ALICUOTAS = fields.Text(
         'REGINFO_CV_ALICUOTAS',
         readonly=True,
@@ -111,23 +111,18 @@ class AccountVatLedger(models.Model):
         readonly=True
     )
     vouchers_filename = fields.Char(
-        readonly=True,
         compute='_compute_files',
     )
     aliquots_file = fields.Binary(
         compute='_compute_files',
-        readonly=True
     )
     aliquots_filename = fields.Char(
-        readonly=True,
         compute='_compute_files',
     )
     import_aliquots_file = fields.Binary(
         compute='_compute_files',
-        readonly=True
     )
     import_aliquots_filename = fields.Char(
-        readonly=True,
         compute='_compute_files',
     )
     prorate_tax_credit = fields.Boolean(
@@ -208,9 +203,8 @@ class AccountVatLedger(models.Model):
             [('report_name', '=', 'report_account_vat_ledger')],
             limit=1).report_action(self)
 
-# citi / libro iva digital methods
+# txt / libro iva digital methods
 
-    @api.multi
     def format_amount(self, amount, padding=15, decimals=2, invoice=False):
         # get amounts on correct sign despite conifiguration on taxes and tax
         # codes
@@ -230,7 +224,6 @@ class AccountVatLedger(models.Model):
             template = "{:0>%dd}" % (padding)
         return template.format(int(round(abs(amount) * 10**decimals, decimals)))
 
-    @api.multi
     @api.depends(
         'REGINFO_CV_CBTE',
         'REGINFO_CV_ALICUOTAS',
@@ -250,6 +243,9 @@ class AccountVatLedger(models.Model):
             )
             self.aliquots_file = base64.encodestring(
                 self.REGINFO_CV_ALICUOTAS.encode('ISO-8859-1'))
+        else:
+            self.aliquots_file = False
+            self.aliquots_filename = False
         if self.REGINFO_CV_COMPRAS_IMPORTACIONES:
             self.import_aliquots_filename = _('Import_Alicuots_%s_%s.txt') % (
                 self.type,
@@ -258,6 +254,9 @@ class AccountVatLedger(models.Model):
             )
             self.import_aliquots_file = base64.encodestring(
                 self.REGINFO_CV_COMPRAS_IMPORTACIONES.encode('ISO-8859-1'))
+        else:
+            self.import_aliquots_file = False
+            self.import_aliquots_filename = False
         if self.REGINFO_CV_CBTE:
             self.vouchers_filename = _('Vouchers_%s_%s.txt') % (
                 self.type,
@@ -266,9 +265,11 @@ class AccountVatLedger(models.Model):
             )
             self.vouchers_file = base64.encodestring(
                 self.REGINFO_CV_CBTE.encode('ISO-8859-1'))
+        else:
+            self.vouchers_file = False
+            self.vouchers_filename = False
 
-    @api.multi
-    def compute_citi_data(self):
+    def compute_txt_data(self):
         alicuotas = self.get_REGINFO_CV_ALICUOTAS()
         # sacamos todas las lineas y las juntamos
         lines = []
@@ -306,7 +307,7 @@ class AccountVatLedger(models.Model):
             # por las dudas limpiamos letras
             number = re.sub("[^0-9]", "", number)
         else:
-            number = partner.cuit_required()
+            number = partner.ensure_vat()
         return number.rjust(20, '0')
 
     @api.model
@@ -320,25 +321,23 @@ class AccountVatLedger(models.Model):
         return invoice._l10n_ar_get_document_number_parts(
                 invoice.l10n_latam_document_number, invoice.l10n_latam_document_type_id.code)['invoice_number']
 
-    @api.multi
-    def get_citi_invoices(self):
+    def get_txt_invoices(self):
         self.ensure_one()
         return self.env['account.move'].search([
-            ('document_type_id.export_to_citi', '=', True),
+            ('document_type_id.export_to_txt', '=', True),
             ('id', 'in', self.invoice_ids.ids)], order='date_invoice asc')
 
-    @api.multi
     def get_REGINFO_CV_CBTE(self, alicuotas):
         self.ensure_one()
         res = []
-        invoices = self.get_citi_invoices()
+        invoices = self.get_txt_invoices()
         if self.type == 'purchase':
             partners = invoices.mapped('commercial_partner_id').filtered(
                 lambda r: r.l10n_latam_identification_type_id.l10n_ar_afip_code in (
                     False, 99) or not r.vat)
             if partners:
                 raise ValidationError(_(
-                    "On purchase citi, partner document type is mandatory "
+                    "On purchase txt, partner document type is mandatory "
                     "and it must be different from 99. "
                     "Partners: \r\n\r\n"
                     "%s") % '\r\n'.join(
@@ -354,10 +353,10 @@ class AccountVatLedger(models.Model):
 
             row = [
                 # Campo 1: Fecha de comprobante
-                fields.Date.from_string(inv.date_invoice).strftime('%Y%m%d'),
+                fields.Date.from_string(inv.invoice_date).strftime('%Y%m%d'),
 
                 # Campo 2: Tipo de Comprobante.
-                "{:0>3d}".format(int(inv.document_type_id.code)),
+                "{:0>3d}".format(int(inv.l10n_latam_document_type_id.code)),
 
                 # Campo 3: Punto de Venta
                 self.get_point_of_sale(inv),
@@ -524,7 +523,7 @@ class AccountVatLedger(models.Model):
                     else:
                         # row.append(self.format_amount(0))
                         # por ahora no implementado pero seria lo mismo que
-                        # sacar si prorrateo y que el cliente entre en el citi
+                        # sacar si prorrateo y que el cliente entre en el txt
                         # en cada comprobante y complete cuando es en
                         # credito fiscal computable
                         raise ValidationError(_(
@@ -567,7 +566,6 @@ class AccountVatLedger(models.Model):
             res.append(''.join(row))
         self.REGINFO_CV_CBTE = '\r\n'.join(res)
 
-    @api.multi
     def get_tax_row(self, invoice, base, code, tax_amount, impo=False):
         self.ensure_one()
         inv = invoice
@@ -635,7 +633,6 @@ class AccountVatLedger(models.Model):
             ]
         return row
 
-    @api.multi
     def get_REGINFO_CV_ALICUOTAS(self, impo=False):
         """
         Devolvemos un dict para calcular la cantidad de alicuotas cuando
@@ -651,10 +648,10 @@ class AccountVatLedger(models.Model):
         # usamos mapped por si hay afip codes duplicados (ej. manual y
         # auto)
         if impo:
-            invoices = self.get_citi_invoices().filtered(
+            invoices = self.get_txt_invoices().filtered(
                 lambda r: r.document_type_id.code == '66')
         else:
-            invoices = self.get_citi_invoices().filtered(
+            invoices = self.get_txt_invoices().filtered(
                 lambda r: r.document_type_id.code != '66')
         for inv in invoices:
             lines = []
