@@ -306,7 +306,7 @@ class AccountVatLedger(models.Model):
         self.ensure_one()
         return self.env['account.move'].search([
             ('id', 'in', self.invoice_ids.mapped('move_id').ids),
-            ('l10n_latam_document_type_id.code', '!=', False)])
+            ('l10n_latam_document_type_id.code', '!=', False)], order='invoice_date asc, name asc, id asc')
 
     def _get_REGINFO_CV_CBTE(self, alicuotas):
         self.ensure_one()
