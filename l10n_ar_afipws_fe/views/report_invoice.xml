@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- <template id="report_invoice_document" inherit_id="l10n_ar.report_invoice_document">
+    <template id="report_invoice_document" inherit_id="l10n_ar.report_invoice_document">
         <p name="comment" position="before">
             <p t-if="o.journal_id.afip_ws == 'wsbfe'" >
                 THE PURCHASER ASSUMES THE COMMITMENT, IN THE NATURE OF AN AFFECTED DECLARATION, OF NOT EXPORTING THE PROPERTY DURING THE TERM OF THREE 3 YEARS FROM THE ACQUISITION<br/>
@@ -19,6 +19,6 @@
             </div>
         </div>
     </template>
- -->
+
 
 </odoo>
