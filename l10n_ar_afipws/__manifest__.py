@@ -7,8 +7,8 @@
     'license': 'AGPL-3',
     'summary': '',
     'depends': [
-        # this dependency is becaouse of CUIT request and some config menus
-        'base',
+        'l10n_ar',  # needed for CUIT and also demo data
+        # TODO this module should be merged with l10n_ar_afipws_fe as the dependencies are the same
     ],
     'external_dependencies': {
         'python': ['pyafipws', 'OpenSSL', 'pysimplesoap']
