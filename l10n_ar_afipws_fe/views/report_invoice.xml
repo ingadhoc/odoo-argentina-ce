@@ -13,6 +13,29 @@
             </div>
         </div>
     </template>
+    <template id="latam_report_invoice_document" inherit_id="l10n_latam_invoice_document.report_invoice_document">
+        <xpath expr="//h2[@t-if='o.l10n_latam_document_type_id.report_name']" position="replace">
+            <div class="row" t-if="o.l10n_latam_document_type_id.report_name">
+                <div class="col-4">
+                </div>
+                <div class="col-2 text-center" t-if="o.l10n_latam_document_type_id.report_name">
+                    <div class="card" style="margin:0px;">
+                        <div class="card-header" style="font-size: 48px;padding:0px;">
+                            <span t-field="o.l10n_latam_document_type_id.l10n_ar_letter"/>
+                        </div>
+                        <div class="card-body" style="height: 20px;padding:0px;">cod.             
+                            <span t-field="o.l10n_latam_document_type_id.code"/></div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <h2>
+                        <span t-field="o.l10n_latam_document_number"/>
+                    </h2>
+                    <div t-field="o.l10n_latam_document_type_id.report_name"/>
+                </div>
+            </div>
+        </xpath>
+    </template>
     <template id="external_layout_standard" inherit_id="web.external_layout_standard">
         <xpath expr="//div[contains(@t-attf-class, 'footer')]/div" position="before">
             <t t-call="l10n_ar_afipws_fe.afip_footer"/>
