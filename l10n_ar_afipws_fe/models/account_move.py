@@ -132,8 +132,8 @@ class AccountMove(models.Model):
                     [c for c in str(
                         rec.afip_auth_code_due or '') if c.isdigit()])
                 barcode = ''.join(
-                    [str(rec.company_id.cuit),
-                        "%03d" % int(rec.document_type_id.code),
+                    [str(rec.company_id.vat),
+                        "%03d" % int(rec.l10n_latam_document_type_id.code),
                         "%05d" % int(rec.journal_id.l10n_ar_afip_pos_number),
                         str(rec.afip_auth_code), cae_due])
                 rec.afip_barcode = barcode

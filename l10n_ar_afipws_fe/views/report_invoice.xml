@@ -1,24 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-
-    <!-- <template id="report_invoice_document" inherit_id="l10n_ar.report_invoice_document">
-        <p name="comment" position="before">
-            <p t-if="o.journal_id.afip_ws == 'wsbfe'" >
-                THE PURCHASER ASSUMES THE COMMITMENT, IN THE NATURE OF AN AFFECTED DECLARATION, OF NOT EXPORTING THE PROPERTY DURING THE TERM OF THREE 3 YEARS FROM THE ACQUISITION<br/>
-            </p>
-        </p>
-        <div name="footer_left_column" position="inside">
-            <img t-if="o.l10n_ar_afip_barcode" t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;humanreadable=1' % ('I2of5', o.l10n_ar_afip_barcode)" alt="Barcode"  style="height:80px"/>
-        </div>
-        <div name="pager" position="before">
+    <template id="afip_footer" name="afip footer">
+        <div class="row" t-if="'afip_barcode' in o and o.afip_barcode and 'afip_auth_code' in o and o.afip_auth_code and 'afip_auth_code_due' in o and o.afip_auth_code_due">
             <div>
-                CAE: <span t-field="o.afip_auth_code"/>
+                <img alt="Barcode" style="height:80px" t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;humanreadable=1' % ('I2of5', o.afip_barcode)" t-if="o.afip_barcode"/>
             </div>
             <div>
-                CAE Due Date: <span t-field="o.afip_auth_code_due"/>
+                <div>CAE: 
+                    <span t-field="o.afip_auth_code"/></div>
+                <div>CAE Due Date:
+                    <span t-field="o.afip_auth_code_due"/></div>
             </div>
         </div>
     </template>
- -->
-
+    <template id="external_layout_standard" inherit_id="web.external_layout_standard">
+        <xpath expr="//div[contains(@t-attf-class, 'footer')]/div" position="before">
+            <t t-call="l10n_ar_afipws_fe.afip_footer"/>
+        </xpath>
+    </template>
+    <template id="external_layout_background" inherit_id="web.external_layout_background">
+        <!-- footer -->
+        <xpath expr="//div[contains(@t-attf-class, 'footer')]/div" position="before">
+            <t t-call="l10n_ar_afipws_fe.afip_footer"/>
+        </xpath>
+    </template>
+    <template id="external_layout_boxed" inherit_id="web.external_layout_boxed">
+        <!-- footer -->
+        <xpath expr="//div[contains(@t-attf-class, 'footer')]/div" position="before">
+            <t t-call="l10n_ar_afipws_fe.afip_footer"/>
+        </xpath>
+    </template>
+    <template id="external_layout_clean" inherit_id="web.external_layout_clean">
+        <!-- header -->
+        <xpath expr="//div[contains(@t-attf-class, 'footer')]/div" position="before">
+            <t t-call="l10n_ar_afipws_fe.afip_footer"/>
+        </xpath>
+    </template>
 </odoo>
