@@ -387,7 +387,7 @@ class AccountMove(models.Model):
                     # agregamos cbu para factura de credito electronica
                     ws.AgregarOpcional(
                         opcional_id=2101,
-                        valor=inv.invoice_partner_bank_id.cbu)
+                        valor=inv.invoice_partner_bank_id.acc_number)
                 elif int(doc_afip_code) in [202, 203, 207, 208, 212, 213]:
                     valor = inv.afip_fce_es_anulacion and 'S' or 'N'
                     ws.AgregarOpcional(
