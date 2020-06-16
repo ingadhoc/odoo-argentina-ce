@@ -77,36 +77,6 @@ class AccountMove(models.Model):
         '- NO: sí el comprobante asociado (original) NO se encuentra rechazado por el comprador'
     )
 
-    def _l10n_ar_get_amounts(self):
-        # TODO check if already on l10n_ar and we can remove from here
-        self.ensure_one()
-        tax_lines = self.line_ids.filtered('tax_line_id')
-        vat_taxes = tax_lines.filtered(lambda r: r.tax_line_id.tax_group_id.l10n_ar_vat_afip_code)
-
-        vat_taxable = self.env['account.move.line']
-        for line in self.invoice_line_ids:
-            if any(tax.tax_group_id.l10n_ar_vat_afip_code and tax.tax_group_id.l10n_ar_vat_afip_code not in [
-                    '0', '1', '2'] for tax in line.tax_ids):
-                vat_taxable |= line
-
-        return {'vat_amount': sum(vat_taxes.mapped('price_subtotal')),
-                # For invoices of letter C should not pass VAT
-                'vat_taxable_amount': sum(vat_taxable.mapped('price_subtotal'))
-                if self.l10n_latam_document_type_id.l10n_ar_letter != 'C' else self.amount_untaxed,
-                'vat_exempt_base_amount': sum(self.invoice_line_ids.filtered(lambda x: x.tax_ids.filtered(
-                    lambda y: y.tax_group_id.l10n_ar_vat_afip_code == '2')).mapped('price_subtotal')),
-                'vat_untaxed_base_amount': sum(self.invoice_line_ids.filtered(lambda x: x.tax_ids.filtered(
-                    lambda y: y.tax_group_id.l10n_ar_vat_afip_code == '1')).mapped('price_subtotal')),
-                'other_taxes_amount': sum((tax_lines - vat_taxes).mapped('price_subtotal')),
-                'iibb_perc_amount': sum(tax_lines.filtered(
-                    lambda r: r.tax_line_id.tax_group_id.l10n_ar_tribute_afip_code == '07').mapped('price_subtotal')),
-                'mun_perc_amount': sum(tax_lines.filtered(
-                    lambda r: r.tax_line_id.tax_group_id.l10n_ar_tribute_afip_code == '08').mapped('price_subtotal')),
-                'intern_tax_amount': sum(tax_lines.filtered(
-                    lambda r: r.tax_line_id.tax_group_id.l10n_ar_tribute_afip_code == '04').mapped('price_subtotal')),
-                'other_perc_amount': sum(tax_lines.filtered(
-                    lambda r: r.tax_line_id.tax_group_id.l10n_ar_tribute_afip_code == '09').mapped('price_subtotal'))}
-
     @api.depends('journal_id', 'afip_auth_code')
     def _compute_validation_type(self):
         for rec in self:
@@ -132,10 +102,12 @@ class AccountMove(models.Model):
                     [c for c in str(
                         rec.afip_auth_code_due or '') if c.isdigit()])
                 barcode = ''.join(
-                    [str(rec.company_id.cuit),
-                        "%03d" % int(rec.document_type_id.code),
+                    [str(rec.company_id.vat),
+                        "%03d" % int(rec.l10n_latam_document_type_id.code),
                         "%05d" % int(rec.journal_id.l10n_ar_afip_pos_number),
                         str(rec.afip_auth_code), cae_due])
+                rec.afip_barcode = barcode
+            else:
                 rec.afip_barcode = barcode
 
     def get_related_invoices_data(self):
@@ -268,7 +240,7 @@ class AccountMove(models.Model):
             imp_iva = str("%.2f" % amounts['vat_amount'])
             # se usaba para wsca..
             # imp_subtotal = str("%.2f" % inv.amount_untaxed)
-            imp_trib = str("%.2f" % amounts['other_taxes_amount'])
+            imp_trib = str("%.2f" % amounts['not_vat_taxes_amount'])
             imp_op_ex = str("%.2f" % amounts['vat_exempt_base_amount'])
             moneda_id = inv.currency_id.l10n_ar_afip_code
             moneda_ctz = inv.l10n_ar_currency_rate
@@ -371,8 +343,8 @@ class AccountMove(models.Model):
                 impto_liq_rni = 0.0
                 imp_iibb = amounts['iibb_perc_amount']
                 imp_perc_mun = amounts['mun_perc_amount']
-                imp_internos = amounts['intern_tax_amount']
-                imp_perc = amounts['other_perc_amount']
+                imp_internos = amounts['intern_tax_amount'] + amounts['other_taxes_amount']
+                imp_perc = amounts['vat_perc_amount'] + amounts['profits_perc_amount'] + amounts['other_perc_amount']
 
                 ws.CrearFactura(
                     tipo_doc, nro_doc, zona, doc_afip_code, pos_number,
