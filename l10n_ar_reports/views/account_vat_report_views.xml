@@ -40,6 +40,8 @@
                         <group>
                             <field name="first_page"/>
                             <field name="last_page"/>
+                            <field name="prorate_tax_credit"/>
+                            <field name="prorate_type" attrs="{'invisible':[('prorate_tax_credit','=',False)],'required':[('prorate_tax_credit','=',True)]}"/>
                             <field name="reference"/>
                         </group>
                     </group>
@@ -49,6 +51,25 @@
                         </page>
                         <page string="Journals" name="journal_ids">
                             <field name="journal_ids" domain="[('type', '=', type), ('company_id', '=', company_id), ('l10n_latam_use_documents', '=', True)]"/>
+                        </page>
+                        <page string="Archivos TXT" name="txt_files">
+                            <button name="compute_txt_data" type="object" string="Compute TXT Data" states="draft"/>
+                            <group>
+                                <field name="vouchers_filename" invisible="1"/>
+                                <field name="aliquots_filename" invisible="1"/>
+                                <field name="import_aliquots_filename" invisible="1"/>
+                                <group>
+                                    <field name="vouchers_file" filename="vouchers_filename"/>
+                                    <field name="aliquots_file" filename="aliquots_filename"/>
+                                    <field name="import_aliquots_file" filename="import_aliquots_filename"/>
+                                </group>
+                            </group>
+                            <group col="1" groups="base.group_no_one">
+                                <!-- <field name="REGINFO_CV_CABECERA"/> -->
+                                <field name="REGINFO_CV_CBTE"/>
+                                <field name="REGINFO_CV_ALICUOTAS"/>
+                                <field name="REGINFO_CV_COMPRAS_IMPORTACIONES" attrs="{'invisible': [('type', '!=', 'purchase')]}"/>
+                            </group>
                         </page>
                         <page string="Notes" name="notes">
                             <field name="note"/>

@@ -15,6 +15,7 @@ class AccountArVatLine(models.Model):
     _name = "account.ar.vat.line"
     _description = "Línea de IVA para análisis en localización argentina"
     _auto = False
+    _order = 'invoice_date asc, move_name asc, id asc'
 
     document_type_id = fields.Many2one('l10n_latam.document.type', 'Document Type', readonly=True)
     date = fields.Date(readonly=True)
