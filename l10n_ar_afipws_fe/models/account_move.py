@@ -4,6 +4,9 @@
 ##############################################################################
 from odoo import fields, models, api, _
 from odoo.exceptions import UserError
+from odoo.tools import float_repr
+import base64
+import json
 import logging
 import sys
 import traceback
@@ -39,9 +42,9 @@ class AccountMove(models.Model):
         string='CAE/CAI/CAEA due Date',
         states={'draft': [('readonly', False)]},
     )
-    afip_barcode = fields.Char(
-        compute='_compute_barcode',
-        string='AFIP Barcode (for backward compatibility)'
+    afip_qr_code = fields.Char(
+        compute='_compute_qr_code',
+        string='AFIP QR code'
     )
     afip_message = fields.Text(
         string='AFIP Message',
@@ -81,7 +84,8 @@ class AccountMove(models.Model):
     def _compute_validation_type(self):
         for rec in self:
             if rec.journal_id.afip_ws and not rec.afip_auth_code:
-                validation_type = self.env['res.company']._get_environment_type()
+                validation_type = self.env[
+                    'res.company']._get_environment_type()
                 # if we are on homologation env and we dont have certificates
                 # we validate only locally
                 if validation_type == 'homologation':
@@ -94,19 +98,32 @@ class AccountMove(models.Model):
                 rec.validation_type = False
 
     @api.depends('afip_auth_code')
-    def _compute_barcode(self):
+    def _compute_qr_code(self):
         for rec in self:
-            barcode = False
-            if rec.afip_auth_code:
-                cae_due = ''.join(
-                    [c for c in str(
-                        rec.afip_auth_code_due or '') if c.isdigit()])
-                barcode = ''.join(
-                    [str(rec.company_id.vat),
-                        "%03d" % int(rec.l10n_latam_document_type_id.code),
-                        "%05d" % int(rec.journal_id.l10n_ar_afip_pos_number),
-                        str(rec.afip_auth_code), cae_due])
-                rec.afip_barcode = barcode
+            if rec.afip_auth_mode in ['CAE', 'CAEA'] and rec.afip_auth_code:
+                number_parts = self._l10n_ar_get_document_number_parts(
+                    rec.l10n_latam_document_number, rec.l10n_latam_document_type_id.code)
+
+                qr_dict = {
+                    'ver': 1,
+                    'fecha': str(rec.invoice_date),
+                    'cuit': int(rec.company_id.partner_id.l10n_ar_vat),
+                    'ptoVta': number_parts['point_of_sale'],
+                    'tipoCmp': int(rec.l10n_latam_document_type_id.code),
+                    'nroCmp': number_parts['invoice_number'],
+                    'importe': float(float_repr(rec.amount_total, 2)),
+                    'moneda': rec.currency_id.l10n_ar_afip_code,
+                    'ctz': float(float_repr(rec.l10n_ar_currency_rate, 2)),
+                    'tipoCodAut': 'E' if rec.afip_auth_mode == 'CAE' else 'A',
+                    'codAut': rec.afip_auth_code,
+                }
+                if len(rec.commercial_partner_id.l10n_latam_identification_type_id) and rec.commercial_partner_id.vat:
+                    qr_dict['tipoDocRec'] = int(
+                        rec.commercial_partner_id.l10n_latam_identification_type_id.l10n_ar_afip_code)
+                    qr_dict['nroDocRec'] = int(rec.commercial_partner_id.vat.replace('-', '').replace('.', ''))
+                qr_data = base64.encodestring(json.dumps(
+                    qr_dict).encode('ascii'), indent=None).decode('ascii')
+                rec.afip_qr_code = 'https://www.afip.gob.ar/fe/qr/?p=%s' % qr_data
 
     def get_related_invoices_data(self):
         """
@@ -294,7 +311,8 @@ class AccountMove(models.Model):
                 # 1671 Report fecha_pago with format YYYMMDD
                 # 1672 Is required only doc_type 19. concept (2,4)
                 # 1673 If doc_type != 19 should not be reported.
-                # 1674 doc_type 19 concept (2,4). date should be >= invoice date
+                # 1674 doc_type 19 concept (2,4). date should be >= invoice
+                # date
                 fecha_pago = datetime.strftime(inv.invoice_date_due, '%Y%m%d') \
                     if int(doc_afip_code) == 19 and tipo_expo in [2, 4] and inv.invoice_date_due else ''
 
@@ -341,8 +359,10 @@ class AccountMove(models.Model):
                 impto_liq_rni = 0.0
                 imp_iibb = amounts['iibb_perc_amount']
                 imp_perc_mun = amounts['mun_perc_amount']
-                imp_internos = amounts['intern_tax_amount'] + amounts['other_taxes_amount']
-                imp_perc = amounts['vat_perc_amount'] + amounts['profits_perc_amount'] + amounts['other_perc_amount']
+                imp_internos = amounts[
+                    'intern_tax_amount'] + amounts['other_taxes_amount']
+                imp_perc = amounts[
+                    'vat_perc_amount'] + amounts['profits_perc_amount'] + amounts['other_perc_amount']
 
                 ws.CrearFactura(
                     tipo_doc, nro_doc, zona, doc_afip_code, pos_number,
@@ -509,7 +529,7 @@ class AccountMove(models.Model):
                         sys.exc_type,
                         sys.exc_value)[0]
             if msg:
-                _logger.info(_('AFIP Validation Error. %s' % msg)+' XML Request: %s XML Response: %s' % (
+                _logger.info(_('AFIP Validation Error. %s' % msg) + ' XML Request: %s XML Response: %s' % (
                     ws.XmlRequest, ws.XmlResponse))
                 raise UserError(_('AFIP Validation Error. %s' % msg))
 
@@ -520,7 +540,8 @@ class AccountMove(models.Model):
             # escribe aca si no hay errores
             if vto:
                 vto = datetime.strptime(vto, '%Y%m%d').date()
-            _logger.info('CAE solicitado con exito. CAE: %s. Resultado %s' % (ws.CAE, ws.Resultado))
+            _logger.info('CAE solicitado con exito. CAE: %s. Resultado %s' % (
+                ws.CAE, ws.Resultado))
             inv.write({
                 'afip_auth_mode': 'CAE',
                 'afip_auth_code': ws.CAE,
