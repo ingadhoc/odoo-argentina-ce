@@ -206,7 +206,11 @@ class AccountMove(models.Model):
             mipyme_fce = int(doc_afip_code) in [201, 206, 211]
             # due date only for concept "services" and mipyme_fce
             if int(concepto) != 1 and int(doc_afip_code) not in [202, 203, 207, 208, 212, 213] or mipyme_fce:
-                fecha_venc_pago = inv.invoice_date_due or inv.invoice_date
+                if len(inv.invoice_payment_term_id):
+                    terms = inv.invoice_payment_term_id.compute(inv.amount_total, inv.invoice_datem, inv.currency_id)
+                    fecha_venc_pago = terms[-1][0]
+                else:
+                    fecha_venc_pago = inv.invoice_date_due or inv.invoice_date
                 if afip_ws != 'wsmtxca':
                     fecha_venc_pago = fecha_venc_pago.strftime('%Y%m%d')
             else:
