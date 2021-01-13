@@ -4,6 +4,8 @@
 ##############################################################################
 from odoo import fields, models, api, _
 from odoo.exceptions import UserError
+import base64
+import json
 import logging
 import sys
 import traceback
@@ -42,6 +44,10 @@ class AccountMove(models.Model):
     afip_barcode = fields.Char(
         compute='_compute_barcode',
         string='AFIP Barcode (for backward compatibility)'
+    )
+    afip_qr_data = fields.Char(
+        compute='_compute_qr_data',
+        string='AFIP QR'
     )
     afip_message = fields.Text(
         string='AFIP Message',
@@ -107,6 +113,29 @@ class AccountMove(models.Model):
                         "%05d" % int(rec.journal_id.l10n_ar_afip_pos_number),
                         str(rec.afip_auth_code), cae_due])
                 rec.afip_barcode = barcode
+
+    def _compute_qr_data(self):
+        for rec in self:
+            if rec.afip_auth_mode in ['CAE', 'CAEA'] and rec.afip_auth_code:
+                qr_dict = {
+                    'ver': 1,
+                    'fecha': str(rec.invoice_date),
+                    'cuit': int(rec.company_id.partner_id.vat),
+                    'ptoVta': rec.journal_id.l10n_ar_afip_pos_number,
+                    'tipoCmp': int(rec.l10n_latam_document_type_id.code),
+                    'nroCmp': int(rec.l10n_latam_document_number.split('-')[1]),# TO-DO: preguntar esto
+                    'importe': round(rec.amount_total, 2),
+                    'moneda': rec.currency_id.l10n_ar_afip_code,
+                    'ctz': rec.l10n_ar_currency_rate,
+                    'tipoCodAut': 'E' if rec.afip_auth_mode == 'CAE' else 'A',
+                    'codAut': rec.afip_auth_code,
+                }
+                if len(rec.commercial_partner_id.l10n_latam_identification_type_id) and rec.commercial_partner_id.vat:
+                    qr_dict['tipoDocRec'] = int(
+                        rec.commercial_partner_id.l10n_latam_identification_type_id.l10n_ar_afip_code)
+                    qr_dict['nroDocRec'] = int(rec.commercial_partner_id.vat)
+                qr_data = base64.encodestring(json.dumps(qr_dict).encode('ascii')).decode('ascii')
+                rec.afip_qr_data = 'https://www.afip.gob.ar/fe/qr/?p=%s' % qr_data
 
     def get_related_invoices_data(self):
         """
@@ -206,11 +235,7 @@ class AccountMove(models.Model):
             mipyme_fce = int(doc_afip_code) in [201, 206, 211]
             # due date only for concept "services" and mipyme_fce
             if int(concepto) != 1 and int(doc_afip_code) not in [202, 203, 207, 208, 212, 213] or mipyme_fce:
-                if len(inv.invoice_payment_term_id):
-                    terms = inv.invoice_payment_term_id.compute(inv.amount_total, inv.invoice_datem, inv.currency_id)
-                    fecha_venc_pago = terms[-1][0]
-                else:
-                    fecha_venc_pago = inv.invoice_date_due or inv.invoice_date
+                fecha_venc_pago = inv.invoice_date_due or inv.invoice_date
                 if afip_ws != 'wsmtxca':
                     fecha_venc_pago = fecha_venc_pago.strftime('%Y%m%d')
             else:
@@ -424,6 +449,7 @@ class AccountMove(models.Model):
                         afip_ws != 'wsmtxca' and CbteAsoc.invoice_date.strftime(
                             '%Y%m%d') or CbteAsoc.invoice_date.strftime('%Y-%m-%d'),
                     )
+
             # analize line items - invoice detail
             # wsfe do not require detail
             if afip_ws != 'wsfe':
