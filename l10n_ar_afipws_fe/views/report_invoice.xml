@@ -8,7 +8,7 @@
             </p>
         </p>
         <div name="footer_left_column" position="inside">
-            <img t-if="o.afip_barcode" t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('QR', o.afip_qr_data, 400,400)" alt="qr"  style="height:120px"/>
+            <img t-if="o.afip_qr_code" t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('QR', o.afip_qr_code, 300,300)" alt="qr"  style="height:100px"/>
         </div>
         <div name="pager" position="before">
             <div>
@@ -27,7 +27,7 @@
             </p>
         </p>
         <div name="footer_left_column" position="inside">
-            <img t-if="o.afip_qr_data" t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('QR', o.afip_barcode, 400,400)" alt="qr"  style="height:120px"/>
+            <img t-if="o.afip_qr_code" t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('QR', o.afip_qr_code, 300,300)" alt="qr"  style="height:100px"/>
         </div>
         <div name="pager" position="before">
             <div>
