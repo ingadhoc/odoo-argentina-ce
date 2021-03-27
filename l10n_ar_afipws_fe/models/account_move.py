@@ -122,7 +122,7 @@ class AccountMove(models.Model):
                         rec.commercial_partner_id.l10n_latam_identification_type_id.l10n_ar_afip_code)
                     qr_dict['nroDocRec'] = int(rec.commercial_partner_id.vat.replace('-', '').replace('.', ''))
                 qr_data = base64.encodestring(json.dumps(
-                    qr_dict).encode('ascii')).decode('ascii')
+                    qr_dict, indent=None).encode('ascii')).decode('ascii')
                 rec.afip_qr_code = 'https://www.afip.gob.ar/fe/qr/?p=%s' % qr_data
 
     def get_related_invoices_data(self):
