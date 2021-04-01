@@ -5,3 +5,5 @@
 from . import account_move
 from . import afipws_connection
 from . import account_journal
+from . import res_config_settings
+
