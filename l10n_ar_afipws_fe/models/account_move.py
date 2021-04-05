@@ -381,7 +381,7 @@ class AccountMove(models.Model):
 
                     # agregamos tipo de transmision si esta definido
                     transmission_type = self.env['ir.config_parameter'].sudo().get_param(
-                        'l10n_ar_edi.fce_transmission', '')
+                        'l10n_ar_afipws_fe.fce_transmission', '')
                     if transmission_type:
                         ws.AgregarOpcional(
                             opcional_id=27,
