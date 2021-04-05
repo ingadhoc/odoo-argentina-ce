@@ -124,6 +124,8 @@ class AccountMove(models.Model):
                 qr_data = base64.encodestring(json.dumps(
                     qr_dict, indent=None).encode('ascii')).decode('ascii')
                 rec.afip_qr_code = 'https://www.afip.gob.ar/fe/qr/?p=%s' % qr_data
+            else:
+                rec.afip_qr_code = False
 
     def get_related_invoices_data(self):
         """
