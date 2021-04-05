@@ -14,5 +14,5 @@ class ResConfigSettings(models.TransientModel):
          ('ADC', 'ADC - AGENTE DE DEPOSITO COLECTIVO')],
         'FCE: Opción de Transmisión',
         help="Este campo sera necesario cuando informes comprobantes del tipo FCE MiPyME",
-        config_parameter='l10n_ar_edi.fce_transmission'
+        config_parameter='l10n_ar_afipws_fe.fce_transmission'
     )
