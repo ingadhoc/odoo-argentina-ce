@@ -1,6 +1,6 @@
 {
     'name': 'Modulo Base para los Web Services de AFIP',
-    'version': '13.0.1.0.0',
+    'version': '13.0.1.1.0',
     'category': 'Localization/Argentina',
     'sequence': 14,
     'author': 'ADHOC SA, Moldeo Interactive,Odoo Community Association (OCA)',
@@ -15,6 +15,7 @@
     },
     'data': [
         'wizard/upload_certificate_view.xml',
+        'wizard/res_partner_update_from_padron_wizard_view.xml',
         'views/afipws_menuitem.xml',
         'views/afipws_certificate_view.xml',
         'views/afipws_certificate_alias_view.xml',
