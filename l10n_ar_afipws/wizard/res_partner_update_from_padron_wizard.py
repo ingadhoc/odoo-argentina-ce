@@ -7,6 +7,7 @@ _logger = logging.getLogger(__name__)
 
 class ResPartnerUpdateFromPadronField(models.TransientModel):
     _name = 'res.partner.update.from.padron.field'
+    _description = 'AFIP A5 Census Field'
 
     wizard_id = fields.Many2one(
         'res.partner.update.from.padron.wizard',
@@ -22,6 +23,7 @@ class ResPartnerUpdateFromPadronField(models.TransientModel):
 
 class ResPartnerUpdateFromPadronWizard(models.TransientModel):
     _name = 'res.partner.update.from.padron.wizard'
+    _description = 'AFIP A5 Census Wizard'
 
     @api.model
     def get_partners(self):
