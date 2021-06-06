@@ -14,10 +14,13 @@ class ResPartnerUpdateFromPadronField(models.TransientModel):
         'Wizard',
     )
     field = fields.Char(
+        'name'
     )
     old_value = fields.Char(
+        'old Value'
     )
     new_value = fields.Char(
+        'new Value'
     )
 
 
@@ -59,21 +62,11 @@ class ResPartnerUpdateFromPadronWizard(models.TransientModel):
     def _get_domain(self):
         fields_names = [
             'name',
-            'estado_padron',
             'street',
             'city',
             'zip',
-            'actividades_padron',
-            'impuestos_padron',
-            'imp_iva_padron',
-            'state_id',
-            'imp_ganancias_padron',
-            'monotributo_padron',
-            'actividad_monotributo_padron',
-            'empleador_padron',
-            'integrante_soc_padron',
-            'last_update_padron',
-            'afip_responsability_type_id',
+            'l10n_ar_afip_responsibility_type_id',
+            'last_update_census'
         ]
         return [
             ('model', '=', 'res.partner'),
@@ -137,7 +130,6 @@ class ResPartnerUpdateFromPadronWizard(models.TransientModel):
         required=True,
     )
 
-
     @api.onchange('partner_id')
     def change_partner(self):
         self.ensure_one()
@@ -147,15 +139,17 @@ class ResPartnerUpdateFromPadronWizard(models.TransientModel):
         if partner:
             partner_vals = partner.get_data_from_padron_afip()
             lines = []
-            for key, new_value in partner_vals.items():
+            fields_names = list(set(partner_vals) & set(fields_names))
+            for key in fields_names:
                 old_value = partner[key]
+                new_value = partner_vals[key]
                 if new_value == '':
                     new_value = False
                 if self.title_case and key in ('name', 'city', 'street'):
                     new_value = new_value and new_value.title()
                 if key in ('impuestos_padron', 'actividades_padron'):
                     old_value = old_value.ids
-                elif key in ('state_id', 'afip_responsability_type_id'):
+                elif key in ('state_id', 'l10n_ar_afip_responsibility_type_id'):
                     old_value = old_value.id
                 if new_value and key in fields_names and \
                         old_value != new_value:
@@ -168,7 +162,6 @@ class ResPartnerUpdateFromPadronWizard(models.TransientModel):
                     lines.append((0, False, line_vals))
             self.field_ids = lines
 
-
     def _update(self):
         self.ensure_one()
         vals = {}
@@ -178,7 +171,6 @@ class ResPartnerUpdateFromPadronWizard(models.TransientModel):
             else:
                 vals[field.field] = field.new_value
         self.partner_id.write(vals)
-
 
     def automatic_process_cb(self):
         for partner in self.partner_ids:
@@ -195,7 +187,6 @@ class ResPartnerUpdateFromPadronWizard(models.TransientModel):
             'target': 'new',
         }
 
-
     def update_selection(self):
         self.ensure_one()
         if not self.field_ids:
@@ -210,7 +201,6 @@ class ResPartnerUpdateFromPadronWizard(models.TransientModel):
         self._update()
         return self.next_cb()
 
-
     def next_cb(self):
         """
         """
@@ -218,7 +208,6 @@ class ResPartnerUpdateFromPadronWizard(models.TransientModel):
         if self.partner_id:
             self.write({'partner_ids': [(3, self.partner_id.id, False)]})
         return self._next_screen()
-
 
     def _next_screen(self):
         self.ensure_one()
@@ -247,7 +236,6 @@ class ResPartnerUpdateFromPadronWizard(models.TransientModel):
             'view_mode': 'form',
             'target': 'new',
         }
-
 
     def start_process_cb(self):
         """
