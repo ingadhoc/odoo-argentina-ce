@@ -142,9 +142,13 @@ class AccountMove(models.Model):
         The last thing we do is request the cae because if an error occurs
         after cae requested, the invoice has been already validated on afip
         """
-        res = super().post()
-        self.do_pyafipws_request_cae()
-        return res
+        for rec in self:
+            res=super().post()
+            rec.do_pyafipws_request_cae()
+            return res
+        # res = super().post()
+        # self.do_pyafipws_request_cae()
+        # return res
 
     def do_pyafipws_request_cae(self):
         "Request to AFIP the invoices' Authorization Electronic Code (CAE)"
