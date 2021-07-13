@@ -142,10 +142,11 @@ class AccountMove(models.Model):
         The last thing we do is request the cae because if an error occurs
         after cae requested, the invoice has been already validated on afip
         """
+        res=super().post()
         for rec in self:
-            res=super().post()
+            
             rec.do_pyafipws_request_cae()
-            return res
+        return res
         # res = super().post()
         # self.do_pyafipws_request_cae()
         # return res
@@ -243,7 +244,7 @@ class AccountMove(models.Model):
             else:
                 fecha_serv_desde = fecha_serv_hasta = None
 
-            amounts = self._l10n_ar_get_amounts()
+            amounts = inv._l10n_ar_get_amounts()
             # invoice amount totals:
             imp_total = str("%.2f" % inv.amount_total)
             # ImpTotConc es el iva no gravado
@@ -391,8 +392,8 @@ class AccountMove(models.Model):
             # TODO ver si en realidad tenemos que usar un vat pero no lo
             # subimos
             if afip_ws not in ['wsfex', 'wsbfe']:
-                vat_taxable = self.env['account.move.line']
-                for line in self.line_ids:
+                vat_taxable = inv.env['account.move.line']
+                for line in inv.line_ids:
                     if any(
                             tax.tax_group_id.l10n_ar_vat_afip_code and tax.tax_group_id.l10n_ar_vat_afip_code
                             not in ['0', '1', '2'] for tax in line.tax_line_id) and line.price_subtotal:
@@ -400,20 +401,20 @@ class AccountMove(models.Model):
                 for vat in vat_taxable:
                     ws.AgregarIva(
                         vat.tax_line_id.tax_group_id.l10n_ar_vat_afip_code,
-                        "%.2f" % sum(self.invoice_line_ids.filtered(lambda x: x.tax_ids.filtered(
+                        "%.2f" % sum(inv.invoice_line_ids.filtered(lambda x: x.tax_ids.filtered(
                             lambda y: y.tax_group_id.l10n_ar_vat_afip_code ==
                             vat.tax_line_id.tax_group_id.l10n_ar_vat_afip_code)).mapped('price_subtotal')),
                         # "%.2f" % abs(vat.base_amount),
                         "%.2f" % vat.price_subtotal,
                     )
 
-                not_vat_taxes = self.line_ids.filtered(
+                not_vat_taxes = inv.line_ids.filtered(
                     lambda x: x.tax_line_id and x.tax_line_id.tax_group_id.l10n_ar_tribute_afip_code)
                 for tax in not_vat_taxes:
                     ws.AgregarTributo(
                         tax.tax_line_id.tax_group_id.l10n_ar_tribute_afip_code,
                         tax.tax_line_id.tax_group_id.name,
-                        "%.2f" % sum(self.invoice_line_ids.filtered(lambda x: x.tax_ids.filtered(
+                        "%.2f" % sum(inv.invoice_line_ids.filtered(lambda x: x.tax_ids.filtered(
                             lambda y: y.tax_group_id.l10n_ar_tribute_afip_code ==
                             tax.tax_line_id.tax_group_id.l10n_ar_tribute_afip_code)).mapped('price_subtotal')),
                         # "%.2f" % abs(tax.base_amount),
@@ -426,21 +427,21 @@ class AccountMove(models.Model):
 
             if CbteAsoc:
                 # fex no acepta fecha
-                doc_number_parts = self._l10n_ar_get_document_number_parts(
+                doc_number_parts = inv._l10n_ar_get_document_number_parts(
                     CbteAsoc.l10n_latam_document_number, CbteAsoc.l10n_latam_document_type_id.code)
                 if afip_ws == 'wsfex':
                     ws.AgregarCmpAsoc(
                         CbteAsoc.l10n_latam_document_type_id.document_type_id.code,
                         doc_number_parts['point_of_sale'],
                         doc_number_parts['invoice_number'],
-                        self.company_id.vat,
+                        inv.company_id.vat,
                     )
                 else:
                     ws.AgregarCmpAsoc(
                         CbteAsoc.l10n_latam_document_type_id.code,
                         doc_number_parts['point_of_sale'],
                         doc_number_parts['invoice_number'],
-                        self.company_id.vat,
+                        inv.company_id.vat,
                         afip_ws != 'wsmtxca' and CbteAsoc.invoice_date.strftime(
                             '%Y%m%d') or CbteAsoc.invoice_date.strftime('%Y-%m-%d'),
                     )
