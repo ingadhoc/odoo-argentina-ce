@@ -1,0 +1,55 @@
+<odoo>
+    <data>
+        <record id="afipws_caea_tree" model="ir.ui.view">
+            <field name="name">afipws_caea.tree</field>
+            <field name="model">afipws.caea</field>
+            <field name="arch" type="xml">
+                <tree string="caea">
+                    <field name="company_id"/>
+                    <field name="name"/>
+                    <field name="order"/>
+                    <field name="afip_caea"/>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                    <button name="send_caea_invoices" string="send invoices to AFIP" type="object"/>
+                </tree>
+            </field>
+        </record>
+        <record id="afipws_form" model="ir.ui.view">
+            <field name="name">afipws.form</field>
+            <field name="model">afipws.caea</field>
+            <field name="arch" type="xml">
+                <form string="description">
+                    <header>
+                        <button name="send_caea_invoices" string="send invoices to AFIP" type="object"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <field name="company_id"/>
+                            <field name="name"/>
+                            <field name="order"/>
+                            <field name="afip_caea"/>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                        <group>
+                            <field name="move_ids">
+                                <tree  string="invoices">
+                                    <field invisible="True" name="id"/>
+                                    <field name="name"/>
+                                </tree>
+                            </field>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record id="action_caea" model="ir.actions.act_window">
+            <field name="name">CAEA</field>
+            <field name="res_model">afipws.caea</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <menuitem action="action_caea" id="caea_menu" name="CAEA" parent="l10n_ar_afipws.menu_afipws"/>
+        <menuitem action="action_caea" id="caea_menu" name="CAEA" parent="l10n_ar.menu_afip_config"/>
+    </data>
+</odoo>

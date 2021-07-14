@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_account_journal_form" model="ir.ui.view">
+        <field name="name">caea_journal.form</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="l10n_ar.view_account_journal_form"/>
+        <field name="arch" type="xml">
+            <field name="l10n_ar_share_sequences" position="after">
+                <field attrs="{'invisible':['|', '|', ('l10n_latam_country_code', '!=', 'AR'), ('l10n_latam_use_documents', '=', False), ('type', '!=', 'sale')]}" name="use_for_caea"/>
+                <field attrs="{'invisible':['|', '|', '|', ('l10n_latam_country_code', '!=', 'AR'), ('l10n_latam_use_documents', '=', False), ('type', '!=', 'sale'), ('use_for_caea','=', True)]}" name="caea_journal_id"/>
+            </field>
+        </field>
+    </record>
+</odoo>

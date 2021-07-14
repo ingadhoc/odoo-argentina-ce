@@ -83,9 +83,9 @@ class AccountMove(models.Model):
     @api.depends('journal_id', 'afip_auth_code')
     def _compute_validation_type(self):
         for rec in self:
-            if rec.journal_id.afip_ws and not rec.afip_auth_code:
-                validation_type = self.env[
-                    'res.company']._get_environment_type()
+            if rec.journal_id.afip_ws and \
+                    (not rec.afip_auth_code or (rec.afip_auth_code and rec.afip_auth_mode == 'CAEA')):
+                validation_type = self.env['res.company']._get_environment_type()
                 # if we are on homologation env and we dont have certificates
                 # we validate only locally
                 if validation_type == 'homologation':
@@ -266,13 +266,18 @@ class AccountMove(models.Model):
 
             # create the invoice internally in the helper
             if afip_ws == 'wsfe':
+                if inv.afip_auth_mode == 'CAEA' and inv.afip_auth_code:
+                    caea = inv.afip_auth_code
+                else:
+                    caea = False
+
                 ws.CrearFactura(
                     concepto, tipo_doc, nro_doc, doc_afip_code, pos_number,
                     cbt_desde, cbt_hasta, imp_total, imp_tot_conc, imp_neto,
                     imp_iva,
                     imp_trib, imp_op_ex, fecha_cbte, fecha_venc_pago,
                     fecha_serv_desde, fecha_serv_hasta,
-                    moneda_id, moneda_ctz
+                    moneda_id, moneda_ctz, caea
                 )
             # elif afip_ws == 'wsmtxca':
             #     obs_generales = inv.comment
@@ -512,16 +517,16 @@ class AccountMove(models.Model):
             msg = False
             try:
                 if afip_ws == 'wsfe':
-                    ws.CAESolicitar()
+                    afip_auth_code = ws.CAESolicitar()
                     vto = ws.Vencimiento
                 elif afip_ws == 'wsmtxca':
-                    ws.AutorizarComprobante()
+                    afip_auth_code = ws.AutorizarComprobante()
                     vto = ws.Vencimiento
                 elif afip_ws == 'wsfex':
-                    ws.Authorize(inv.id)
+                    afip_auth_code = ws.Authorize(inv.id)
                     vto = ws.FchVencCAE
                 elif afip_ws == 'wsbfe':
-                    ws.Authorize(inv.id)
+                    afip_auth_code =ws.Authorize(inv.id)
                     vto = ws.Vencimiento
             except SoapFault as fault:
                 msg = 'Falla SOAP %s: %s' % (
@@ -552,8 +557,8 @@ class AccountMove(models.Model):
             _logger.info('CAE solicitado con exito. CAE: %s. Resultado %s' % (
                 ws.CAE, ws.Resultado))
             inv.write({
-                'afip_auth_mode': 'CAE',
-                'afip_auth_code': ws.CAE,
+                'afip_auth_mode': ws.EmisionTipo,
+                'afip_auth_code': afip_auth_code,
                 'afip_auth_code_due': vto,
                 'afip_result': ws.Resultado,
                 'afip_message': msg,
