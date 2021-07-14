@@ -152,9 +152,10 @@ class AccountMove(models.Model):
         "Request to AFIP the invoices' Authorization Electronic Code (CAE)"
         for inv in self:
             # Ignore invoices with cae (do not check date)
-            if inv.afip_auth_code:
-                continue
+            # 
 
+            if inv.afip_auth_code and inv.afip_auth_mode != 'CAEA':
+                continue
             afip_ws = inv.journal_id.afip_ws
             if not afip_ws:
                 continue
