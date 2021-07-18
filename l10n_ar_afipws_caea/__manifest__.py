@@ -13,12 +13,16 @@
 
     'data': [
         'security/ir.model.access.csv',
+        'views/asset.xml',
         'views/account_journal.xml',
         'views/afipws_caea.xml',
         'views/company.xml',
         'views/res_config_settings.xml',
         'views/pyafipws_dummy.xml',
         'data/ir_cron.xml'
+    ],
+    'qweb': [
+        'static/src/xml/systray_afip_caea.xml',
     ],
     'demo': [
         #'demo/demo.xml',

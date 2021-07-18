@@ -19,8 +19,8 @@
 					</group>
 				</sheet>
 				<footer>
-					<button attr="{'invisible':[('afip_ws_caea_state','!=','inactive'), ('status','=',True)]}" name="afip_red_button" string="Active CAEA" type="object"/>
-					<button attr="{'invisible':[('afip_ws_caea_state','!=','active'), ('status','=',False)]}" name="afip_green_button" string="Return to CAE" type="object"/>
+					<button   attrs="{'invisible':[('status','!=',False)]}" name="afip_red_button" string="Active CAEA" type="object"/>
+					<button  name="afip_green_button" string="Return to CAE" type="object"/>
 				</footer>
 			</form>
 		</field>

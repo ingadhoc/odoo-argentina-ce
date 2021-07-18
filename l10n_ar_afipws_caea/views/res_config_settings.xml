@@ -22,7 +22,11 @@
 
                             <div class="mt8">
                                 <label for="afip_ws_caea_state"/>
-                                <field class="font-weight-bold" name="afip_ws_caea_state"/>
+                                <field class="font-weight-bold" attrs="{'readonly':True}" name="afip_ws_caea_state"/>
+                            </div>
+                            <div class="mt8">
+                                <label for="afip_ws_caea_timeout"/>
+                                <field name="afip_ws_caea_timeout" widget="float_time"/>
                             </div>
 
                         </div>

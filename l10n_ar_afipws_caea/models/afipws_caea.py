@@ -73,7 +73,6 @@ class AfipwsCaea(models.Model):
 
     @api.model
     def create(self, values):
-
         """exist = self.search([
             ('company_id', '=', values['company_id']),
             ('name', '=', values['name']),
@@ -90,7 +89,6 @@ class AfipwsCaea(models.Model):
         #        _('The Common Name must be lower than 50 characters long'))
 
         #_logger.info("ws.ErrMsg " % ws.ErrMsg)
-        _logger.info(caea)
         if caea == '':
             caea = ws.CAEASolicitar(values['name'], values['order'])
             _logger.info(ws.ErrMsg)
@@ -130,13 +128,30 @@ class AfipwsCaea(models.Model):
             ])
 
             if not len(caea):
-
                 self.create({
                     'name': period,
                     'order': order,
                     'company_id': company_id.id
                 })
-
+    @api.model
+    def cron_caea_timeout(self):
+        state = self.env['ir.config_parameter'].get_param(
+            'afip.ws.caea.state', 'inactive')
+        if state == 'active':
+            timeout = int(self.env['ir.config_parameter'].get_param(
+                'afip.ws.caea.timeout', 2))
+            threshold = fields.Datetime.from_string(fields.Datetime.now()) - relativedelta(minutes=int(timeout*60))
+            log = self.env['afipws.caea.log'].search_count([
+                ('event', '=', 'start_caea'),
+                ('event_datetime', '>', threshold)
+            ], order='event_datetime DESC')
+            if log < 1:
+                self.env['ir.config_parameter'].set_param(
+                    'afip.ws.caea.state', 'inactive')
+                self.env['afipws.caea.log'].create([
+                    {'event': 'end_caea', 'user_id': self.env.user.id}
+                ])
+                                                
     def cron_send_caea_invoices(self):
 
         self.env['ir.config_parameter'].set_param(
@@ -146,3 +161,26 @@ class AfipwsCaea(models.Model):
             ('date_to', '>=',  fields.Date.today() + relativedelta(days=1))
         ])
         caea_ids.send_caea_invoices()
+
+
+class AfipwsCaeaLog(models.Model):
+
+    _name = 'afipws.caea.log'
+    _description = 'afipws caea log'
+
+    user_id = fields.Many2one(
+        'res.users',
+        string='User',
+        default=lambda self: self.env.user.id
+    )
+    event_datetime = fields.Datetime(
+        string='Datetime',
+        default=lambda self: fields.Datetime.now()
+    )
+    event = fields.Selection(
+        [('request', 'request'),
+         ('start_caea', 'start caea mode'),
+         ('end_caea', 'end caea mode')
+         ],
+        string='Event',
+    )
