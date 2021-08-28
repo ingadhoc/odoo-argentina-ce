@@ -2,6 +2,7 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
+# from typing_extensions import Annotated
 from odoo import fields, models, api, _
 from odoo.exceptions import UserError
 from odoo.tools import float_repr
@@ -144,15 +145,41 @@ class AccountMove(models.Model):
         The last thing we do is request the cae because if an error occurs
         after cae requested, the invoice has been already validated on afip
         """
+        
+        # Inicio-Default
         res=super().post()
-        # for rec in self:
-            
-        #     rec.do_pyafipws_request_cae()
-        # return res
-        # res = super().post()
         self.do_pyafipws_request_cae()
         return res
+        # Fin-Default
 
+        # Inicio-JJVR
+        # res = super().post()
+        # for rec in self:
+        #     if rec.afip_auth_code:
+        #         rec.do_pyafipws_request_cae()
+        #     # if not rec.afip_auth_code:
+        #     #     rec.button_draft()
+        # return res
+        # Fin-JJVR
+
+        # Inicio-JJVR
+        # super().button_draft()
+        # super().button_cancel()
+        # super().delete_number()
+        # super().button_draft()
+        # for rec in self:
+        #     if (rec.afip_xml_request != NULL) and (rec.afip_xml_request != ''):
+        #         rec.post()
+        # return res
+        # Fin-JJVR
+        
+        # # Inicio-JJVR
+        # super().button_draft()
+        # super().button_cancel()
+        # super().delete_number()
+        # super().button_draft()
+        # # Fin-JJVR
+    
     def do_pyafipws_request_cae(self):
         "Request to AFIP the invoices' Authorization Electronic Code (CAE)"
         for inv in self:
@@ -196,6 +223,12 @@ class AccountMove(models.Model):
 
             # authenticate against AFIP:
             ws = inv.company_id.get_connection(afip_ws).connect()
+
+            # # Inicio-JJVR
+            # if not ws.XmlRequest:
+            # if 1==1:
+            #     continue
+            # # Fin-JJVR
 
             if afip_ws == 'wsfex':
                 if not country:
@@ -538,13 +571,24 @@ class AccountMove(models.Model):
             if msg:
                 _logger.info(_('AFIP Validation Error. %s' % msg) + ' XML Request: %s XML Response: %s' % (
                     ws.XmlRequest, ws.XmlResponse))
-                raise UserError(_('AFIP Validation Error. %s' % msg))
+                # raise UserError(_('AFIP Validation Error. %s' % msg))
+                # Inicio JJVR
+                # En este caso, dejamos de ejecutar el "raise". 
+                # Ya que, si el raise se ejecuta saldremos del ciclo FOR. Por lo tanto, todas las facturas siguientes a esta no pasaran por esta funcion.
+                # Entonces para solucionar esto, a esta factura la volvemos a su estado de borrador. Y no afectara a las siguientes!
+                inv.button_draft()
+                inv.button_cancel()
+                inv.delete_number()
+                inv.button_draft()
+                continue
+                # Fin JJVR
 
             msg = u"\n".join([ws.Obs or "", ws.ErrMsg or ""])
             if not ws.CAE or ws.Resultado != 'A':
                 raise UserError(_('AFIP Validation Error. %s' % msg))
             # TODO ver que algunso campos no tienen sentido porque solo se
             # escribe aca si no hay errores
+            
             if vto:
                 vto = datetime.strptime(vto, '%Y%m%d').date()
             _logger.info('CAE solicitado con exito. CAE: %s. Resultado %s' % (
@@ -564,4 +608,5 @@ class AccountMove(models.Model):
             # la factura no quede validada total si tiene cae no se vuelve a
             # solicitar. Lo mismo podriamos usar para grabar los mensajes de
             # afip de respuesta
+
             inv._cr.commit()
