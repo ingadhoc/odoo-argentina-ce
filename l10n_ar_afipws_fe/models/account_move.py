@@ -153,8 +153,8 @@ class AccountMove(models.Model):
     def do_pyafipws_request_cae(self):
         "Request to AFIP the invoices' Authorization Electronic Code (CAE)"
         # JJVR - Inicio
-        falla = False
-        falla_journal_ids = []
+        has_error = False
+        error_invoice_ids = self.env['account.move']
         # JJVR - Fin
         for inv in self:
             # Ignore invoices with cae (do not check date)
@@ -549,8 +549,8 @@ class AccountMove(models.Model):
                 inv.button_cancel()
                 inv.delete_number()
                 inv.button_draft()
-                falla = True
-                falla_journal_ids.append(inv.journal_id)                
+                has_error = True
+                error_invoice_ids += inv
                 continue
                 # Fin JJVR
             
@@ -588,8 +588,7 @@ class AccountMove(models.Model):
             inv._cr.commit()
         
         # Inicio - JJVR
-        if falla:
-            falla_journal_ids = list(dict.fromkeys(falla_journal_ids))  # Eliminamos todas las journals_ids repetidas
-            for falla_journal_id in falla_journal_ids:
-                falla_journal_id.sync_document_local_remote_number
+        if has_error:
+            # Sincronizamos la numeración de los journals_ids con error
+            error_invoice_ids.mapped('journal_id').sync_document_local_remote_number()
         # Fin - JJVR
