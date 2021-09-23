@@ -555,7 +555,7 @@ class AccountMove(models.Model):
                 # Fin JJVR
             
             # Inicio JJVR
-            if falla:
+            if has_error:
                 ws_next_invoice_number = int(inv.journal_id.get_pyafipws_last_invoice(inv.l10n_latam_document_type_id)['result']) + 1
                 inv.name = inv.name[:-8] + str(ws_next_invoice_number).zfill(8)
             # Fin JJVR
