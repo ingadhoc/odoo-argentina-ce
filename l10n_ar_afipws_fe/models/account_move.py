@@ -166,10 +166,11 @@ class AccountMove(models.Model):
                 continue
 
             # Ignore invoice if not ws on point of sale
-            if not afip_ws:
-                raise UserError(_(
-                    'If you use electronic journals (invoice id %s) you need '
-                    'configure AFIP WS on the journal') % (inv.id))
+            # jjvr: agis
+            # if not afip_ws:
+            #     raise UserError(_(
+            #         'If you use electronic journals (invoice id %s) you need '
+            #         'configure AFIP WS on the journal') % (inv.id))
 
             # if no validation type and we are on electronic invoice, it means
             # that we are on a testing database without homologation
