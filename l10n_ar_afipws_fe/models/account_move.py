@@ -152,10 +152,10 @@ class AccountMove(models.Model):
     
     def do_pyafipws_request_cae(self):
         "Request to AFIP the invoices' Authorization Electronic Code (CAE)"
-        # JJVR - Inicio
+        # jjvr - Inicio
         has_error = False
         error_invoice_ids = self.env['account.move']
-        # JJVR - Fin
+        # jjvr - Fin
         for inv in self:
             # Ignore invoices with cae (do not check date)
             if inv.afip_auth_code:
@@ -166,11 +166,14 @@ class AccountMove(models.Model):
                 continue
 
             # Ignore invoice if not ws on point of sale
-            # jjvr: agis
-            # if not afip_ws:
-            #     raise UserError(_(
-            #         'If you use electronic journals (invoice id %s) you need '
-            #         'configure AFIP WS on the journal') % (inv.id))
+            # # jjvr: agis
+            if not afip_ws:
+                if (len(self) == 1):
+                    raise UserError(_(
+                        'If you use electronic journals (invoice id %s) you need '
+                        'configure AFIP WS on the journal') % (inv.id))
+                else:
+                    has_error = True
 
             # if no validation type and we are on electronic invoice, it means
             # that we are on a testing database without homologation
@@ -201,19 +204,28 @@ class AccountMove(models.Model):
 
             if afip_ws == 'wsfex':
                 if not country:
-                    raise UserError(_(
-                        'For WS "%s" country is required on partner' % (
-                            afip_ws)))
+                    if (len(self) == 1):
+                        raise UserError(_(
+                            'For WS "%s" country is required on partner' % (
+                                afip_ws)))
+                    else:
+                        has_error = True
                 elif not country.code:
-                    raise UserError(_(
-                        'For WS "%s" country code is mandatory'
-                        'Country: %s' % (
-                            afip_ws, country.name)))
+                    if (len(self) == 1):
+                        raise UserError(_(
+                            'For WS "%s" country code is mandatory'
+                            'Country: %s' % (
+                                afip_ws, country.name)))
+                    else:
+                        has_error = True
                 elif not country.l10n_ar_afip_code:
-                    raise UserError(_(
-                        'For WS "%s" country afip code is mandatory'
-                        'Country: %s' % (
-                            afip_ws, country.name)))
+                    if (len(self) == 1):
+                        raise UserError(_(
+                            'For WS "%s" country afip code is mandatory'
+                            'Country: %s' % (
+                                afip_ws, country.name)))
+                    else:
+                        has_error = True
 
             ws_next_invoice_number = int(
                 inv.journal_id.get_pyafipws_last_invoice(inv.l10n_latam_document_type_id)['result']) + 1
@@ -342,9 +354,12 @@ class AccountMove(models.Model):
                     else:
                         cuit_pais_cliente = country.cuit_fisica
                     if not cuit_pais_cliente:
-                        raise UserError(_(
-                            'No vat defined for the partner and also no CUIT '
-                            'set on country'))
+                        if (len(self) == 1):
+                            raise UserError(_(
+                                'No vat defined for the partner and also no CUIT '
+                                'set on country'))
+                        else:
+                            has_error = True
 
                 domicilio_cliente = " - ".join([
                     commercial_partner.name or '',
@@ -541,12 +556,11 @@ class AccountMove(models.Model):
                 _logger.info(_('AFIP Validation Error. %s' % msg) + ' XML Request: %s XML Response: %s' % (
                     ws.XmlRequest, ws.XmlResponse))
                 # raise UserError(_('AFIP Validation Error. %s' % msg))
-                # Inicio JJVR
+                # Inicio jjvr
                 # En caso que sea una unica factura y de error este raise se ejecuta.
                 # Caso contrario, no se ejecutara el RAISE ya que afectara a todo el ciclo FOR.
-                # jjvr: agis
-                # if (len(self) == 1):
-                #     raise UserError(_('AFIP Validation Error. %s' % msg))
+                if (len(self) == 1):
+                    raise UserError(_('AFIP Validation Error. %s' % msg))
                 inv.button_draft()
                 inv.button_cancel()
                 inv.delete_number()
@@ -554,13 +568,13 @@ class AccountMove(models.Model):
                 has_error = True
                 error_invoice_ids += inv
                 continue
-                # Fin JJVR
+                # Fin jjvr
             
-            # Inicio JJVR
+            # Inicio jjvr
             if has_error:
                 ws_next_invoice_number = int(inv.journal_id.get_pyafipws_last_invoice(inv.l10n_latam_document_type_id)['result']) + 1
                 inv.name = inv.name[:-8] + str(ws_next_invoice_number).zfill(8)
-            # Fin JJVR
+            # Fin jjvr
             
             msg = u"\n".join([ws.Obs or "", ws.ErrMsg or ""])
             if not ws.CAE or ws.Resultado != 'A':
