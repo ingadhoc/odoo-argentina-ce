@@ -544,8 +544,9 @@ class AccountMove(models.Model):
                 # Inicio JJVR
                 # En caso que sea una unica factura y de error este raise se ejecuta.
                 # Caso contrario, no se ejecutara el RAISE ya que afectara a todo el ciclo FOR.
-                if (len(self) == 1):
-                    raise UserError(_('AFIP Validation Error. %s' % msg))
+                # jjvr: agis
+                # if (len(self) == 1):
+                #     raise UserError(_('AFIP Validation Error. %s' % msg))
                 inv.button_draft()
                 inv.button_cancel()
                 inv.delete_number()
