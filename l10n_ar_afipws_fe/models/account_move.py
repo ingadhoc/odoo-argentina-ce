@@ -152,11 +152,13 @@ class AccountMove(models.Model):
     
     def do_pyafipws_request_cae(self):
         "Request to AFIP the invoices' Authorization Electronic Code (CAE)"
-        # jjvr - Inicio
+        # jjvr: Check if there was an error in any invoice of the process
         has_error = False
         error_invoice_ids = self.env['account.move']
-        # jjvr - Fin
+        # jjvr: fin 
         for inv in self:
+            # jjvr: Check if there is an error in the current invoice
+            has_err_inv = False
             # Ignore invoices with cae (do not check date)
             if inv.afip_auth_code:
                 continue
@@ -173,7 +175,7 @@ class AccountMove(models.Model):
                         'If you use electronic journals (invoice id %s) you need '
                         'configure AFIP WS on the journal') % (inv.id))
                 else:
-                    has_error = True
+                    has_err_inv = True
 
             # if no validation type and we are on electronic invoice, it means
             # that we are on a testing database without homologation
@@ -209,7 +211,7 @@ class AccountMove(models.Model):
                             'For WS "%s" country is required on partner' % (
                                 afip_ws)))
                     else:
-                        has_error = True
+                        has_err_inv = True
                 elif not country.code:
                     if (len(self) == 1):
                         raise UserError(_(
@@ -217,7 +219,7 @@ class AccountMove(models.Model):
                             'Country: %s' % (
                                 afip_ws, country.name)))
                     else:
-                        has_error = True
+                        has_err_inv = True
                 elif not country.l10n_ar_afip_code:
                     if (len(self) == 1):
                         raise UserError(_(
@@ -225,7 +227,7 @@ class AccountMove(models.Model):
                             'Country: %s' % (
                                 afip_ws, country.name)))
                     else:
-                        has_error = True
+                        has_err_inv = True
 
             ws_next_invoice_number = int(
                 inv.journal_id.get_pyafipws_last_invoice(inv.l10n_latam_document_type_id)['result']) + 1
@@ -359,7 +361,7 @@ class AccountMove(models.Model):
                                 'No vat defined for the partner and also no CUIT '
                                 'set on country'))
                         else:
-                            has_error = True
+                            has_err_inv = True
 
                 domicilio_cliente = " - ".join([
                     commercial_partner.name or '',
@@ -522,6 +524,17 @@ class AccountMove(models.Model):
                             codigo, ds, qty, umed, precio, "%.2f" % importe,
                             bonif)
 
+            # jjvr: If there was an error in the current invoice
+            if has_err_inv:
+                inv.button_draft()
+                inv.button_cancel()
+                inv.delete_number()
+                inv.button_draft()
+                has_error = True
+                error_invoice_ids += inv
+                continue
+            # jjvr: fin
+
             # Request the authorization! (call the AFIP webservice method)
             vto = None
             msg = False
@@ -603,8 +616,8 @@ class AccountMove(models.Model):
             # afip de respuesta
             inv._cr.commit()
         
-        # Inicio - JJVR
+        # jjvr: If there was an error in any invoice of the process
         if has_error:
-            # Sincronizamos la numeración de los journals_ids con error
+            # The numbering of journals_ids with error is synchronized
             error_invoice_ids.mapped('journal_id').sync_document_local_remote_number()
-        # Fin - JJVR
+        # jjvr: fin 
