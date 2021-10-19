@@ -478,9 +478,12 @@ class AccountMove(models.Model):
                     if not line.product_uom_id:
                         umed = '7'
                     elif not line.product_uom_id.l10n_ar_afip_code:
-                        raise UserError(_(
-                            'Not afip code con producto UOM %s' % (
-                                line.product_uom_id.name)))
+                        if (len(self) == 1):
+                            raise UserError(_(
+                                'Not afip code con producto UOM %s' % (
+                                    line.product_uom_id.name)))
+                        else:
+                            has_err_inv = True
                     else:
                         umed = line.product_uom_id.l10n_ar_afip_code
                     # cod_mtx = line.uom_id.l10n_ar_afip_code
@@ -585,13 +588,22 @@ class AccountMove(models.Model):
             
             # Inicio jjvr
             if has_error:
-                ws_next_invoice_number = int(inv.journal_id.get_pyafipws_last_invoice(inv.l10n_latam_document_type_id)['result']) + 1
+#                ws_next_invoice_number = int(inv.journal_id.get_pyafipws_last_invoice(inv.l10n_latam_document_type_id)['result']) + 1
                 inv.name = inv.name[:-8] + str(ws_next_invoice_number).zfill(8)
             # Fin jjvr
             
             msg = u"\n".join([ws.Obs or "", ws.ErrMsg or ""])
             if not ws.CAE or ws.Resultado != 'A':
-                raise UserError(_('AFIP Validation Error. %s' % msg))
+                if (len(self) == 1):
+                    raise UserError(_('AFIP Validation Error. %s' % msg))
+                inv.button_draft()
+                inv.button_cancel()
+                inv.delete_number()
+                inv.button_draft()
+                has_error = True
+                error_invoice_ids += inv
+                continue
+
             # TODO ver que algunso campos no tienen sentido porque solo se
             # escribe aca si no hay errores
             
