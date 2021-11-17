@@ -1,4 +1,4 @@
-[![Coverage Status](https://coveralls.io/repos/ingadhoc/odoo-argentina/badge.png?branch=13.0)](https://coveralls.io/r/ingadhoc/odoo-argentina?branch=13.0)
+[![Coverage Status](https://coveralls.io/repos/ingadhoc/odoo-argentina/badge.png?branch=15.0)](https://coveralls.io/r/ingadhoc/odoo-argentina?branch=15.0)
 [![Code Climate](https://codeclimate.com/github/ingadhoc/odoo-argentina/badges/gpa.svg)](https://codeclimate.com/github/ingadhoc/odoo-argentina)
 
 # ADHOC odoo-argentina-ce
@@ -11,7 +11,7 @@ For any argentinan functionality that is not in odoo CE (community edition) or o
 
 Translation Status
 ------------------
-[![Transifex Status](https://www.transifex.com/projects/p/ingadhoc-odoo-argentina-13-0/chart/image_png)](https://www.transifex.com/projects/p/ingadhoc-odoo-argentina-13-0)
+[![Transifex Status](https://www.transifex.com/projects/p/ingadhoc-odoo-argentina-15-0/chart/image_png)](https://www.transifex.com/projects/p/ingadhoc-odoo-argentina-15-0)
 
 ----
 
