@@ -61,9 +61,11 @@ class AfipwsConnection(models.Model):
         ('ws_sr_padron_a5', 'Servicio de Consulta de Padrón Alcance 5'),
         ('ws_sr_padron_a10', 'Servicio de Consulta de Padrón Alcance 10'),
         ('ws_sr_padron_a100', 'Servicio de Consulta de Padrón Alcance 100'),
+        ('wsfecred', 'Servicio de Consulta para facturas de credito'),
     ],
         'AFIP WS',
         required=True,
+        default='ws_sr_padron_a5'
     )
 
     @api.depends('type', 'afip_ws')
@@ -112,6 +114,14 @@ class AfipwsConnection(models.Model):
                 afip_ws_url = (
                     "https://awshomo.afip.gov.ar/sr-padron/webservices/"
                     "personaServiceA5?wsdl")
+        elif afip_ws == 'wsfecred':
+            if environment_type == 'production':
+                afip_ws_url = (
+                    "https://serviciosjava.afip.gob.ar/wsfecred/FECredService?wsdl")
+            else:
+                afip_ws_url = (
+                    "https://fwshomo.afip.gov.ar/wsfecred/FECredService?wsdl")
+
         return afip_ws_url
 
     def check_afip_ws(self, afip_ws):
@@ -191,4 +201,7 @@ class AfipwsConnection(models.Model):
         elif afip_ws == 'ws_sr_padron_a5':
             from pyafipws.ws_sr_padron import WSSrPadronA5
             ws = WSSrPadronA5()
+        elif afip_ws == 'wsfecred':
+            from pyafipws.wsfecred import WSFECred
+            ws = WSFECred()
         return ws

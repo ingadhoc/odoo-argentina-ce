@@ -16,6 +16,12 @@ _logger = logging.getLogger(__name__)
 class ResPartner(models.Model):
     _inherit = 'res.partner'
 
+    mipyme_required = fields.Boolean(
+        string='Must credit invoice',
+    )
+    mipyme_from_amount = fields.Float(
+        string='Credit invoice from amount',
+    )
     last_update_census = fields.Date(
         string='Last update census'
     )
@@ -129,3 +135,11 @@ class ResPartner(models.Model):
                 self.name, cuit, 'La afip no devolvió nombre'))
         vals = self.parce_census_vals(padron)
         return vals
+
+    def l10n_ar_afipws_fe_min_ammount(self):
+        for record in self:
+            if record.l10n_ar_vat:
+                ws = self.env.user.company_id.get_connection('wsfecred').connect()
+                res = ws.ConsultarMontoObligadoRecepcion(record.l10n_ar_vat)
+                record.mipyme_required = True if ws.Resultado == 'S' else False
+                record.mipyme_from_amount = float(res)

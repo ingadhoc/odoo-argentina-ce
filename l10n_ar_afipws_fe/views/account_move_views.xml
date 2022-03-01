@@ -20,7 +20,7 @@
                 <field name="afip_fce_es_anulacion"/>
             </field>
             <notebook>
-                <page string="AFIP" name="afip" attrs="{'invisible': [('type', 'not in', ['out_invoice', 'out_refund'])]}">
+                <page string="AFIP" name="afip" attrs="{'invisible': [('move_type', 'not in', ['out_invoice', 'out_refund'])]}">
                     <group>
                         <field name='validation_type' invisible="1"/>
                         <label for="afip_auth_code" string="AFIP authorization"/>
@@ -31,8 +31,8 @@
                         <field name='afip_auth_code_due'/>
                         <field name='afip_result'/>
                         <field name='afip_message'/>
-                        <field name='afip_xml_request' groups="base.group_no_one"/>
-                        <field name='afip_xml_response' groups="base.group_no_one"/>
+                        <field name='afip_xml_request' widget="ace" groups="base.group_no_one"/>
+                        <field name='afip_xml_response'  widget="ace" groups="base.group_no_one"/>
                     </group>
                 </page>
             </notebook>
