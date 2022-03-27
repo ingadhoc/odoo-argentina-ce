@@ -120,7 +120,8 @@ class AccountMove(models.Model):
                 if len(rec.commercial_partner_id.l10n_latam_identification_type_id) and rec.commercial_partner_id.vat:
                     qr_dict['tipoDocRec'] = int(
                         rec.commercial_partner_id.l10n_latam_identification_type_id.l10n_ar_afip_code)
-                    qr_dict['nroDocRec'] = int(rec.commercial_partner_id.vat.replace('-', '').replace('.', ''))
+                    qr_dict['nroDocRec'] = int(
+                        rec.commercial_partner_id.vat.replace('-', '').replace('.', ''))
                 qr_data = base64.encodestring(json.dumps(
                     qr_dict, indent=None).encode('ascii')).decode('ascii')
                 rec.afip_qr_code = 'https://www.afip.gob.ar/fe/qr/?p=%s' % qr_data
@@ -139,31 +140,25 @@ class AccountMove(models.Model):
         else:
             return self.browse()
 
-    def action_post(self):
-        """
-        The last thing we do is request the cae because if an error occurs
-        after cae requested, the invoice has been already validated on afip
-        """
-        res = super().action_post()
-        self.do_pyafipws_request_cae()
+    def _post(self, soft=True):
+        res = super()._post(soft)
+        request_caea_invoices = self.filtered(
+            lambda x:
+            x.company_id.country_id.code == "AR" and x.is_invoice() and 
+            x.move_type in ['out_invoice', 'out_refund'] and
+            x.journal_id.afip_ws and not x.afip_auth_code
+        )
+        print(request_caea_invoices)
+        request_caea_invoices.do_pyafipws_request_cae()
         return res
 
     def do_pyafipws_request_cae(self):
         "Request to AFIP the invoices' Authorization Electronic Code (CAE)"
         for inv in self:
-            # Ignore invoices with cae (do not check date)
-            if inv.afip_auth_code:
-                continue
 
             afip_ws = inv.journal_id.afip_ws
             if not afip_ws:
                 continue
-
-            # Ignore invoice if not ws on point of sale
-            if not afip_ws:
-                raise UserError(_(
-                    'If you use electronic journals (invoice id %s) you need '
-                    'configure AFIP WS on the journal') % (inv.id))
 
             # if no validation type and we are on electronic invoice, it means
             # that we are on a testing database without homologation
