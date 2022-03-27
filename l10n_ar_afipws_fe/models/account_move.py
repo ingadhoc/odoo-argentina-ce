@@ -148,7 +148,6 @@ class AccountMove(models.Model):
             x.move_type in ['out_invoice', 'out_refund'] and
             x.journal_id.afip_ws and not x.afip_auth_code
         )
-        print(request_caea_invoices)
         request_caea_invoices.do_pyafipws_request_cae()
         return res
 

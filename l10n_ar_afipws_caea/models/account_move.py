@@ -34,7 +34,7 @@ class AccountMove(models.Model):
         else:
             return super().get_pyafipws_last_invoice(document_type)
 
-    def post(self):
+    def _post(self, soft=True):
         caea_state = self.env['ir.config_parameter'].sudo().get_param(
             'afip.ws.caea.state', 'inactive')
         if caea_state == 'active':
@@ -44,7 +44,7 @@ class AccountMove(models.Model):
                 if len(inv.journal_id.caea_journal_id):
                     inv.journal_id = inv.journal_id.caea_journal_id.id
 
-        res = super().post()
+        res = super()._post(soft)
         return res
 
     def do_pyafipws_request_cae(self):
