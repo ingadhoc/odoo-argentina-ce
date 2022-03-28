@@ -5,3 +5,4 @@ access_afipws_certificate_alias_manager,afipws.certificate.alias.manager,model_a
 access_afipws_certificate_alias_user,afipws.certificate.alias.user,model_afipws_certificate_alias,base.group_user,1,0,0,0
 access_afipws_certificate_manager,afipws.certificate.manager,model_afipws_certificate,base.group_system,1,1,1,1
 access_afipws_certificate_user,afipws.certificate.user,model_afipws_certificate,base.group_user,1,0,0,0
+access_a5_wizard,res.partner.update.from.padron.wizard,model_res_partner_update_from_padron_wizard,base.group_user,1,1,1,1

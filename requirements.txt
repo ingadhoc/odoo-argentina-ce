@@ -7,4 +7,5 @@ git+https://github.com/pysimplesoap/pysimplesoap@e1453f385cee119bf8cfb53c763ef21
 # Pillow>=2.0.0
 # git+https://github.com/OCA/openupgradelib/@master
 # git+https://github.com/reingart/pyafipws@py3k
-git+https://github.com/ingadhoc/pyafipws@py3k
+# git+https://github.com/ingadhoc/pyafipws@py3k
+git+https://github.com/filoquin/pyafipws.git@py3k

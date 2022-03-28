@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_afipws_caea_manager,afipws.caea.manager,model_afipws_caea,base.group_system,1,1,1,1
+access_afipws_caea_user,afipws.caea.user,model_afipws_caea,base.group_user,1,0,0,0
+access_afipws_caea_log_manager,afipws.caea.log.user,l10n_ar_afipws_caea.model_afipws_caea_log,base.group_user,1,0,0,0
+ccess_afipws_caea_log_user,afipws.caea.log.manger,l10n_ar_afipws_caea.model_afipws_caea_log,account.group_account_invoice,1,1,1,0

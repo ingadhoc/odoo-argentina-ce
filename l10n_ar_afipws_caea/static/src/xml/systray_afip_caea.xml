@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+   <t t-name="systray_afip.caea">
+       <li class="caea_icon">
+           <label class="caea_label" style="margin-bottom:0px;" 
+            title="Afip state">
+              <div class="icon_div">
+                  <div class="toggle-icon"><i class="fa fa-plug"                                  
+                    id="fa-icon"/>
+                  </div>
+              </div>
+           </label>
+       </li>
+   </t>
+</templates>

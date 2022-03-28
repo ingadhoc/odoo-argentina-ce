@@ -16,7 +16,6 @@
                     <button name="get_pyafipws_cuit_document_classes" string="Get Document Types" help="Get valid document types for this webservice" type="object" attrs="{'invisible':[('afip_ws', '=', False)]}"/>
                     <button name="get_pyafipws_zonas" string="Get Zones" help="Get zones for this webservice" type="object" attrs="{'invisible':[('afip_ws', '!=', 'wsbfe')]}"/>
                     <button name="get_pyafipws_NCM" string="Get NCM" help="Obetener códigos del Nomenclador Común del Mercosur" type="object" attrs="{'invisible':[('afip_ws', '!=', 'wsbfe')]}"/>
-                    <button name="sync_document_local_remote_number" string="Sync Remote/Local Numbers" help="Sync documents local next number against remote Numbers" type="object" confirm="Warning! this operation can not be undone, all sequences will be syncronized with remote numbers" attrs="{'invisible':[('afip_ws', '=', False)]}"/>
                 </header>
             </sheet>
         </field>

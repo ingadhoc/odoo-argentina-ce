@@ -1,0 +1,97 @@
+<odoo>
+    <data>
+        <record id="afipws_caea_tree" model="ir.ui.view">
+            <field name="name">afipws_caea.tree</field>
+            <field name="model">afipws.caea</field>
+            <field name="arch" type="xml">
+                <tree string="caea">
+                    <field name="company_id"/>
+                    <field name="name"/>
+                    <field name="month" optional="true"/>
+                    <field name="year" optional="true"/>
+                    <field name="order" optional="true"/>
+                    <field name="date_from" optional="hide"/>
+                    <field name="date_to" optional="hide"/>
+                    <field groups="base.group_multi_company" name="company_id"/>
+                </tree>
+            </field>
+        </record>
+        <record id="afipws_form" model="ir.ui.view">
+            <field name="name">afipws.form</field>
+            <field name="model">afipws.caea</field>
+            <field name="arch" type="xml">
+                <form string="description">
+                    <header>
+                        <button name="action_request_caea" states="draft" string="Request CAEA" type="object"/>
+                        <field name="state" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <h1>
+                            <field attrs="{'readonly': True}" name="name"/>
+                        </h1>
+                        <group col="6">
+                            <field attrs="{'readonly':[('name','!=','/')]}" name="month"/>
+                            <field attrs="{'readonly':[('name','!=','/')]}" name="year"/>
+                            <field attrs="{'readonly':[('name','!=','/')]}" name="order"/>
+                        </group>
+                        <group>
+                            <field attrs="{'invisible':True}" name="period"/>
+                            <field groups="base.group_multi_company" name="company_id"/>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                        <notebook>
+                            <page name="moves" string="Invoices">
+                                <group>
+                                    <button name="action_send_invoices" states="active" string="Send invoices" type="object"/>
+                                </group>
+                                <group>
+                                    <span>
+                                        <field attrs="{'readonly':True}" name="move_ids">
+                                            <tree string="invoices">
+                                                <field invisible="True" name="id"/>
+                                                <field name="name"/>
+                                                <field name="caea_post_datetime"/>
+                                                <field name="l10n_ar_afip_caea_reported"/>
+                                            </tree>
+                                        </field>
+                                    </span>
+                                </group>
+                            </page>
+                            <page name="journals" string="Autorized CAEA journals">
+                                <group>
+                                    <button name="action_get_caea_pos" states="active" string="Update autorized CAEA pos" type="object"/>
+                                    <button name="report_no_invoices" states="active" string="report no invoices" type="object"/>
+                                </group>
+                                <group>
+                                    <span>
+                                        <field attrs="{'readonly':True}" name="journal_ids">
+                                            <tree string="invoices">
+                                                <field invisible="True" name="id"/>
+                                                <field name="name"/>
+                                                <field name="l10n_ar_afip_pos_number"/>
+                                                <field name="l10n_ar_afip_pos_system"/>
+                                            </tree>
+                                        </field>
+                                    </span>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field groups="base.group_user" name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+        <record id="action_caea" model="ir.actions.act_window">
+            <field name="name">CAEA</field>
+            <field name="res_model">afipws.caea</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <menuitem action="action_caea" id="caea_menu" name="CAEA" parent="l10n_ar_afipws.menu_afipws"/>
+        <menuitem action="action_caea" id="caea_menu" name="CAEA" parent="l10n_ar.menu_afip_config"/>
+    </data>
+</odoo>
