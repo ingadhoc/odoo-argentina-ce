@@ -42,18 +42,18 @@
                 <field name="partner_id"/>
                 <field name="afip_responsibility_type_id"/>
                 <field name="cuit"/>
-                <field name="not_taxed" sum="Total"/>
-                <field name="base_25" sum="Total"/>
-                <field name="vat_25" sum="Total"/>
-                <field name="base_5" sum="Total"/>
-                <field name="vat_5" sum="Total"/>
-                <field name="base_10" sum="Total"/>
-                <field name="vat_10" sum="Total"/>
-                <field name="base_21" sum="Total"/>
-                <field name="vat_21" sum="Total"/>
-                <field name="base_27" sum="Total"/>
-                <field name="vat_27" sum="Total"/>
-                <field name="vat_per" sum="Total"/>
+                <field name="not_taxed" sum="Total" optional="hide"/>
+                <field name="base_25" sum="Total" optional="hide"/>
+                <field name="vat_25" sum="Total" optional="hide"/>
+                <field name="base_5" sum="Total"optional="hide"/>
+                <field name="vat_5" sum="Total" optional="hide"/>
+                <field name="base_10" sum="Total" optional="hide"/>
+                <field name="vat_10" sum="Total" optional="hide"/>
+                <field name="base_21" sum="Total" optional="show"/>
+                <field name="vat_21" sum="Total"  optional="show"/>
+                <field name="base_27" sum="Total" optional="hide"/>
+                <field name="vat_27" sum="Total" optional="hide"/>
+                <field name="vat_per" sum="Total" optional="hide"/>
                 <field name="other_taxes" sum="Total"/>
                 <field name="total" sum="Total"/>
                 <button name="open_journal_entry" string="Open" type="object" icon="fa-external-link" help="Open journal entry"/>

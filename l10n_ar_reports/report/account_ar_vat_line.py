@@ -85,21 +85,47 @@ SELECT
     am.l10n_latam_document_type_id as document_type_id,
     am.state,
     am.company_id,
-    sum(CASE WHEN btg.l10n_ar_vat_afip_code = '5' THEN aml.balance ELSE Null END) as base_21,
-    sum(CASE WHEN ntg.l10n_ar_vat_afip_code = '5' THEN aml.balance ELSE Null END) as vat_21,
-    sum(CASE WHEN btg.l10n_ar_vat_afip_code = '4' THEN aml.balance ELSE Null END) as base_10,
-    sum(CASE WHEN ntg.l10n_ar_vat_afip_code = '4' THEN aml.balance ELSE Null END) as vat_10,
-    sum(CASE WHEN btg.l10n_ar_vat_afip_code = '6' THEN aml.balance ELSE Null END) as base_27,
-    sum(CASE WHEN ntg.l10n_ar_vat_afip_code = '6' THEN aml.balance ELSE Null END) as vat_27,
-    sum(CASE WHEN btg.l10n_ar_vat_afip_code = '9' THEN aml.balance ELSE Null END) as base_25,
-    sum(CASE WHEN ntg.l10n_ar_vat_afip_code = '9' THEN aml.balance ELSE Null END) as vat_25,
-    sum(CASE WHEN btg.l10n_ar_vat_afip_code = '8' THEN aml.balance ELSE Null END) as base_5,
-    sum(CASE WHEN ntg.l10n_ar_vat_afip_code = '8' THEN aml.balance ELSE Null END) as vat_5,
-    sum(CASE WHEN btg.l10n_ar_vat_afip_code in ('0', '1', '2', '3', '7') THEN aml.balance ELSE Null END) as not_taxed,
-    sum(CASE WHEN ntg.l10n_ar_tribute_afip_code = '06' THEN aml.balance ELSE Null END) as vat_per,
-    sum(CASE WHEN ntg.l10n_ar_vat_afip_code is null and ntg.l10n_ar_tribute_afip_code != '06'
-        THEN aml.balance ELSE Null END) as other_taxes,
-    sum(aml.balance) as total
+    sum(CASE WHEN btg.l10n_ar_vat_afip_code = '5' AND am.type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN btg.l10n_ar_vat_afip_code = '5' AND am.type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+             ELSE Null END) as base_21,
+    sum(CASE WHEN ntg.l10n_ar_vat_afip_code = '5' AND am.type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN ntg.l10n_ar_vat_afip_code = '5' AND am.type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+    		 ELSE Null END) as vat_21,
+    sum(CASE WHEN btg.l10n_ar_vat_afip_code = '4' AND am.type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN btg.l10n_ar_vat_afip_code = '4' AND am.type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+             ELSE Null END) as base_10,
+    sum(CASE WHEN ntg.l10n_ar_vat_afip_code = '4' AND am.type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN ntg.l10n_ar_vat_afip_code = '4' AND am.type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+    		 ELSE Null END) as vat_10,
+    sum(CASE WHEN btg.l10n_ar_vat_afip_code = '6' AND am.type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN btg.l10n_ar_vat_afip_code = '6' AND am.type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+             ELSE Null END) as base_27,
+    sum(CASE WHEN ntg.l10n_ar_vat_afip_code = '6' AND am.type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN ntg.l10n_ar_vat_afip_code = '6' AND am.type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+    		 ELSE Null END) as vat_27,
+    sum(CASE WHEN btg.l10n_ar_vat_afip_code = '9' AND am.type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN btg.l10n_ar_vat_afip_code = '9' AND am.type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+             ELSE Null END) as base_25,
+    sum(CASE WHEN ntg.l10n_ar_vat_afip_code = '9' AND am.type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN ntg.l10n_ar_vat_afip_code = '9' AND am.type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+    		 ELSE Null END) as vat_25,
+    sum(CASE WHEN btg.l10n_ar_vat_afip_code = '8' AND am.type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN btg.l10n_ar_vat_afip_code = '8' AND am.type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+             ELSE Null END) as base_5,
+    sum(CASE WHEN ntg.l10n_ar_vat_afip_code = '8' AND am.type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN ntg.l10n_ar_vat_afip_code = '8' AND am.type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+    		 ELSE Null END) as vat_5,
+    sum(CASE WHEN btg.l10n_ar_vat_afip_code IN ('0', '1', '2', '3', '7') AND am.type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN btg.l10n_ar_vat_afip_code IN ('0', '1', '2', '3', '7') AND am.type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+             ELSE Null END) as not_taxed,
+    sum(CASE WHEN ntg.l10n_ar_tribute_afip_code = '06' AND am.type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN ntg.l10n_ar_tribute_afip_code = '06' AND am.type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+    		 ELSE Null END) as vat_per,
+    sum(CASE WHEN ntg.l10n_ar_vat_afip_code is null and ntg.l10n_ar_tribute_afip_code != '06' AND am.type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN ntg.l10n_ar_vat_afip_code is null and ntg.l10n_ar_tribute_afip_code != '06' AND am.type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+             ELSE Null END) as other_taxes,
+    sum(CASE WHEN am.type IN ('out_invoice', 'out_refund') THEN aml.balance*-1
+             WHEN am.type IN ('in_invoice', 'in_refund') THEN aml.balance END) as total
 FROM
     account_move_line aml
 LEFT JOIN
@@ -134,6 +160,7 @@ LEFT JOIN
 WHERE
     (aml.tax_line_id is not null or btg.l10n_ar_vat_afip_code is not null)
     and am.type in ('out_invoice', 'in_invoice', 'out_refund', 'in_refund')
+    and am.state = 'posted'
 GROUP BY
     am.id, art.name, rp.id, lit.id
 ORDER BY

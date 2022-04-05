@@ -3,3 +3,4 @@
 # directory
 ##############################################################################
 from . import account_ar_vat_line
+from . import account_vat_xlsx

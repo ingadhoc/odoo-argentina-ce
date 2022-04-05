@@ -200,7 +200,7 @@ class AccountVatLedger(models.Model):
     def action_print(self):
         self.ensure_one()
         return self.env['ir.actions.report'].search(
-            [('report_name', '=', 'report_account_vat_ledger')],
+            [('report_name', '=', 'account_vat_ledger_xlsx')],
             limit=1).report_action(self)
 
 # txt for citi / libro iva digital methods

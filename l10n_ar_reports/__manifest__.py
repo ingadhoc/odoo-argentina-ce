@@ -7,10 +7,11 @@
     'license': 'AGPL-3',
     'summary': '',
     "depends": [
-        "report_aeroo",
         "l10n_ar",
+        "report_xlsx",
     ],
     'external_dependencies': {
+        'XlsxWriter'
     },
     "data": [
         'report/account_ar_vat_line_view.xml',
@@ -23,7 +24,7 @@
     ],
     'images': [
     ],
-    'installable': False,
+    'installable': True,
     'auto_install': False,
     'application': False,
 }

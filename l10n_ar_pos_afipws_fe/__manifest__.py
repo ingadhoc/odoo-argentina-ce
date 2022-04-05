@@ -16,6 +16,11 @@
     ],
     'demo': [
     ],
+    'assets': {
+        'point_of_sale.assets': [
+            'l10n_ar_pos_afipws_fe/static/src/js/pos_order.js',
+        ]
+    },
     'images': [
     ],
     'installable': True,

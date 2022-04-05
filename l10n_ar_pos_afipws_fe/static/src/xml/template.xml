@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="point_of_sale.template" xml:space="preserve">
+        <t owl="1" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension" t-name="OrderReceipt">
+                <xpath expr="//div[hasclass('before-footer')]" position="after">
+                        <t t-if="receipt.l10n_ar_afip_auth_code">
+                                <div class="afip-cae-info" style="text-align: center; font-size: 75%;">
+                                        <t t-if="receipt.l10n_ar_afip_qr_image">
+                                                <div style="overflow: hidden;">
+                                                        <img alt="afip" class="pos-afip-qr" t-attf-src="data:image/png;base64,{{receipt.l10n_ar_afip_qr_image}}"/>
+                                                </div>
+                                        </t>
+                                        <strong>CAE:</strong>
+                                        <t t-esc="receipt.l10n_ar_afip_auth_code"/>
+                                        <div style="margin-top:3px;">
+                                                <strong>Vto. CAE:</strong>
+                                                <t t-esc="receipt.l10n_ar_afip_auth_code_due"/>
+                                        </div>
+                                </div>
+                        </t>
+                </xpath>
+        </t>
+</templates>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<template id="point_of_sale_asset" inherit_id="point_of_sale.assets" name="point of sale afipws fe">
+		<xpath expr="." position="inside">
+			<script src="/l10n_ar_pos_afipws_fe/static/src/js/pos_order.js" type="text/javascript"/>
+		</xpath>
+	</template>
+</odoo>
