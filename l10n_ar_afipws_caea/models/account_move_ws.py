@@ -36,6 +36,7 @@ class AccountMove(models.Model):
             invoice_info["moneda_ctz"],
             invoice_info["caea"],
             invoice_info["CbteFchHsGen"],
+
         )
 
     def wsfe_caea_request_autorization(self, ws):

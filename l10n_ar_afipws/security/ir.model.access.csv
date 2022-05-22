@@ -8,3 +8,4 @@ access_afipws_certificate_user,afipws.certificate.user,model_afipws_certificate,
 access_a5_wizard,res.partner.update.from.padron.wizard,model_res_partner_update_from_padron_wizard,base.group_user,1,1,1,1
 access_afipws_upload_certificate_wizard,afipws.upload_certificate.wizard,model_afipws_upload_certificate_wizard,base.group_system,1,1,1,1
 access_a5_field,res.partner.update.from.padron.field,model_res_partner_update_from_padron_field,base.group_user,1,1,1,1
+

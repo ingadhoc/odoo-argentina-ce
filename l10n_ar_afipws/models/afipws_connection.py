@@ -61,6 +61,7 @@ class AfipwsConnection(models.Model):
         "AFIP WS",
         required=True,
         default="ws_sr_padron_a5",
+
     )
 
     @api.depends("type", "afip_ws")
@@ -117,6 +118,7 @@ class AfipwsConnection(models.Model):
                 )
             else:
                 afip_ws_url = "https://fwshomo.afip.gov.ar/wsfecred/FECredService?wsdl"
+
 
         return afip_ws_url
 

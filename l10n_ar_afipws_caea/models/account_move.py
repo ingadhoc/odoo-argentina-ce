@@ -5,6 +5,7 @@ import sys
 import traceback
 import logging
 
+
 _logger = logging.getLogger(__name__)
 
 try:
@@ -42,6 +43,7 @@ class AccountMove(models.Model):
             inv_ids = self.filtered(
                 lambda record: record.journal_id.l10n_ar_afip_pos_system != "CAEA"
             )
+
             for inv in inv_ids:
                 if len(inv.journal_id.caea_journal_id):
                     inv.journal_id = inv.journal_id.caea_journal_id.id
@@ -58,11 +60,13 @@ class AccountMove(models.Model):
         if caea_state == "inactive":
             return super().do_pyafipws_request_cae()
         elif caea_state == "active":
+
             return self.do_pyafipws_request_caea()
 
     def do_pyafipws_request_caea(self):
         for inv in self:
             if inv.journal_id.l10n_ar_afip_pos_system != "CAEA":
+
                 continue
             # Ignore invoices with cae (do not check date)
             if inv.afip_auth_code:
@@ -101,6 +105,7 @@ class AccountMove(models.Model):
             else:
                 raise UserError(_("The company does not have active CAEA"))
 
+
     def do_pyafipws_post_caea_invoice(self):
         "Request to AFIP the invoices' Authorization Electronic Code (CAE)"
         for inv in self:
@@ -108,6 +113,7 @@ class AccountMove(models.Model):
             if inv.afip_auth_mode != "CAEA":
                 continue
             afip_ws = inv.company_id.get_caea_ws()
+
             if not afip_ws:
                 continue
 
@@ -121,6 +127,7 @@ class AccountMove(models.Model):
                     % (inv.id)
                 )
 
+
             # Inicio conexion
             ws = inv.company_id.get_connection(afip_ws).connect()
 
@@ -130,6 +137,7 @@ class AccountMove(models.Model):
             invoice_info["CbteFchHsGen"] = inv.caea_post_datetime.strftime(
                 "%Y%m%d%H%M%S"
             )
+
 
             # Creo la factura en el ambito de pyafipws
             inv.wsfe_pyafipws_caea_create_invoice(ws, invoice_info)
@@ -145,6 +153,7 @@ class AccountMove(models.Model):
 
             except SoapFault as fault:
                 msg = "Falla SOAP %s: %s" % (fault.faultcode, fault.faultstring)
+
             except Exception as e:
                 msg = e
             except Exception:
@@ -190,5 +199,6 @@ class AccountMove(models.Model):
                     "l10n_ar_afip_caea_reported": True,
                 }
             )
+
 
             inv._cr.commit()

@@ -31,7 +31,6 @@ class AccountJournalWs(models.Model):
                 )
             else:
                 return _("AFIP WS %s not implemented") % afip_ws
-
             msg = " - ".join([ws.Excepcion, ws.ErrMsg, ws.Obs])
             return last
 

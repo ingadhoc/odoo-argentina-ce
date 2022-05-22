@@ -43,6 +43,7 @@ class AccountJournal(models.Model):
             )
         return super()._get_journal_codes()
 
+
     def test_pyafipws_dummy(self):
         """
         AFIP Description: Método Dummy para verificación de funcionamiento de
@@ -62,5 +63,6 @@ class AccountJournal(models.Model):
             "type": "ir.actions.act_window",
             "target": "new",
             "context": {"default_journal_id": self.id},
+
         }
         return view

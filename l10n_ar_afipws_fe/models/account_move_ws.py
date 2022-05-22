@@ -162,6 +162,7 @@ class AccountMove(models.Model):
                         )
                     ).mapped("price_subtotal")
                 ),
+
                 # "%.2f" % abs(vat.base_amount),
                 "%.2f" % vat.price_subtotal,
             )
@@ -604,6 +605,7 @@ class AccountMove(models.Model):
         for line in self.invoice_line_ids.filtered(lambda x: not x.display_type):
             line_temp = {}
             line_temp["codigo"] = line.product_id.default_code
+
             # unidad de referencia del producto si se comercializa
             # en una unidad distinta a la de consumo
             # uom is not mandatory, if no UOM we use "unit"

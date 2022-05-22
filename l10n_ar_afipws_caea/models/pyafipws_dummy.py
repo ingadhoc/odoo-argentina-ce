@@ -5,12 +5,14 @@ from odoo.exceptions import UserError
 
 import logging
 
+
 _logger = logging.getLogger(__name__)
 
 
 class pyafipwsDummy(models.TransientModel):
     _name = "pyafipws.dummy"
     _description = "AFIP dummy"
+
 
     @api.model
     def default_get(self, fields_list):
