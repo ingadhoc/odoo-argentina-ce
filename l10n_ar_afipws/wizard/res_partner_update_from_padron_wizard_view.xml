@@ -55,5 +55,10 @@
             </form>
         </field>
     </record>
-    <act_window binding_model="res.partner" id="action_partner_update" name="Automatic Update from Padron" res_model="res.partner.update.from.padron.wizard" target="new" view_mode="form"/>
+    <record id="action_partner_update" model="ir.actions.act_window">
+        <field name="name">Automatic Update from Padron</field>
+        <field name="res_model">res.partner.update.from.padron.wizard</field>
+        <field name="target">new</field>
+        <field name="view_mode">form</field>
+    </record>
 </odoo>

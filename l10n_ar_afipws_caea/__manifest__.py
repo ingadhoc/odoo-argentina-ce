@@ -6,7 +6,7 @@
     'sequence': 14,
     'author': "Filoquin",
     'website': "http://www.sipecu.com.ar",
-
+    'license': 'LGPL-3',
     'category': 'Localization/Argentina',
     'version': '15.0.1.0.0',
     'depends': ['l10n_ar_afipws_fe'],
@@ -27,5 +27,5 @@
     ],
     'installable': False,
     'auto_install': False,
-    'application': False,    
+    'application': False,
 }
