@@ -5,10 +5,6 @@
 
 from odoo import fields, models, api, _
 from odoo.exceptions import UserError
-try:
-    from pysimplesoap.client import SoapFault
-except ImportError:
-    SoapFault = None
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -125,8 +121,6 @@ class ResPartner(models.Model):
             'Obtuvimos este error: %s')
         try:
             padron.Consultar(cuit)
-        except SoapFault as e:
-            raise UserError(error_msg % (self.name, cuit, e.faultstring))
         except Exception as e:
             raise UserError(error_msg % (self.name, cuit, e))
 
