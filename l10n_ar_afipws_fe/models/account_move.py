@@ -16,11 +16,6 @@ from datetime import datetime
 
 _logger = logging.getLogger(__name__)
 
-try:
-    from pysimplesoap.client import SoapFault
-except ImportError:
-    _logger.debug("Can not `from pyafipws.soap import SoapFault`.")
-
 
 class AccountMove(models.Model):
     _inherit = "account.move"
@@ -202,8 +197,6 @@ class AccountMove(models.Model):
             try:
                 # Pido autorizacion
                 inv.pyafipws_request_autorization(ws, afip_ws)
-            except SoapFault as fault:
-                msg = "Falla SOAP %s: %s" % (fault.faultcode, fault.faultstring)
             except Exception as e:
                 msg = e
             except Exception:
