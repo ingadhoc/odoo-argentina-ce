@@ -4,12 +4,14 @@
 ##############################################################################
 from odoo.exceptions import UserError
 from odoo import fields, models, api, _
+
 try:
     from OpenSSL import crypto
 except ImportError:
     crypto = None
 import base64
 import logging
+
 _logger = logging.getLogger(__name__)
 
 
@@ -19,74 +21,74 @@ class AfipwsCertificate(models.Model):
     _rec_name = "alias_id"
 
     alias_id = fields.Many2one(
-        'afipws.certificate_alias',
-        ondelete='cascade',
-        string='Certificate Alias',
+        "afipws.certificate_alias",
+        ondelete="cascade",
+        string="Certificate Alias",
         required=True,
         auto_join=True,
         index=True,
     )
     csr = fields.Text(
-        'Request Certificate',
+        "Request Certificate",
         readonly=True,
-        states={'draft': [('readonly', False)]},
-        help='Certificate Request in PEM format.'
+        states={"draft": [("readonly", False)]},
+        help="Certificate Request in PEM format.",
     )
     crt = fields.Text(
-        'Certificate',
+        "Certificate",
         readonly=True,
-        states={
-            'draft': [('readonly', False)]},
-        help='Certificate in PEM format.'
+        states={"draft": [("readonly", False)]},
+        help="Certificate in PEM format.",
     )
-    state = fields.Selection([
-        ('draft', 'Draft'),
-        ('confirmed', 'Confirmed'),
-        ('cancel', 'Cancelled'),
-    ],
-        'State',
+    state = fields.Selection(
+        [
+            ("draft", "Draft"),
+            ("confirmed", "Confirmed"),
+            ("cancel", "Cancelled"),
+        ],
+        "State",
         index=True,
         readonly=True,
-        default='draft',
+        default="draft",
         help="* The 'Draft' state is used when a user is creating a new pair "
         "key. Warning: everybody can see the key."
         "\n* The 'Confirmed' state is used when a certificate is valid."
         "\n* The 'Canceled' state is used when the key is not more used. You "
-        "cant use this key again."
+        "cant use this key again.",
     )
     request_file = fields.Binary(
-        'Download Signed Certificate Request',
-        compute='_compute_request_file',
-        readonly=True
+        "Download Signed Certificate Request",
+        compute="_compute_request_file",
+        readonly=True,
     )
     request_filename = fields.Char(
-        'Filename',
+        "Filename",
         readonly=True,
-        compute='_compute_request_file',
+        compute="_compute_request_file",
     )
 
-    @api.depends('csr')
+    @api.depends("csr")
     def _compute_request_file(self):
         for rec in self:
-            rec.request_filename = 'request.csr'
+            rec.request_filename = "request.csr"
             if rec.csr:
-                rec.request_file = base64.encodestring(self.csr.encode('utf-8'))
+                rec.request_file = base64.encodestring(self.csr.encode("utf-8"))
             else:
                 rec.request_file = False
 
     def action_to_draft(self):
-        if self.alias_id.state != 'confirmed':
-            raise UserError(_('Certificate Alias must be confirmed first!'))
-        self.write({'state': 'draft'})
+        if self.alias_id.state != "confirmed":
+            raise UserError(_("Certificate Alias must be confirmed first!"))
+        self.write({"state": "draft"})
         return True
 
     def action_cancel(self):
-        self.write({'state': 'cancel'})
+        self.write({"state": "cancel"})
         return True
 
     def action_confirm(self):
         self.verify_crt()
-        self.write({'state': 'confirmed'})
+        self.write({"state": "confirmed"})
         return True
 
     def verify_crt(self):
@@ -99,14 +101,16 @@ class AfipwsCertificate(models.Model):
 
             if not crt:
                 msg = _(
-                    'Invalid action! Please, set the certification string to '
-                    'continue.')
+                    "Invalid action! Please, set the certification string to "
+                    "continue."
+                )
             certificate = rec.get_certificate()
             if certificate is None:
                 msg = _(
-                    'Invalid action! Your certificate string is invalid. '
-                    'Check if you forgot the header CERTIFICATE or forgot/ '
-                    'append end of lines.')
+                    "Invalid action! Your certificate string is invalid. "
+                    "Check if you forgot the header CERTIFICATE or forgot/ "
+                    "append end of lines."
+                )
             if msg:
                 raise UserError(msg)
         return True
@@ -119,16 +123,20 @@ class AfipwsCertificate(models.Model):
         if self.crt:
             try:
                 certificate = crypto.load_certificate(
-                    crypto.FILETYPE_PEM, self.crt.encode('ascii'))
+                    crypto.FILETYPE_PEM, self.crt.encode("ascii")
+                )
             except Exception as e:
-                if 'Expecting: CERTIFICATE' in e[0]:
-                    raise UserError(_(
-                        'Wrong Certificate file format.\nBe sure you have '
-                        'BEGIN CERTIFICATE string in your first line.'))
+                if "Expecting: CERTIFICATE" in e[0]:
+                    raise UserError(
+                        _(
+                            "Wrong Certificate file format.\nBe sure you have "
+                            "BEGIN CERTIFICATE string in your first line."
+                        )
+                    )
                 else:
-                    raise UserError(_(
-                        'Unknown error.\nX509 return this message:\n %s') % (
-                        e[0]))
+                    raise UserError(
+                        _("Unknown error.\nX509 return this message:\n %s") % (e[0])
+                    )
         else:
             certificate = None
         return certificate

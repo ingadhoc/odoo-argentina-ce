@@ -12,52 +12,95 @@ class AccountArVatLine(models.Model):
     segun la informacion de impuestos y ademas agrega algunos otros
     campos
     """
+
     _name = "account.ar.vat.line"
     _description = "Línea de IVA para análisis en localización argentina"
     _auto = False
-    _order = 'invoice_date asc, move_name asc, id asc'
+    _order = "invoice_date asc, move_name asc, id asc"
 
-    document_type_id = fields.Many2one('l10n_latam.document.type', 'Document Type', readonly=True)
+    document_type_id = fields.Many2one(
+        "l10n_latam.document.type", "Document Type", readonly=True
+    )
     date = fields.Date(readonly=True)
     invoice_date = fields.Date(readonly=True)
     cuit = fields.Char(readonly=True)
     afip_responsibility_type_name = fields.Char(readonly=True)
     partner_name = fields.Char(readonly=True)
     move_name = fields.Char(readonly=True)
-    type = fields.Selection(selection=[
-        ('entry', 'Journal Entry'),
-        ('out_invoice', 'Customer Invoice'),
-        ('out_refund', 'Customer Credit Note'),
-        ('in_invoice', 'Vendor Bill'),
-        ('in_refund', 'Vendor Credit Note'),
-        ('out_receipt', 'Sales Receipt'),
-        ('in_receipt', 'Purchase Receipt'),
-    ], readonly=True)
-    base_21 = fields.Monetary(readonly=True, string='Grav. 21%', currency_field='company_currency_id')
-    vat_21 = fields.Monetary(readonly=True, string='VAT 21%', currency_field='company_currency_id')
-    base_27 = fields.Monetary(readonly=True, string='Grav. 27%', currency_field='company_currency_id')
-    vat_27 = fields.Monetary(readonly=True, string='VAT 27%', currency_field='company_currency_id')
-    base_10 = fields.Monetary(readonly=True, string='Grav. 10,5%', currency_field='company_currency_id')
-    vat_10 = fields.Monetary(readonly=True, string='VAT 10,5%', currency_field='company_currency_id')
-    base_25 = fields.Monetary(readonly=True, string='Grav. 2,5%', currency_field='company_currency_id')
-    vat_25 = fields.Monetary(readonly=True, string='VAT 2,5%', currency_field='company_currency_id')
-    base_5 = fields.Monetary(readonly=True, string='Grav. 5%', currency_field='company_currency_id')
-    vat_5 = fields.Monetary(readonly=True, string='VAT 5%', currency_field='company_currency_id')
+    type = fields.Selection(
+        selection=[
+            ("entry", "Journal Entry"),
+            ("out_invoice", "Customer Invoice"),
+            ("out_refund", "Customer Credit Note"),
+            ("in_invoice", "Vendor Bill"),
+            ("in_refund", "Vendor Credit Note"),
+            ("out_receipt", "Sales Receipt"),
+            ("in_receipt", "Purchase Receipt"),
+        ],
+        readonly=True,
+    )
+    base_21 = fields.Monetary(
+        readonly=True, string="Grav. 21%", currency_field="company_currency_id"
+    )
+    vat_21 = fields.Monetary(
+        readonly=True, string="VAT 21%", currency_field="company_currency_id"
+    )
+    base_27 = fields.Monetary(
+        readonly=True, string="Grav. 27%", currency_field="company_currency_id"
+    )
+    vat_27 = fields.Monetary(
+        readonly=True, string="VAT 27%", currency_field="company_currency_id"
+    )
+    base_10 = fields.Monetary(
+        readonly=True, string="Grav. 10,5%", currency_field="company_currency_id"
+    )
+    vat_10 = fields.Monetary(
+        readonly=True, string="VAT 10,5%", currency_field="company_currency_id"
+    )
+    base_25 = fields.Monetary(
+        readonly=True, string="Grav. 2,5%", currency_field="company_currency_id"
+    )
+    vat_25 = fields.Monetary(
+        readonly=True, string="VAT 2,5%", currency_field="company_currency_id"
+    )
+    base_5 = fields.Monetary(
+        readonly=True, string="Grav. 5%", currency_field="company_currency_id"
+    )
+    vat_5 = fields.Monetary(
+        readonly=True, string="VAT 5%", currency_field="company_currency_id"
+    )
     vat_per = fields.Monetary(
-        readonly=True, string='VAT Perc.', currency_field='company_currency_id')
+        readonly=True, string="VAT Perc.", currency_field="company_currency_id"
+    )
     not_taxed = fields.Monetary(
-        readonly=True, string='Not taxed/ex', currency_field='company_currency_id')
+        readonly=True, string="Not taxed/ex", currency_field="company_currency_id"
+    )
     other_taxes = fields.Monetary(
-        readonly=True, string='Other Taxes', currency_field='company_currency_id')
-    total = fields.Monetary(readonly=True, currency_field='company_currency_id')
-    state = fields.Selection([('draft', 'Unposted'), ('posted', 'Posted')], 'Status', readonly=True)
-    journal_id = fields.Many2one('account.journal', 'Journal', readonly=True, auto_join=True)
-    partner_id = fields.Many2one('res.partner', 'Partner', readonly=True, auto_join=True)
+        readonly=True, string="Other Taxes", currency_field="company_currency_id"
+    )
+    total = fields.Monetary(readonly=True, currency_field="company_currency_id")
+    state = fields.Selection(
+        [("draft", "Unposted"), ("posted", "Posted")], "Status", readonly=True
+    )
+    journal_id = fields.Many2one(
+        "account.journal", "Journal", readonly=True, auto_join=True
+    )
+    partner_id = fields.Many2one(
+        "res.partner", "Partner", readonly=True, auto_join=True
+    )
     afip_responsibility_type_id = fields.Many2one(
-        'l10n_ar.afip.responsibility.type', string='AFIP Responsibility Type', readonly=True, auto_join=True)
-    company_id = fields.Many2one('res.company', 'Company', readonly=True, auto_join=True)
-    company_currency_id = fields.Many2one(related='company_id.currency_id', readonly=True)
-    move_id = fields.Many2one('account.move', string='Entry', auto_join=True)
+        "l10n_ar.afip.responsibility.type",
+        string="AFIP Responsibility Type",
+        readonly=True,
+        auto_join=True,
+    )
+    company_id = fields.Many2one(
+        "res.company", "Company", readonly=True, auto_join=True
+    )
+    company_currency_id = fields.Many2one(
+        related="company_id.currency_id", readonly=True
+    )
+    move_id = fields.Many2one("account.move", string="Entry", auto_join=True)
 
     def open_journal_entry(self):
         self.ensure_one()
