@@ -5,11 +5,6 @@
 
 from odoo import fields, models, api, _
 from odoo.exceptions import UserError
-
-try:
-    from pysimplesoap.client import SoapFault
-except ImportError:
-    SoapFault = None
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -139,8 +134,6 @@ class ResPartner(models.Model):
         )
         try:
             padron.Consultar(cuit)
-        except SoapFault as e:
-            raise UserError(error_msg % (self.name, cuit, e.faultstring))
         except Exception as e:
             raise UserError(error_msg % (self.name, cuit, e))
 
@@ -155,5 +148,4 @@ class ResPartner(models.Model):
                 ws = self.env.user.company_id.get_connection("wsfecred").connect()
                 res = ws.ConsultarMontoObligadoRecepcion(record.l10n_ar_vat)
                 record.mipyme_required = True if ws.Resultado == "S" else False
-
                 record.mipyme_from_amount = float(res)

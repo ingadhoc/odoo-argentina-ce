@@ -5,9 +5,9 @@
     "sequence": 14,
     "author": "Filoquin",
     "website": "http://www.sipecu.com.ar",
+    "license": "LGPL-3",
     "category": "Localization/Argentina",
     "version": "15.0.1.0.0",
-    "license": "AGPL-3",
     "depends": ["l10n_ar_afipws_fe"],
     "data": [
         "security/ir.model.access.csv",
