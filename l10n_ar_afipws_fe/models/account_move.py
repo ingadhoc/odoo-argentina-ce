@@ -6,6 +6,7 @@ from odoo import fields, models, api, _
 from odoo.exceptions import UserError
 from odoo.tools import float_repr
 import base64
+base64.encodestring = base64.encodebytes
 import json
 import logging
 import sys
@@ -110,7 +111,7 @@ class AccountMove(models.Model):
                     "moneda": rec.currency_id.l10n_ar_afip_code,
                     "ctz": float(float_repr(rec.l10n_ar_currency_rate, 2)),
                     "tipoCodAut": "E" if rec.afip_auth_mode == "CAE" else "A",
-                    "codAut": rec.afip_auth_code,
+                    "codAut": int(rec.afip_auth_code),
                 }
                 if (
                     len(rec.commercial_partner_id.l10n_latam_identification_type_id)
@@ -125,6 +126,7 @@ class AccountMove(models.Model):
                 qr_data = base64.encodestring(
                     json.dumps(qr_dict, indent=None).encode("ascii")
                 ).decode("ascii")
+                qr_data = str(qr_data).replace("\n", "")
                 rec.afip_qr_code = "https://www.afip.gob.ar/fe/qr/?p=%s" % qr_data
             else:
                 rec.afip_qr_code = False
