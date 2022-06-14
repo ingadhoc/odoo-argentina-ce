@@ -13,7 +13,6 @@ class pyafipwsDummy(models.TransientModel):
     _name = "pyafipws.dummy"
     _description = "AFIP dummy"
 
-
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)

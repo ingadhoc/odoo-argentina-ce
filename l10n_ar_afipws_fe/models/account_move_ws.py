@@ -162,7 +162,6 @@ class AccountMove(models.Model):
                         )
                     ).mapped("price_subtotal")
                 ),
-
                 # "%.2f" % abs(vat.base_amount),
                 "%.2f" % vat.price_subtotal,
             )

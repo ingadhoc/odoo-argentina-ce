@@ -6,6 +6,7 @@ from odoo import fields, models, api, _
 from odoo.exceptions import UserError
 from odoo.tools import float_repr
 import base64
+
 base64.encodestring = base64.encodebytes
 import json
 import logging

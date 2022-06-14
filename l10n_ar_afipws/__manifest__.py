@@ -23,7 +23,6 @@
         "security/ir.model.access.csv",
         "security/security.xml",
         "data/ir.actions.url_data.xml",
-
     ],
     "demo": [
         "demo/certificate_demo.xml",
@@ -33,5 +32,4 @@
     "installable": True,
     "auto_install": False,
     "application": False,
-
 }

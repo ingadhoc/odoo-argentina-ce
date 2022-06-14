@@ -105,7 +105,6 @@ class AccountMove(models.Model):
             else:
                 raise UserError(_("The company does not have active CAEA"))
 
-
     def do_pyafipws_post_caea_invoice(self):
         "Request to AFIP the invoices' Authorization Electronic Code (CAE)"
         for inv in self:
@@ -127,7 +126,6 @@ class AccountMove(models.Model):
                     % (inv.id)
                 )
 
-
             # Inicio conexion
             ws = inv.company_id.get_connection(afip_ws).connect()
 
@@ -137,7 +135,6 @@ class AccountMove(models.Model):
             invoice_info["CbteFchHsGen"] = inv.caea_post_datetime.strftime(
                 "%Y%m%d%H%M%S"
             )
-
 
             # Creo la factura en el ambito de pyafipws
             inv.wsfe_pyafipws_caea_create_invoice(ws, invoice_info)
@@ -199,6 +196,5 @@ class AccountMove(models.Model):
                     "l10n_ar_afip_caea_reported": True,
                 }
             )
-
 
             inv._cr.commit()
