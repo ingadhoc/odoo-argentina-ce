@@ -11,6 +11,7 @@ _logger = logging.getLogger(__name__)
 
 class AccountVatLedgerXlsx(models.AbstractModel):
     _name = "report.account_vat_ledger_xlsx"
+    _description = "report vat ledger in xlsx"
     _inherit = "report.report_xlsx.abstract"
 
     def generate_xlsx_report(self, workbook, data, vat_ledger):

@@ -8,7 +8,6 @@ class PosOrder(models.Model):
 
     l10n_ar_afip_qr_image = fields.Binary(string="image", compute="compute_qr_image")
     afip_auth_mode = fields.Selection(
-        [("CAE", "CAE"), ("CAI", "CAI"), ("CAEA", "CAEA")],
         string="AFIP authorization mode",
         related="account_move.afip_auth_mode",
     )
