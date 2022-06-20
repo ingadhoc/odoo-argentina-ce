@@ -12,52 +12,95 @@ class AccountArVatLine(models.Model):
     segun la informacion de impuestos y ademas agrega algunos otros
     campos
     """
+
     _name = "account.ar.vat.line"
     _description = "Línea de IVA para análisis en localización argentina"
     _auto = False
-    _order = 'invoice_date asc, move_name asc, id asc'
+    _order = "invoice_date asc, move_name asc, id asc"
 
-    document_type_id = fields.Many2one('l10n_latam.document.type', 'Document Type', readonly=True)
+    document_type_id = fields.Many2one(
+        "l10n_latam.document.type", "Document Type", readonly=True
+    )
     date = fields.Date(readonly=True)
     invoice_date = fields.Date(readonly=True)
     cuit = fields.Char(readonly=True)
     afip_responsibility_type_name = fields.Char(readonly=True)
     partner_name = fields.Char(readonly=True)
     move_name = fields.Char(readonly=True)
-    type = fields.Selection(selection=[
-        ('entry', 'Journal Entry'),
-        ('out_invoice', 'Customer Invoice'),
-        ('out_refund', 'Customer Credit Note'),
-        ('in_invoice', 'Vendor Bill'),
-        ('in_refund', 'Vendor Credit Note'),
-        ('out_receipt', 'Sales Receipt'),
-        ('in_receipt', 'Purchase Receipt'),
-    ], readonly=True)
-    base_21 = fields.Monetary(readonly=True, string='Grav. 21%', currency_field='company_currency_id')
-    vat_21 = fields.Monetary(readonly=True, string='VAT 21%', currency_field='company_currency_id')
-    base_27 = fields.Monetary(readonly=True, string='Grav. 27%', currency_field='company_currency_id')
-    vat_27 = fields.Monetary(readonly=True, string='VAT 27%', currency_field='company_currency_id')
-    base_10 = fields.Monetary(readonly=True, string='Grav. 10,5%', currency_field='company_currency_id')
-    vat_10 = fields.Monetary(readonly=True, string='VAT 10,5%', currency_field='company_currency_id')
-    base_25 = fields.Monetary(readonly=True, string='Grav. 2,5%', currency_field='company_currency_id')
-    vat_25 = fields.Monetary(readonly=True, string='VAT 2,5%', currency_field='company_currency_id')
-    base_5 = fields.Monetary(readonly=True, string='Grav. 5%', currency_field='company_currency_id')
-    vat_5 = fields.Monetary(readonly=True, string='VAT 5%', currency_field='company_currency_id')
+    move_type = fields.Selection(
+        selection=[
+            ("entry", "Journal Entry"),
+            ("out_invoice", "Customer Invoice"),
+            ("out_refund", "Customer Credit Note"),
+            ("in_invoice", "Vendor Bill"),
+            ("in_refund", "Vendor Credit Note"),
+            ("out_receipt", "Sales Receipt"),
+            ("in_receipt", "Purchase Receipt"),
+        ],
+        readonly=True,
+    )
+    base_21 = fields.Monetary(
+        readonly=True, string="Grav. 21%", currency_field="company_currency_id"
+    )
+    vat_21 = fields.Monetary(
+        readonly=True, string="VAT 21%", currency_field="company_currency_id"
+    )
+    base_27 = fields.Monetary(
+        readonly=True, string="Grav. 27%", currency_field="company_currency_id"
+    )
+    vat_27 = fields.Monetary(
+        readonly=True, string="VAT 27%", currency_field="company_currency_id"
+    )
+    base_10 = fields.Monetary(
+        readonly=True, string="Grav. 10,5%", currency_field="company_currency_id"
+    )
+    vat_10 = fields.Monetary(
+        readonly=True, string="VAT 10,5%", currency_field="company_currency_id"
+    )
+    base_25 = fields.Monetary(
+        readonly=True, string="Grav. 2,5%", currency_field="company_currency_id"
+    )
+    vat_25 = fields.Monetary(
+        readonly=True, string="VAT 2,5%", currency_field="company_currency_id"
+    )
+    base_5 = fields.Monetary(
+        readonly=True, string="Grav. 5%", currency_field="company_currency_id"
+    )
+    vat_5 = fields.Monetary(
+        readonly=True, string="VAT 5%", currency_field="company_currency_id"
+    )
     vat_per = fields.Monetary(
-        readonly=True, string='VAT Perc.', currency_field='company_currency_id')
+        readonly=True, string="VAT Perc.", currency_field="company_currency_id"
+    )
     not_taxed = fields.Monetary(
-        readonly=True, string='Not taxed/ex', currency_field='company_currency_id')
+        readonly=True, string="Not taxed/ex", currency_field="company_currency_id"
+    )
     other_taxes = fields.Monetary(
-        readonly=True, string='Other Taxes', currency_field='company_currency_id')
-    total = fields.Monetary(readonly=True, currency_field='company_currency_id')
-    state = fields.Selection([('draft', 'Unposted'), ('posted', 'Posted')], 'Status', readonly=True)
-    journal_id = fields.Many2one('account.journal', 'Journal', readonly=True, auto_join=True)
-    partner_id = fields.Many2one('res.partner', 'Partner', readonly=True, auto_join=True)
+        readonly=True, string="Other Taxes", currency_field="company_currency_id"
+    )
+    total = fields.Monetary(readonly=True, currency_field="company_currency_id")
+    state = fields.Selection(
+        [("draft", "Unposted"), ("posted", "Posted")], "Status", readonly=True
+    )
+    journal_id = fields.Many2one(
+        "account.journal", "Journal", readonly=True, auto_join=True
+    )
+    partner_id = fields.Many2one(
+        "res.partner", "Partner", readonly=True, auto_join=True
+    )
     afip_responsibility_type_id = fields.Many2one(
-        'l10n_ar.afip.responsibility.type', string='AFIP Responsibility Type', readonly=True, auto_join=True)
-    company_id = fields.Many2one('res.company', 'Company', readonly=True, auto_join=True)
-    company_currency_id = fields.Many2one(related='company_id.currency_id', readonly=True)
-    move_id = fields.Many2one('account.move', string='Entry', auto_join=True)
+        "l10n_ar.afip.responsibility.type",
+        string="AFIP Responsibility Type",
+        readonly=True,
+        auto_join=True,
+    )
+    company_id = fields.Many2one(
+        "res.company", "Company", readonly=True, auto_join=True
+    )
+    company_currency_id = fields.Many2one(
+        related="company_id.currency_id", readonly=True
+    )
+    move_id = fields.Many2one("account.move", string="Entry", auto_join=True)
 
     def open_journal_entry(self):
         self.ensure_one()
@@ -75,7 +118,7 @@ SELECT
     am.name as move_name,
     rp.name as partner_name,
     am.id as move_id,
-    am.type,
+    move_type,
     am.date,
     am.invoice_date,
     am.partner_id,
@@ -85,21 +128,47 @@ SELECT
     am.l10n_latam_document_type_id as document_type_id,
     am.state,
     am.company_id,
-    sum(CASE WHEN btg.l10n_ar_vat_afip_code = '5' THEN aml.balance ELSE Null END) as base_21,
-    sum(CASE WHEN ntg.l10n_ar_vat_afip_code = '5' THEN aml.balance ELSE Null END) as vat_21,
-    sum(CASE WHEN btg.l10n_ar_vat_afip_code = '4' THEN aml.balance ELSE Null END) as base_10,
-    sum(CASE WHEN ntg.l10n_ar_vat_afip_code = '4' THEN aml.balance ELSE Null END) as vat_10,
-    sum(CASE WHEN btg.l10n_ar_vat_afip_code = '6' THEN aml.balance ELSE Null END) as base_27,
-    sum(CASE WHEN ntg.l10n_ar_vat_afip_code = '6' THEN aml.balance ELSE Null END) as vat_27,
-    sum(CASE WHEN btg.l10n_ar_vat_afip_code = '9' THEN aml.balance ELSE Null END) as base_25,
-    sum(CASE WHEN ntg.l10n_ar_vat_afip_code = '9' THEN aml.balance ELSE Null END) as vat_25,
-    sum(CASE WHEN btg.l10n_ar_vat_afip_code = '8' THEN aml.balance ELSE Null END) as base_5,
-    sum(CASE WHEN ntg.l10n_ar_vat_afip_code = '8' THEN aml.balance ELSE Null END) as vat_5,
-    sum(CASE WHEN btg.l10n_ar_vat_afip_code in ('0', '1', '2', '3', '7') THEN aml.balance ELSE Null END) as not_taxed,
-    sum(CASE WHEN ntg.l10n_ar_tribute_afip_code = '06' THEN aml.balance ELSE Null END) as vat_per,
-    sum(CASE WHEN ntg.l10n_ar_vat_afip_code is null and ntg.l10n_ar_tribute_afip_code != '06'
-        THEN aml.balance ELSE Null END) as other_taxes,
-    sum(aml.balance) as total
+    sum(CASE WHEN btg.l10n_ar_vat_afip_code = '5' AND move_type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN btg.l10n_ar_vat_afip_code = '5' AND move_type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+             ELSE Null END) as base_21,
+    sum(CASE WHEN ntg.l10n_ar_vat_afip_code = '5' AND move_type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN ntg.l10n_ar_vat_afip_code = '5' AND move_type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+    		 ELSE Null END) as vat_21,
+    sum(CASE WHEN btg.l10n_ar_vat_afip_code = '4' AND move_type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN btg.l10n_ar_vat_afip_code = '4' AND move_type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+             ELSE Null END) as base_10,
+    sum(CASE WHEN ntg.l10n_ar_vat_afip_code = '4' AND move_type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN ntg.l10n_ar_vat_afip_code = '4' AND move_type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+    		 ELSE Null END) as vat_10,
+    sum(CASE WHEN btg.l10n_ar_vat_afip_code = '6' AND move_type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN btg.l10n_ar_vat_afip_code = '6' AND move_type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+             ELSE Null END) as base_27,
+    sum(CASE WHEN ntg.l10n_ar_vat_afip_code = '6' AND move_type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN ntg.l10n_ar_vat_afip_code = '6' AND move_type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+    		 ELSE Null END) as vat_27,
+    sum(CASE WHEN btg.l10n_ar_vat_afip_code = '9' AND move_type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN btg.l10n_ar_vat_afip_code = '9' AND move_type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+             ELSE Null END) as base_25,
+    sum(CASE WHEN ntg.l10n_ar_vat_afip_code = '9' AND move_type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN ntg.l10n_ar_vat_afip_code = '9' AND move_type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+    		 ELSE Null END) as vat_25,
+    sum(CASE WHEN btg.l10n_ar_vat_afip_code = '8' AND move_type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN btg.l10n_ar_vat_afip_code = '8' AND move_type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+             ELSE Null END) as base_5,
+    sum(CASE WHEN ntg.l10n_ar_vat_afip_code = '8' AND move_type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN ntg.l10n_ar_vat_afip_code = '8' AND move_type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+    		 ELSE Null END) as vat_5,
+    sum(CASE WHEN btg.l10n_ar_vat_afip_code IN ('0', '1', '2', '3', '7') AND move_type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN btg.l10n_ar_vat_afip_code IN ('0', '1', '2', '3', '7') AND move_type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+             ELSE Null END) as not_taxed,
+    sum(CASE WHEN ntg.l10n_ar_tribute_afip_code = '06' AND move_type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN ntg.l10n_ar_tribute_afip_code = '06' AND move_type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+    		 ELSE Null END) as vat_per,
+    sum(CASE WHEN ntg.l10n_ar_vat_afip_code is null and ntg.l10n_ar_tribute_afip_code != '06' AND move_type IN ('out_invoice', 'out_refund') THEN aml.balance*-1 
+             WHEN ntg.l10n_ar_vat_afip_code is null and ntg.l10n_ar_tribute_afip_code != '06' AND move_type IN ('in_invoice',  'in_refund')  THEN aml.balance 
+             ELSE Null END) as other_taxes,
+    sum(CASE WHEN move_type IN ('out_invoice', 'out_refund') THEN aml.balance*-1
+             WHEN move_type IN ('in_invoice', 'in_refund') THEN aml.balance END) as total
 FROM
     account_move_line aml
 LEFT JOIN
@@ -133,7 +202,8 @@ LEFT JOIN
     ON am.l10n_ar_afip_responsibility_type_id = art.id
 WHERE
     (aml.tax_line_id is not null or btg.l10n_ar_vat_afip_code is not null)
-    and am.type in ('out_invoice', 'in_invoice', 'out_refund', 'in_refund')
+    and move_type in ('out_invoice', 'in_invoice', 'out_refund', 'in_refund')
+    and am.state = 'posted'
 GROUP BY
     am.id, art.name, rp.id, lit.id
 ORDER BY
