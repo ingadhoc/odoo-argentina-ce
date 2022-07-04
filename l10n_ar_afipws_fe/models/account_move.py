@@ -78,6 +78,44 @@ class AccountMove(models.Model):
         "- NO: sí el comprobante asociado (original) NO se encuentra rechazado por el comprador",
     )
 
+    def _get_starting_sequence(self):
+        """ If use documents then will create a new starting sequence using the document type code prefix and the
+        journal document number with a 8 padding number """
+        if self.journal_id.l10n_latam_use_documents and self.company_id.account_fiscal_country_id.code == "AR" and self.journal_id.afip_ws:
+            if self.l10n_latam_document_type_id :
+                number = int(
+                    self.journal_id.get_pyafipws_last_invoice(
+                        self.l10n_latam_document_type_id
+                    )
+                ) 
+                return self._get_formatted_sequence(number)
+        return super()._get_starting_sequence()
+
+    def _set_next_sequence(self):
+        self.ensure_one()
+        if self._name == 'account.move' and self.journal_id.l10n_latam_use_documents and self.company_id.account_fiscal_country_id.code == "AR" and self.journal_id.afip_ws:
+
+            last_sequence = self._get_last_sequence()
+            new = not last_sequence
+            if new:
+                last_sequence = self._get_last_sequence(relaxed=True) or self._get_starting_sequence()
+
+            format, format_values = self._get_sequence_format_param(last_sequence)
+            if new:
+                format_values['seq'] = int(
+                    self.journal_id.get_pyafipws_last_invoice(
+                        self.l10n_latam_document_type_id
+                    )
+                ) 
+                format_values['year'] = self[self._sequence_date_field].year % (10 ** format_values['year_length'])
+                format_values['month'] = self[self._sequence_date_field].month
+            format_values['seq'] = format_values['seq'] + 1
+
+            self[self._sequence_field] = format.format(**format_values)
+            self._compute_split_sequence()
+        else:
+            super()._set_next_sequence()
+        
     @api.depends("journal_id", "afip_auth_code")
     def _compute_validation_type(self):
         for rec in self:
