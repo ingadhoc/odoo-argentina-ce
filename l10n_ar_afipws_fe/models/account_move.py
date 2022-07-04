@@ -76,7 +76,6 @@ class AccountMove(models.Model):
         help="Solo utilizado en comprobantes MiPyMEs (FCE) del tipo débito o crédito. Debe informar:\n"
         "- SI: sí el comprobante asociado (original) se encuentra rechazado por el comprador\n"
         "- NO: sí el comprobante asociado (original) NO se encuentra rechazado por el comprador",
-    
     )
 
     @api.depends("journal_id", "afip_auth_code")
