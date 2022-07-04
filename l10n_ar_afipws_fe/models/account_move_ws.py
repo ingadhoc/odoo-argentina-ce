@@ -219,6 +219,8 @@ class AccountMove(models.Model):
                 self.company_id.vat,
                 invoice_info["CbteAsoc"].invoice_date.strftime("%Y%m%d"),
             )
+        if  invoice_info["afip_associated_period_from"] and invoice_info["afip_associated_period_to"]:
+            ws.AgregarPeriodoComprobantesAsociados(invoice_info["afip_associated_period_from"],invoice_info["afip_associated_period_to"])
         self.pyafipws_add_tax(ws)
 
     def wsbfe_invoice_add_info(self, ws, invoice_info):
@@ -417,6 +419,8 @@ class AccountMove(models.Model):
         invoice_info["moneda_ctz"] = self.l10n_ar_currency_rate
         invoice_info["CbteAsoc"] = self.get_related_invoices_data()
 
+        invoice_info["afip_associated_period_from"] = self.afip_associated_period_from
+        invoice_info["afip_associated_period_to"] = self.afip_associated_period_to
         return invoice_info
 
     def wsfe_map_invoice_info(self):
@@ -434,6 +438,9 @@ class AccountMove(models.Model):
             invoice_info["fecha_serv_hasta"] = invoice_info[
                 "fecha_serv_hasta"
             ].strftime("%Y%m%d")
+        if  invoice_info["afip_associated_period_from"] and invoice_info["afip_associated_period_to"]:
+            invoice_info["afip_associated_period_from"] = invoice_info["afip_associated_period_from"].strftime("%Y%m%d")
+            invoice_info["afip_associated_period_to"] = invoice_info["afip_associated_period_to"].strftime("%Y%m%d")
 
         return invoice_info
 
@@ -452,6 +459,11 @@ class AccountMove(models.Model):
             invoice_info["fecha_serv_hasta"] = invoice_info[
                 "fecha_serv_hasta"
             ].strftime("%Y%m%d")
+
+        if  invoice_info["afip_associated_period_from"] and invoice_info["afip_associated_period_to"]:
+            invoice_info["afip_associated_period_from"] = invoice_info["afip_associated_period_from"].strftime("%Y%m%d")
+            invoice_info["afip_associated_period_to"] = invoice_info["afip_associated_period_to"].strftime("%Y%m%d")
+
 
         invoice_info["zona"] = 1  # Nacional (la unica devuelta por afip)
         # los responsables no inscriptos no se usan mas
@@ -495,6 +507,9 @@ class AccountMove(models.Model):
                     "Country: %s" % (self.journal_id.afip_ws, country.name)
                 )
             )
+        if  invoice_info["afip_associated_period_from"] and invoice_info["afip_associated_period_to"]:
+            invoice_info["afip_associated_period_from"] = invoice_info["afip_associated_period_from"].strftime("%Y%m%d")
+            invoice_info["afip_associated_period_to"] = invoice_info["afip_associated_period_to"].strftime("%Y%m%d")
 
         if self.invoice_incoterm_id:
             invoice_info["incoterms"] = self.invoice_incoterm_id.code

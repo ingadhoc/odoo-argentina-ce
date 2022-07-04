@@ -40,6 +40,12 @@ class AccountMove(models.Model):
         string="CAE/CAI/CAEA due Date",
         states={"draft": [("readonly", False)]},
     )
+    afip_associated_period_from = fields.Date(
+        'AFIP Period from'
+    ) 
+    afip_associated_period_to = fields.Date(
+        'AFIP Period to'
+    ) 
     afip_qr_code = fields.Char(compute="_compute_qr_code", string="AFIP QR code")
     afip_message = fields.Text(
         string="AFIP Message",
@@ -70,6 +76,7 @@ class AccountMove(models.Model):
         help="Solo utilizado en comprobantes MiPyMEs (FCE) del tipo débito o crédito. Debe informar:\n"
         "- SI: sí el comprobante asociado (original) se encuentra rechazado por el comprador\n"
         "- NO: sí el comprobante asociado (original) NO se encuentra rechazado por el comprador",
+    
     )
 
     @api.depends("journal_id", "afip_auth_code")
@@ -184,6 +191,13 @@ class AccountMove(models.Model):
 
             # Preparo los datos
             invoice_info = inv.map_invoice_info(afip_ws)
+            number_parts = self._l10n_ar_get_document_number_parts(
+                    inv.l10n_latam_document_number, inv.l10n_latam_document_type_id.code
+            )
+
+            if int(invoice_info["ws_next_invoice_number"]) != int(number_parts["invoice_number"]):
+
+                raise UserError(_('Check document number. Next is %s' % invoice_info["ws_next_invoice_number"]))
 
             # Creo la factura en el ambito de pyafipws
             inv.pyafipws_create_invoice(ws, invoice_info)
@@ -230,8 +244,7 @@ class AccountMove(models.Model):
                 "CAE solicitado con exito. CAE: %s. Resultado %s"
                 % (ws.CAE, ws.Resultado)
             )
-            inv.write(
-                {
+            vals = {
                     "afip_auth_mode": "CAE",
                     "afip_auth_code": ws.CAE,
                     "afip_auth_code_due": vto,
@@ -239,8 +252,9 @@ class AccountMove(models.Model):
                     "afip_message": msg,
                     "afip_xml_request": ws.XmlRequest,
                     "afip_xml_response": ws.XmlResponse,
-                }
-            )
+            }
+
+            inv.write(vals)
             # si obtuvimos el cae hacemos el commit porque estoya no se puede
             # volver atras
             # otra alternativa seria escribir con otro cursor el cae y que
