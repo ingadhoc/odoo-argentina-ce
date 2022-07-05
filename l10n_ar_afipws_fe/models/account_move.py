@@ -40,6 +40,12 @@ class AccountMove(models.Model):
         string="CAE/CAI/CAEA due Date",
         states={"draft": [("readonly", False)]},
     )
+    afip_associated_period_from = fields.Date(
+        'AFIP Period from'
+    ) 
+    afip_associated_period_to = fields.Date(
+        'AFIP Period to'
+    ) 
     afip_qr_code = fields.Char(compute="_compute_qr_code", string="AFIP QR code")
     afip_message = fields.Text(
         string="AFIP Message",
@@ -72,6 +78,44 @@ class AccountMove(models.Model):
         "- NO: sí el comprobante asociado (original) NO se encuentra rechazado por el comprador",
     )
 
+    def _get_starting_sequence(self):
+        """ If use documents then will create a new starting sequence using the document type code prefix and the
+        journal document number with a 8 padding number """
+        if self.journal_id.l10n_latam_use_documents and self.company_id.account_fiscal_country_id.code == "AR" and self.journal_id.afip_ws:
+            if self.l10n_latam_document_type_id :
+                number = int(
+                    self.journal_id.get_pyafipws_last_invoice(
+                        self.l10n_latam_document_type_id
+                    )
+                ) 
+                return self._get_formatted_sequence(number)
+        return super()._get_starting_sequence()
+
+    def _set_next_sequence(self):
+        self.ensure_one()
+        if self._name == 'account.move' and self.journal_id.l10n_latam_use_documents and self.company_id.account_fiscal_country_id.code == "AR" and self.journal_id.afip_ws:
+
+            last_sequence = self._get_last_sequence()
+            new = not last_sequence
+            if new:
+                last_sequence = self._get_last_sequence(relaxed=True) or self._get_starting_sequence()
+
+            format, format_values = self._get_sequence_format_param(last_sequence)
+            if new:
+                format_values['seq'] = int(
+                    self.journal_id.get_pyafipws_last_invoice(
+                        self.l10n_latam_document_type_id
+                    )
+                ) 
+                format_values['year'] = self[self._sequence_date_field].year % (10 ** format_values['year_length'])
+                format_values['month'] = self[self._sequence_date_field].month
+            format_values['seq'] = format_values['seq'] + 1
+
+            self[self._sequence_field] = format.format(**format_values)
+            self._compute_split_sequence()
+        else:
+            super()._set_next_sequence()
+        
     @api.depends("journal_id", "afip_auth_code")
     def _compute_validation_type(self):
         for rec in self:
@@ -184,6 +228,13 @@ class AccountMove(models.Model):
 
             # Preparo los datos
             invoice_info = inv.map_invoice_info(afip_ws)
+            number_parts = self._l10n_ar_get_document_number_parts(
+                    inv.l10n_latam_document_number, inv.l10n_latam_document_type_id.code
+            )
+
+            if int(invoice_info["ws_next_invoice_number"]) != int(number_parts["invoice_number"]):
+
+                raise UserError(_('Check document number. Next is %s' % invoice_info["ws_next_invoice_number"]))
 
             # Creo la factura en el ambito de pyafipws
             inv.pyafipws_create_invoice(ws, invoice_info)
@@ -230,8 +281,7 @@ class AccountMove(models.Model):
                 "CAE solicitado con exito. CAE: %s. Resultado %s"
                 % (ws.CAE, ws.Resultado)
             )
-            inv.write(
-                {
+            vals = {
                     "afip_auth_mode": "CAE",
                     "afip_auth_code": ws.CAE,
                     "afip_auth_code_due": vto,
@@ -239,8 +289,9 @@ class AccountMove(models.Model):
                     "afip_message": msg,
                     "afip_xml_request": ws.XmlRequest,
                     "afip_xml_response": ws.XmlResponse,
-                }
-            )
+            }
+
+            inv.write(vals)
             # si obtuvimos el cae hacemos el commit porque estoya no se puede
             # volver atras
             # otra alternativa seria escribir con otro cursor el cae y que
