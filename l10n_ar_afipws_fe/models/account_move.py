@@ -42,10 +42,10 @@ class AccountMove(models.Model):
     )
     afip_associated_period_from = fields.Date(
         'AFIP Period from'
-    ) 
+    )
     afip_associated_period_to = fields.Date(
         'AFIP Period to'
-    ) 
+    )
     afip_qr_code = fields.Char(compute="_compute_qr_code", string="AFIP QR code")
     afip_message = fields.Text(
         string="AFIP Message",
@@ -87,7 +87,7 @@ class AccountMove(models.Model):
                     self.journal_id.get_pyafipws_last_invoice(
                         self.l10n_latam_document_type_id
                     )
-                ) 
+                )
                 return self._get_formatted_sequence(number)
         return super()._get_starting_sequence()
 
@@ -106,7 +106,7 @@ class AccountMove(models.Model):
                     self.journal_id.get_pyafipws_last_invoice(
                         self.l10n_latam_document_type_id
                     )
-                ) 
+                )
                 format_values['year'] = self[self._sequence_date_field].year % (10 ** format_values['year_length'])
                 format_values['month'] = self[self._sequence_date_field].month
             format_values['seq'] = format_values['seq'] + 1
@@ -115,7 +115,7 @@ class AccountMove(models.Model):
             self._compute_split_sequence()
         else:
             super()._set_next_sequence()
-        
+
     @api.depends("journal_id", "afip_auth_code")
     def _compute_validation_type(self):
         for rec in self:
@@ -185,14 +185,14 @@ class AccountMove(models.Model):
 
     def _post(self, soft=True):
         res = super()._post(soft)
-        request_caea_invoices = self.filtered(
+        request_cae_invoices = self.filtered(
             lambda x: x.company_id.country_id.code == "AR"
             and x.is_invoice()
             and x.move_type in ["out_invoice", "out_refund"]
             and x.journal_id.afip_ws
             and not x.afip_auth_code
         )
-        request_caea_invoices.do_pyafipws_request_cae()
+        request_cae_invoices.do_pyafipws_request_cae()
         return res
 
     def do_pyafipws_request_cae(self):

@@ -24,13 +24,13 @@ class ResConfigSettings(models.TransientModel):
     )
 
     def afip_red_button(self):
-        self.env["l10n_ar.afipws.caea.log"].create(
+        """self.env["l10n_ar.afipws.caea.log"].create(
             [{"event": "start_caea", "user_id": self.env.user.id}]
-        )
+        )"""
         self.env["ir.config_parameter"].set_param("afip.ws.caea.state", "active")
 
     def afip_green_button(self):
-        self.env["l10n_ar.afipws.caea.log"].create(
+        """self.env["l10n_ar.afipws.caea.log"].create(
             [{"event": "end_caea", "user_id": self.env.user.id}]
-        )
+        )"""
         self.env["ir.config_parameter"].set_param("afip.ws.caea.state", "inactive")
