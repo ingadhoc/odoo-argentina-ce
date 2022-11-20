@@ -22,7 +22,7 @@
             <field name="arch" type="xml">
                 <form string="description">
                     <header>
-                        <button name="action_request_caea" states="draft" string="Request CAEA" type="object"/>
+                        <!-- <button name="action_request_caea" states="draft" string="Request CAEA" type="object"/> -->
                         <field name="state" widget="statusbar"/>
                     </header>
                     <sheet>
@@ -61,7 +61,7 @@
                             <page name="journals" string="Autorized CAEA journals">
                                 <group>
                                     <button name="action_get_caea_pos" states="active" string="Update autorized CAEA pos" type="object"/>
-                                    <button name="report_no_invoices" states="active" string="report no invoices" type="object"/>
+                                    <!-- <button name="report_no_invoices" states="active" string="report no invoices" type="object"/> -->
                                 </group>
                                 <group>
                                     <span>
