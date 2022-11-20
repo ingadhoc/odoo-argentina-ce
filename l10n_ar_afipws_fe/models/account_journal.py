@@ -30,10 +30,15 @@ class AccountJournal(models.Model):
         res.insert(5, ("FEEWS", _("Export Voucher - Web Service")))
         return res
 
+
+    @api.model
+    def _get_type_mapping(self):
+        return {"RAW_MAW": "wsfe", "FEEWS": "wsfex", "BFEWS": "wsbfe"}
+
     @api.depends("l10n_ar_afip_pos_system")
     def _compute_afip_ws(self):
         """Depending on AFIP POS System selected set the proper AFIP WS"""
-        type_mapping = {"RAW_MAW": "wsfe", "FEEWS": "wsfex", "BFEWS": "wsbfe"}
+        type_mapping = self._get_type_mapping()
         for rec in self:
             rec.afip_ws = type_mapping.get(rec.l10n_ar_afip_pos_system, False)
 
