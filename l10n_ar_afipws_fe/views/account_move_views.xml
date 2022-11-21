@@ -20,12 +20,11 @@
                 <label for="afip_auth_code" string="AFIP associated period" attrs="{'invisible': [('move_type', 'not in', ['out_refund'])]}"/>
                 <div class="oe_inline"  attrs="{'invisible': [('move_type', 'not in', ['out_refund'])]}">
                         <field name="afip_associated_period_from" class="oe_inline" placeholder="Date From"/> -
-                        <field name="afip_associated_period_to" class="oe_inline" placeholder="Date to"/> 
+                        <field name="afip_associated_period_to" class="oe_inline" placeholder="Date to"/>
                 </div>
 
             </field>
             <notebook>
-                
                 <page string="AFIP" name="afip" attrs="{'invisible': [('move_type', 'not in', ['out_invoice', 'out_refund'])]}">
                     <group>
                         <field name='validation_type' invisible="1"/>
