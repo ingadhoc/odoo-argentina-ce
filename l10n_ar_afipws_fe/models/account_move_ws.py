@@ -139,32 +139,9 @@ class AccountMove(models.Model):
             return _("AFIP WS %s not implemented") % afip_ws
 
     def pyafipws_add_tax(self, ws):
-        vat_taxable = self.env["account.move.line"]
-        for line in self.line_ids:
-            if (
-                any(
-                    tax.tax_group_id.l10n_ar_vat_afip_code
-                    and tax.tax_group_id.l10n_ar_vat_afip_code not in ["0", "1", "2"]
-                    for tax in line.tax_line_id
-                )
-                and line.price_subtotal
-            ):
-                vat_taxable |= line
-        for vat in vat_taxable:
-            ws.AgregarIva(
-                vat.tax_line_id.tax_group_id.l10n_ar_vat_afip_code,
-                "%.2f"
-                % sum(
-                    self.invoice_line_ids.filtered(
-                        lambda x: x.tax_ids.filtered(
-                            lambda y: y.tax_group_id.l10n_ar_vat_afip_code
-                            == vat.tax_line_id.tax_group_id.l10n_ar_vat_afip_code
-                        )
-                    ).mapped("price_subtotal")
-                ),
-                # "%.2f" % abs(vat.base_amount),
-                "%.2f" % vat.price_subtotal,
-            )
+        vat_items = self._get_vat()
+        for item in vat_items:
+            ws.AgregarIva(item['Id'], "%.2f" % item['BaseImp'], "%.2f" % item['Importe'])
 
         not_vat_taxes = self.line_ids.filtered(
             lambda x: x.tax_line_id
