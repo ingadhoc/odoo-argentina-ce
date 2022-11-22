@@ -9,22 +9,24 @@
             <field name="arch" type="xml">
                 <xpath expr="//div[@id='invoicing_settings']" position="inside">
                     <div class="col-12 col-lg-6 o_setting_box">
-                        <div class="o_setting_left_pane"/>
+                        <div class="o_setting_left_pane">
+                            <field name="use_caea"/>
+                        </div>
                         <div class="o_setting_right_pane">
                             <span class="o_form_label">CAEA</span>
                             <div class="text-muted">AFIP CAEA state
                                     </div>
-                            <div class="mt8">
-                                
-                                <button style="background:#FF0000;color:#FFF;   " attrs="{'invisible':[('afip_ws_caea_state','!=','inactive')]}" name="afip_red_button" string="Active CAEA" type="object"/>
+                            <div class="mt8" attrs="{'invisible': [('use_caea', '=', False)]}">
+                                <button style="background:#00FF00;color:#FFF;" attrs="{'invisible':[('afip_ws_caea_state','=','inactive')]}" name="afip_green_button" string="Go normal mode" type="object"/>
+                                <button style="background:#FF0000;color:#FFF;" attrs="{'invisible':[('afip_ws_caea_state','!=','inactive')]}" name="afip_red_button" string="Go contingency mode" type="object"/>
                                 <button class="btn-link" icon="fa-arrow-right" name="%(l10n_ar_afipws_caea.action_caea)d" string="List CAEA" type="action"/>
                             </div>
 
-                            <div class="mt8">
+                            <div class="mt8" attrs="{'invisible': [('use_caea', '=', False)]}">
                                 <label for="afip_ws_caea_state"/>
                                 <field class="font-weight-bold" attrs="{'readonly':True}" name="afip_ws_caea_state"/>
                             </div>
-                            <div class="mt8">
+                            <div class="mt8" attrs="{'invisible': [('use_caea', '=', False)]}">
                                 <label for="afip_ws_caea_timeout"/>
                                 <field name="afip_ws_caea_timeout" widget="float_time"/>
                             </div>

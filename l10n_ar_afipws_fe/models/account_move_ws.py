@@ -352,7 +352,7 @@ class AccountMove(models.Model):
             self.l10n_ar_afip_concept
         )
 
-        invoice_info["fecha_cbte"] = self.invoice_date
+        invoice_info["fecha_cbte"] = self.invoice_date or fields.Date.today()
         invoice_info["mipyme_fce"] = int(invoice_info["doc_afip_code"]) in [
             201,
             206,
@@ -393,7 +393,7 @@ class AccountMove(models.Model):
         invoice_info["imp_trib"] = str("%.2f" % amounts["not_vat_taxes_amount"])
         invoice_info["imp_op_ex"] = str("%.2f" % amounts["vat_exempt_base_amount"])
         invoice_info["moneda_id"] = self.currency_id.l10n_ar_afip_code
-        invoice_info["moneda_ctz"] = self.l10n_ar_currency_rate
+        invoice_info["moneda_ctz"] = self.l10n_ar_currency_rate or 1
         invoice_info["CbteAsoc"] = self.get_related_invoices_data()
 
         invoice_info["afip_associated_period_from"] = self.afip_associated_period_from

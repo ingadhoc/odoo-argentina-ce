@@ -8,7 +8,7 @@
 				<header/>
 				<sheet>
 					<h1>
-						<field domain="[('afip_ws','!=',False)]" name="journal_id"/>
+						<field name="journal_id"/>
 					</h1>
 					<group>
 						<field name="afip_ws_caea_state"/>
@@ -19,8 +19,8 @@
 					</group>
 				</sheet>
 				<footer>
-					<button   attrs="{'invisible':[('status','!=',False)]}" name="afip_red_button" string="Active CAEA" type="object"/>
-					<button  name="afip_green_button" string="Return to CAE" type="object"/>
+					<button   attrs="{'invisible':[('status','!=',False)]}" name="afip_red_button" string="Go contingency mode" type="object"/>
+					<button  name="afip_green_button" string="Go normal mode" type="object"/>
 				</footer>
 			</form>
 		</field>

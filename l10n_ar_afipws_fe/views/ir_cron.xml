@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="ir_cron_asynchronous_post" model="ir.cron">
+        <field name="name">Invoice: Post draft entries asynchronous</field>
+        <field name="interval_number">5</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+        <field name="nextcall" eval="(DateTime.now().replace(hour=2, minute=0) + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')" />
+        <field name="doall" eval="False"/>
+        <field name="model_id" ref="model_account_move"/>
+        <field name="code">model.cron_asynchronous_post()</field>
+        <field name="state">code</field>
+        <field name="active" eval="False"/>
+    </record>
+</odoo>

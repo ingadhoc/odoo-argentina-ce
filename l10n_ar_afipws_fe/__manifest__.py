@@ -18,6 +18,8 @@
         "views/report_invoice.xml",
         "views/res_config_settings.xml",
         "views/menuitem.xml",
+        "views/ir_cron.xml",
+        "wizard/account_validate_account_move.xml",
     ],
     "demo": [],
     "images": [],

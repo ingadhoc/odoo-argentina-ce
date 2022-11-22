@@ -1,4 +1,4 @@
-from odoo import fields, models, _
+from odoo import fields, models, api, _
 from odoo.exceptions import UserError
 
 import logging
@@ -13,6 +13,12 @@ class AccountJournal(models.Model):
         "account.journal",
         string="Caea journal",
     )
+
+    @api.model
+    def _get_type_mapping(self):
+        vals = super()._get_type_mapping()
+        vals["CAEA"] = "wsfe"
+        return vals
 
     def _get_l10n_ar_afip_pos_types_selection(self):
         """Add more options to the selection field AFIP POS System, re order options by common use"""

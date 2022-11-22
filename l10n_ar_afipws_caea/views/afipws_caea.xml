@@ -22,7 +22,7 @@
             <field name="arch" type="xml">
                 <form string="description">
                     <header>
-                        <button name="action_request_caea" states="draft" string="Request CAEA" type="object"/>
+                        <!-- <button name="action_request_caea" states="draft" string="Request CAEA" type="object"/> -->
                         <field name="state" widget="statusbar"/>
                     </header>
                     <sheet>
@@ -46,34 +46,30 @@
                                     <button name="action_send_invoices" states="active" string="Send invoices" type="object"/>
                                 </group>
                                 <group>
-                                    <span>
-                                        <field attrs="{'readonly':True}" name="move_ids">
-                                            <tree string="invoices">
-                                                <field invisible="True" name="id"/>
-                                                <field name="name"/>
-                                                <field name="caea_post_datetime"/>
-                                                <field name="l10n_ar_afip_caea_reported"/>
-                                            </tree>
-                                        </field>
-                                    </span>
+                                    <field attrs="{'readonly':True}" name="move_ids">
+                                        <tree string="invoices">
+                                            <field invisible="True" name="id"/>
+                                            <field name="name"/>
+                                            <field name="caea_post_datetime"/>
+                                            <field name="l10n_ar_afip_caea_reported"/>
+                                        </tree>
+                                    </field>
                                 </group>
                             </page>
                             <page name="journals" string="Autorized CAEA journals">
                                 <group>
                                     <button name="action_get_caea_pos" states="active" string="Update autorized CAEA pos" type="object"/>
-                                    <button name="report_no_invoices" states="active" string="report no invoices" type="object"/>
+                                    <!-- <button name="report_no_invoices" states="active" string="report no invoices" type="object"/> -->
                                 </group>
                                 <group>
-                                    <span>
-                                        <field attrs="{'readonly':True}" name="journal_ids">
-                                            <tree string="invoices">
-                                                <field invisible="True" name="id"/>
-                                                <field name="name"/>
-                                                <field name="l10n_ar_afip_pos_number"/>
-                                                <field name="l10n_ar_afip_pos_system"/>
-                                            </tree>
-                                        </field>
-                                    </span>
+                                    <field attrs="{'readonly':True}" name="journal_ids">
+                                        <tree string="invoices">
+                                            <field invisible="True" name="id"/>
+                                            <field name="name"/>
+                                            <field name="l10n_ar_afip_pos_number"/>
+                                            <field name="l10n_ar_afip_pos_system"/>
+                                        </tree>
+                                    </field>
                                 </group>
                             </page>
                         </notebook>

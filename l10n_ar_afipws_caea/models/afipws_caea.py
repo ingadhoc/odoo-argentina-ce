@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 from odoo import models, fields, api
 from datetime import datetime
@@ -15,7 +14,7 @@ class AfipwsCaea(models.Model):
     _inherit = ["mail.thread", "mail.activity.mixin"]
 
     _sql_constraints = [
-        ("unique_caea", "unique (company_id,name,order)", "CAEA already exists!")
+        ("name_uniq", "unique(name)", "CAEA already exists!")
     ]
     state = fields.Selection(
         [("draft", "draft"), ("active", "active"), ("reported", "reported")],
@@ -133,37 +132,30 @@ class AfipwsCaea(models.Model):
                         - relativedelta(days=1)
                     )
 
-    @api.model
-    def create(self, values):
-        """exist = self.search([
-            ('company_id', '=', values['company_id']),
-            ('name', '=', values['name']),
-            ('order', '=', values['order'])
-        ])
-        if len(exist):
-            return"""
+    @api.model_create_multi
+    def create(self, vals_list):
         self.env["ir.config_parameter"].set_param("afip.ws.caea.state", "inactive")
+        _logger.info(vals_list)
 
-        company_id = self.env["res.company"].search([("id", "=", values["company_id"])])
-        afip_ws = self.company_id.get_caea_ws()
+        for vals in vals_list:
+            if 'name' not in vals:
+                company_id = self.env["res.company"].search([("id", "=", vals["company_id"])])
+                afip_ws = company_id.get_caea_ws()
+                ws = company_id.get_connection(afip_ws).connect()
+                caea = ws.CAEAConsultar(vals["period"], vals["order"])
 
-        ws = company_id.get_connection(afip_ws).connect()
-        caea = ws.CAEAConsultar(values["period"], values["order"])
-        # raise ValidationError(
-        #        _('The Common Name must be lower than 50 characters long'))
+                # _logger.info("ws.ErrMsg " % ws.ErrMsg)
+                if caea == "":
+                    caea = ws.CAEASolicitar(vals["period"], vals["order"])
+                    _logger.info(ws.ErrMsg)
+                    _logger.info(caea)
 
-        # _logger.info("ws.ErrMsg " % ws.ErrMsg)
-        if caea == "":
-            caea = ws.CAEASolicitar(values["period"], values["order"])
-            _logger.info(ws.ErrMsg)
-            _logger.info(caea)
-
-        values["name"] = caea
-        values["afip_observations"] = ws.Obs
-        values["process_deadline"] = datetime.strptime(ws.FchTopeInf, "%Y%m%d")
-        values["state"] = "active"
-        # TODO: FchProceso
-        return super().create(values)
+                vals["name"] = caea
+                vals["afip_observations"] = ws.Obs
+                vals["process_deadline"] = datetime.strptime(ws.FchTopeInf, "%Y%m%d")
+                vals["state"] = "active"
+                # TODO: FchProceso
+        return super().create(vals_list)
 
     def action_send_invoices(self):
         self.env["ir.config_parameter"].set_param("afip.ws.caea.state", "inactive")
