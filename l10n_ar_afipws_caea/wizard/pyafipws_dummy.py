@@ -19,9 +19,10 @@ class pyafipwsDummy(models.TransientModel):
             journal = self.env["account.journal"].search(
                 [("l10n_ar_afip_pos_system", "=", "RAW_MAW")], limit=1
             )
+            _logger.info(journal)
             if len(journal):
                 res["journal_id"] = journal.id
-
+        _logger.info(res)
         return res
 
     def _default_afip_ws_caea_state(self):
@@ -64,7 +65,7 @@ class pyafipwsDummy(models.TransientModel):
     @api.onchange("journal_id")
     def _onchange_journal_id(self):
         afip_ws = self.journal_id.afip_ws
-        if not afip_ws:
+        if self.journal_id and not afip_ws:
             raise UserError(_("No AFIP WS selected"))
         try:
             ws = self.journal_id.company_id.get_connection(afip_ws).connect()

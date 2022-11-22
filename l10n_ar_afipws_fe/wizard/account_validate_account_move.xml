@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="validate_account_move_view" model="ir.ui.view">
+        <field name="name">Post Journal Entries</field>
+        <field name="model">validate.account.move</field>
+        <field name="inherit_id" ref="account.validate_account_move_view"></field>
+        <field name="arch" type="xml">
+            <field name="force_post" position="after">
+                <field name="async_post"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

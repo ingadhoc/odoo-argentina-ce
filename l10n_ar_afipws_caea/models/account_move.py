@@ -41,32 +41,20 @@ class AccountMove(models.Model):
                 if len(inv.journal_id.caea_journal_id):
                     inv.journal_id = inv.journal_id.caea_journal_id.id
 
-        res = super()._post(soft)
-        return res
+        return super()._post(soft)
 
     def do_pyafipws_request_cae(self):
-        caea_state = (
-            self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("afip.ws.caea.state", "inactive")
-        )
-        if caea_state == "inactive":
-            return super().do_pyafipws_request_cae()
-        elif caea_state == "active":
-            return self.do_pyafipws_request_caea()
+        caea_inv = self.filtered(lambda x: x.journal_id.l10n_ar_afip_pos_system == "CAEA")
+        caea_inv.do_pyafipws_request_caea()
+        return super(AccountMove, self - caea_inv).do_pyafipws_request_cae()
 
     def do_pyafipws_request_caea(self):
         for inv in self:
-            if inv.journal_id.l10n_ar_afip_pos_system != "CAEA":
-                continue
             # Ignore invoices with cae (do not check date)
             if inv.afip_auth_code:
                 continue
 
             afip_ws = inv.journal_id.afip_ws
-            if not afip_ws:
-                continue
-
             # Ignore invoice if not ws on point of sale
             if not afip_ws:
                 raise UserError(
@@ -166,12 +154,12 @@ class AccountMove(models.Model):
             # escribe aca si no hay errores
             _logger.info(
                 "CAEA solicitado con exito. %s. Resultado %s"
-                % (afip_auth_code, ws.Resultado)
+                % (ws.CAEA, ws.Resultado)
             )
-            if hasattr(ws, "Vencimiento"):
-                vto = datetime.strptime(ws.Vencimiento, "%Y%m%d").date()
-            if hasattr(ws, "FchVencCAE"):
-                vto = datetime.strptime(ws.FchVencCAE, "%Y%m%d").date()
+
+            if hasattr(ws, "CbteFch"):
+                vto = datetime.strptime(ws.CbteFch, "%Y%m%d").date()
+
 
             inv.write(
                 {
@@ -185,3 +173,32 @@ class AccountMove(models.Model):
             )
 
             inv._cr.commit()
+
+    def wsfe_pyafipws_caea_create_invoice(self, ws, invoice_info):
+        ws.CrearFactura(
+            invoice_info["concepto"],
+            invoice_info["tipo_doc"],
+            invoice_info["nro_doc"],
+            invoice_info["doc_afip_code"],
+            invoice_info["pos_number"],
+            invoice_info["cbt_desde"],
+            invoice_info["cbt_hasta"],
+            invoice_info["imp_total"],
+            invoice_info["imp_tot_conc"],
+            invoice_info["imp_neto"],
+            invoice_info["imp_iva"],
+            invoice_info["imp_trib"],
+            invoice_info["imp_op_ex"],
+            invoice_info["fecha_cbte"],
+            invoice_info["fecha_venc_pago"],
+            invoice_info["fecha_serv_desde"],
+            invoice_info["fecha_serv_hasta"],
+            invoice_info["moneda_id"],
+            invoice_info["moneda_ctz"],
+            invoice_info["caea"],
+            invoice_info["CbteFchHsGen"],
+        )
+
+
+    def wsfe_caea_request_autorization(self, ws, afip_ws):
+        ws.CAEARegInformativo()
