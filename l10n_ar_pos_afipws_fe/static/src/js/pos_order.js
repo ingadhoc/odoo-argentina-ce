@@ -7,13 +7,11 @@ odoo.define('l10n_ar_pos_afipws_fe.pos_order',function(require){
     this.afip_invoice_data = {};
 
     models.PosModel = models.PosModel.extend({
-          
 
             _flush_orders: function(orders, options) {
                 let self = this;
                 console.log(self);
                 let result;
-  
                 result =  SuperPosModel._flush_orders.call(this,orders, options);
                 result.then(function(order_server_id){
                     if (options['to_invoice']){
@@ -45,7 +43,7 @@ odoo.define('l10n_ar_pos_afipws_fe.pos_order',function(require){
                                         ...order_ids[line],
                                         ...order_data
 
-                                    } 
+                                    }
                                 }
                             });
                             console.log(order_ids);
@@ -77,7 +75,6 @@ odoo.define('l10n_ar_pos_afipws_fe.pos_order',function(require){
             return receipt
         }
    });
-     
+
 });
 
-    
