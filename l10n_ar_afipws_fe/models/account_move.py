@@ -241,7 +241,7 @@ class AccountMove(models.Model):
             else:
                 fecha_serv_desde = fecha_serv_hasta = None
 
-            amounts = self._l10n_ar_get_amounts()
+            amounts = inv._l10n_ar_get_amounts()
             # invoice amount totals:
             imp_total = str("%.2f" % inv.amount_total)
             # ImpTotConc es el iva no gravado
