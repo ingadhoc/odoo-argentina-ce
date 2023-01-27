@@ -232,7 +232,173 @@ class AccountMove(models.Model):
                     inv.l10n_latam_document_number, inv.l10n_latam_document_type_id.code
             )
 
+<<<<<<< HEAD
             if int(invoice_info["ws_next_invoice_number"]) != int(number_parts["invoice_number"]):
+||||||| parent of 8658e76 (temp)
+            mipyme_fce = int(doc_afip_code) in [201, 206, 211]
+            # due date only for concept "services" and mipyme_fce
+            if int(concepto) != 1 and int(doc_afip_code) not in [202, 203, 207, 208, 212, 213] or mipyme_fce:
+                fecha_venc_pago = inv.invoice_date_due or inv.invoice_date
+                if afip_ws != 'wsmtxca':
+                    fecha_venc_pago = fecha_venc_pago.strftime('%Y%m%d')
+            else:
+                fecha_venc_pago = None
+
+            # fecha de servicio solo si no es 1
+            if int(concepto) != 1:
+                fecha_serv_desde = inv.l10n_ar_afip_service_start
+                fecha_serv_hasta = inv.l10n_ar_afip_service_end
+                if afip_ws != 'wsmtxca':
+                    fecha_serv_desde = fecha_serv_desde.strftime('%Y%m%d')
+                    fecha_serv_hasta = fecha_serv_hasta.strftime('%Y%m%d')
+            else:
+                fecha_serv_desde = fecha_serv_hasta = None
+
+            amounts = self._l10n_ar_get_amounts()
+            # invoice amount totals:
+            imp_total = str("%.2f" % inv.amount_total)
+            # ImpTotConc es el iva no gravado
+            imp_tot_conc = str("%.2f" % amounts['vat_untaxed_base_amount'])
+            # tal vez haya una mejor forma, la idea es que para facturas c
+            # no se pasa iva. Probamos hacer que vat_taxable_amount
+            # incorpore a los imp cod 0, pero en ese caso termina reportando
+            # iva y no lo queremos
+            if inv.l10n_latam_document_type_id.l10n_ar_letter == 'C':
+                imp_neto = str("%.2f" % inv.amount_untaxed)
+            else:
+                imp_neto = str("%.2f" % amounts['vat_taxable_amount'])
+            imp_iva = str("%.2f" % amounts['vat_amount'])
+            # se usaba para wsca..
+            # imp_subtotal = str("%.2f" % inv.amount_untaxed)
+            imp_trib = str("%.2f" % amounts['not_vat_taxes_amount'])
+            imp_op_ex = str("%.2f" % amounts['vat_exempt_base_amount'])
+            moneda_id = inv.currency_id.l10n_ar_afip_code
+            moneda_ctz = inv.l10n_ar_currency_rate
+
+            CbteAsoc = inv.get_related_invoices_data()
+
+            # create the invoice internally in the helper
+            if afip_ws == 'wsfe':
+                ws.CrearFactura(
+                    concepto, tipo_doc, nro_doc, doc_afip_code, pos_number,
+                    cbt_desde, cbt_hasta, imp_total, imp_tot_conc, imp_neto,
+                    imp_iva,
+                    imp_trib, imp_op_ex, fecha_cbte, fecha_venc_pago,
+                    fecha_serv_desde, fecha_serv_hasta,
+                    moneda_id, moneda_ctz
+                )
+            # elif afip_ws == 'wsmtxca':
+            #     obs_generales = inv.comment
+            #     ws.CrearFactura(
+            #         concepto, tipo_doc, nro_doc, doc_afip_code, pos_number,
+            #         cbt_desde, cbt_hasta, imp_total, imp_tot_conc, imp_neto,
+            #         imp_subtotal,   # difference with wsfe
+            #         imp_trib, imp_op_ex, fecha_cbte, fecha_venc_pago,
+            #         fecha_serv_desde, fecha_serv_hasta,
+            #         moneda_id, moneda_ctz,
+            #         obs_generales   # difference with wsfe
+            #     )
+            elif afip_ws == 'wsfex':
+                # # foreign trade data: export permit, country code, etc.:
+                if inv.invoice_incoterm_id:
+                    incoterms = inv.invoice_incoterm_id.code
+                    incoterms_ds = inv.invoice_incoterm_id.name
+                    # máximo de 20 caracteres admite
+                    incoterms_ds = incoterms_ds and incoterms_ds[:20]
+                else:
+                    incoterms = incoterms_ds = None
+                # por lo que verificamos, se pide permiso existente solo
+                # si es tipo expo 1 y es factura (codigo 19), para todo el
+                # resto pasamos cadena vacia
+                if int(doc_afip_code) == 19 and tipo_expo == 1:
+                    # TODO investigar si hay que pasar si ("S")
+                    permiso_existente = "N"
+                else:
+                    permiso_existente = ""
+                obs_generales = inv.narration
+=======
+            mipyme_fce = int(doc_afip_code) in [201, 206, 211]
+            # due date only for concept "services" and mipyme_fce
+            if int(concepto) != 1 and int(doc_afip_code) not in [202, 203, 207, 208, 212, 213] or mipyme_fce:
+                fecha_venc_pago = inv.invoice_date_due or inv.invoice_date
+                if afip_ws != 'wsmtxca':
+                    fecha_venc_pago = fecha_venc_pago.strftime('%Y%m%d')
+            else:
+                fecha_venc_pago = None
+
+            # fecha de servicio solo si no es 1
+            if int(concepto) != 1:
+                fecha_serv_desde = inv.l10n_ar_afip_service_start
+                fecha_serv_hasta = inv.l10n_ar_afip_service_end
+                if afip_ws != 'wsmtxca':
+                    fecha_serv_desde = fecha_serv_desde.strftime('%Y%m%d')
+                    fecha_serv_hasta = fecha_serv_hasta.strftime('%Y%m%d')
+            else:
+                fecha_serv_desde = fecha_serv_hasta = None
+
+            amounts = inv._l10n_ar_get_amounts()
+            # invoice amount totals:
+            imp_total = str("%.2f" % inv.amount_total)
+            # ImpTotConc es el iva no gravado
+            imp_tot_conc = str("%.2f" % amounts['vat_untaxed_base_amount'])
+            # tal vez haya una mejor forma, la idea es que para facturas c
+            # no se pasa iva. Probamos hacer que vat_taxable_amount
+            # incorpore a los imp cod 0, pero en ese caso termina reportando
+            # iva y no lo queremos
+            if inv.l10n_latam_document_type_id.l10n_ar_letter == 'C':
+                imp_neto = str("%.2f" % inv.amount_untaxed)
+            else:
+                imp_neto = str("%.2f" % amounts['vat_taxable_amount'])
+            imp_iva = str("%.2f" % amounts['vat_amount'])
+            # se usaba para wsca..
+            # imp_subtotal = str("%.2f" % inv.amount_untaxed)
+            imp_trib = str("%.2f" % amounts['not_vat_taxes_amount'])
+            imp_op_ex = str("%.2f" % amounts['vat_exempt_base_amount'])
+            moneda_id = inv.currency_id.l10n_ar_afip_code
+            moneda_ctz = inv.l10n_ar_currency_rate
+
+            CbteAsoc = inv.get_related_invoices_data()
+
+            # create the invoice internally in the helper
+            if afip_ws == 'wsfe':
+                ws.CrearFactura(
+                    concepto, tipo_doc, nro_doc, doc_afip_code, pos_number,
+                    cbt_desde, cbt_hasta, imp_total, imp_tot_conc, imp_neto,
+                    imp_iva,
+                    imp_trib, imp_op_ex, fecha_cbte, fecha_venc_pago,
+                    fecha_serv_desde, fecha_serv_hasta,
+                    moneda_id, moneda_ctz
+                )
+            # elif afip_ws == 'wsmtxca':
+            #     obs_generales = inv.comment
+            #     ws.CrearFactura(
+            #         concepto, tipo_doc, nro_doc, doc_afip_code, pos_number,
+            #         cbt_desde, cbt_hasta, imp_total, imp_tot_conc, imp_neto,
+            #         imp_subtotal,   # difference with wsfe
+            #         imp_trib, imp_op_ex, fecha_cbte, fecha_venc_pago,
+            #         fecha_serv_desde, fecha_serv_hasta,
+            #         moneda_id, moneda_ctz,
+            #         obs_generales   # difference with wsfe
+            #     )
+            elif afip_ws == 'wsfex':
+                # # foreign trade data: export permit, country code, etc.:
+                if inv.invoice_incoterm_id:
+                    incoterms = inv.invoice_incoterm_id.code
+                    incoterms_ds = inv.invoice_incoterm_id.name
+                    # máximo de 20 caracteres admite
+                    incoterms_ds = incoterms_ds and incoterms_ds[:20]
+                else:
+                    incoterms = incoterms_ds = None
+                # por lo que verificamos, se pide permiso existente solo
+                # si es tipo expo 1 y es factura (codigo 19), para todo el
+                # resto pasamos cadena vacia
+                if int(doc_afip_code) == 19 and tipo_expo == 1:
+                    # TODO investigar si hay que pasar si ("S")
+                    permiso_existente = "N"
+                else:
+                    permiso_existente = ""
+                obs_generales = inv.narration
+>>>>>>> 8658e76 (temp)
 
                 raise UserError(_('Check document number. Next is %s' % invoice_info["ws_next_invoice_number"]))
 
