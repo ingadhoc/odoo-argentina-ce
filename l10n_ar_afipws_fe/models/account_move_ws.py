@@ -343,12 +343,13 @@ class AccountMove(models.Model):
 
     def base_map_invoice_info(self):
         journal = self.journal_id
+        pos_number = self._context.get('default_l10n_ar_afip_pos_number', journal.l10n_ar_afip_pos_number)
         invoice_info = {}
 
         invoice_info["commercial_partner"] = self.commercial_partner_id
         invoice_info["country"] = invoice_info["commercial_partner"].country_id
         invoice_info["journal"] = self.journal_id
-        invoice_info["pos_number"] = journal.l10n_ar_afip_pos_number
+        invoice_info["pos_number"] = pos_number
         invoice_info["doc_afip_code"] = self.l10n_latam_document_type_id.code
         invoice_info["ws_next_invoice_number"] = (
             int(

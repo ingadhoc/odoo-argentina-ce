@@ -19,7 +19,7 @@ class AccountJournalWs(models.Model):
         self.ensure_one()
         company = self.company_id
         afip_ws = self.afip_ws
-
+        pos_number = self._context.get('default_l10n_ar_afip_pos_number', self.l10n_ar_afip_pos_number)
         if not afip_ws:
             return _("No AFIP WS selected on point of sale %s") % (self.name)
         ws = company.get_connection(afip_ws).connect()
@@ -27,7 +27,7 @@ class AccountJournalWs(models.Model):
         try:
             if hasattr(self, "%s_get_pyafipws_last_invoice" % afip_ws):
                 last = getattr(self, "%s_get_pyafipws_last_invoice" % afip_ws)(
-                    self.l10n_ar_afip_pos_number, document_type, ws
+                    pos_number, document_type, ws
                 )
             else:
                 return _("AFIP WS %s not implemented") % afip_ws
