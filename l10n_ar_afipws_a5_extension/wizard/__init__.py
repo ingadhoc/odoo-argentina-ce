@@ -1,0 +1,1 @@
+from . import res_partner_update_from_padron
