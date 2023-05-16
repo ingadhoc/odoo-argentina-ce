@@ -24,17 +24,25 @@
                 </div>
 
             </field>
+            <field name="l10n_latam_document_number" position="after">
+                <label for="afip_auth_code" string="AFIP authorization"/>
+                <div class="oe_inline">
+                    <field name="afip_auth_mode" class="oe_inline"/>
+                    <field name="afip_auth_code" class="oe_inline" attrs="{'required': [('afip_auth_mode', '!=', False)]}" placeholder="Code"/> - <field name='afip_result' attrs="{'invisible': [('afip_result', '=', False)]}"/>
+                </div>
+            </field>
+
             <notebook>
-                <page string="AFIP" name="afip" attrs="{'invisible': [('move_type', 'not in', ['out_invoice', 'out_refund'])]}">
+                <page string="AFIP" name="afip" attrs="{'invisible': [('move_type', 'not in', ['out_invoice', 'out_refund', 'in_invoice', 'in_refund'])]}">
                     <group>
                         <field name='validation_type' invisible="1"/>
-                        <label for="afip_auth_code" string="AFIP authorization"/>
+                        <!-- <label for="afip_auth_code" string="AFIP authorization"/>
                         <div class="oe_inline">
                             <field name="afip_auth_mode" class="oe_inline"/>
-                            <field name="afip_auth_code" class="oe_inline" attrs="{'required': [('afip_auth_mode', '!=', False)]}" placeholder="Code"/> - 
-                        </div>
+                            <field name="afip_auth_code" class="oe_inline" attrs="{'required': [('afip_auth_mode', '!=', False)]}" placeholder="Code"/> -
+                        </div> -->
                         <field name='afip_auth_code_due'/>
-                        <field name='afip_result'/>
+
                         <field name='afip_message'/>
                         <field name='afip_xml_request' widget="ace" groups="base.group_no_one"/>
                         <field name='afip_xml_response'  widget="ace" groups="base.group_no_one"/>
