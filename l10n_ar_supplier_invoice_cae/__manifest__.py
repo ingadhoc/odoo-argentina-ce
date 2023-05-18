@@ -1,9 +1,9 @@
 {
-    "name": "Factura Electrónica Argentina",
+    "name": "Constatación de CAE de facturas de compra",
     "version": "15.0.1.0.0",
     "category": "Localization/Argentina",
     "sequence": 14,
-    "author": "ADHOC SA, Moldeo Interactive,Odoo Community Association (OCA)",
+    "author": "Abasto Software S.R.L.",
     "license": "AGPL-3",
     "summary": "Ported from V11 odoo-argentina",
     "depends": [
