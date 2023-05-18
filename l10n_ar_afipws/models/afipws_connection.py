@@ -100,18 +100,7 @@ class AfipwsConnection(models.Model):
                     "https://awshomo.afip.gov.ar/sr-padron/webservices/"
                     "personaServiceA4?wsdl"
                 )
-        elif afip_ws == "ws_sr_padron_a5":
-            if environment_type == "production":
-                afip_ws_url = (
-                    "https://aws.afip.gov.ar/sr-padron/webservices/"
-                    "personaServiceA5?wsdl"
-                )
-            else:
-                afip_ws_url = (
-                    "https://awshomo.afip.gov.ar/sr-padron/webservices/"
-                    "personaServiceA5?wsdl"
-                )
-        elif afip_ws == "ws_sr_constancia_inscripcion":
+        elif afip_ws == "ws_sr_padron_a5" or afip_ws == "ws_sr_constancia_inscripcion":
             if environment_type == "production":
                 afip_ws_url = (
                     "https://aws.afip.gov.ar/sr-padron/webservices/"
