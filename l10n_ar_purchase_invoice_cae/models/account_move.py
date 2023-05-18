@@ -1,5 +1,5 @@
 import logging
-from odoo import models, _
+from odoo import models, fields, _
 from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
@@ -50,8 +50,8 @@ class AccountMove(models.Model):
             number_parts = self._l10n_ar_get_document_number_parts(
                 self.l10n_latam_document_number, self.l10n_latam_document_type_id.code
             )
-            cbte_nro = number_parts['point_of_sale']
-            pto_vta = number_parts['invoice_number']
+            cbte_nro = str(number_parts['invoice_number']).zfill(8)
+            pto_vta = str(number_parts['point_of_sale']).zfill(5)
 
             cbte_tipo = doc_type.code
             if not pto_vta or not cbte_nro or not cbte_tipo:
@@ -59,8 +59,12 @@ class AccountMove(models.Model):
             cbte_fch = inv.invoice_date
             if not cbte_fch:
                 raise UserError(_('Invoice Date is required!'))
+
+            if not type(cbte_fch) == str:
+                cbte_fch = fields.Date.to_string(cbte_fch)
+
             cbte_fch = cbte_fch.replace("-", "")
-            imp_total = str("%.2f" % inv.amount_total_signed)
+            imp_total = str("%.2f" % inv.amount_total)
 
             _logger.info('Constatando Comprobante en afip')
 
