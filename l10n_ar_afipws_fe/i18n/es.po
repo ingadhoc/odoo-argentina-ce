@@ -101,14 +101,14 @@ msgstr ""
 #. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.view_move_form
 msgid "AFIP authorization"
-msgstr ""
+msgstr "Autorizacion de AFIP"
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields,field_description:l10n_ar_afipws_fe.field_account_bank_statement_line__afip_auth_mode
 #: model:ir.model.fields,field_description:l10n_ar_afipws_fe.field_account_move__afip_auth_mode
 #: model:ir.model.fields,field_description:l10n_ar_afipws_fe.field_account_payment__afip_auth_mode
 msgid "AFIP authorization mode"
-msgstr ""
+msgstr "Modo de autorización de AFIP"
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields,help:l10n_ar_afipws_fe.field_account_bank_statement_line__afip_result
