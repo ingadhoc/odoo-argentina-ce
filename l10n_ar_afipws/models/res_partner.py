@@ -58,27 +58,39 @@ class ResPartner(models.Model):
                 "must set it manually"
             )
 
-        if census.provincia:
-            # depending on the database, caba can have one of this codes
-            caba_codes = ["C", "CABA", "ABA"]
-            # if not localidad then it should be CABA.
-            if not census.localidad:
-                state = self.env["res.country.state"].search(
-                    [("code", "in", caba_codes), ("country_id.code", "=", "AR")],
-                    limit=1,
-                )
-            # If localidad cant be caba
-            else:
-                state = self.env["res.country.state"].search(
-                    [
-                        ("name", "ilike", census.provincia),
-                        ("code", "not in", caba_codes),
-                        ("country_id.code", "=", "AR"),
-                    ],
-                    limit=1,
-                )
-            if state:
-                vals["state_id"] = state.id
+        # Traigo la direccion usando el domicilio fiscal
+        if census.data and census.data.domicilioFiscal:
+            dom_fiscal = census.data.domicilioFiscal
+            state = self.env['res.country.state'].search([('supa_code', '=', dom_fiscal.idProvincia), ('country_id.code', '=', 'AR')], limit=1)
+            country = self.env['res.country'].search([('code', '=', 'AR')], limit=1)
+            city = dom_fiscal.localidad
+            vals.update({
+                'state_id': state.id,
+                'country_id': country.id,
+                'city': city
+            })
+
+        # if census.provincia:
+        #     # depending on the database, caba can have one of this codes
+        #     caba_codes = ["C", "CABA", "ABA"]
+        #     # if not localidad then it should be CABA.
+        #     if not census.localidad:
+        #         state = self.env["res.country.state"].search(
+        #             [("code", "in", caba_codes), ("country_id.code", "=", "AR")],
+        #             limit=1,
+        #         )
+        #     # If localidad cant be caba
+        #     else:
+        #         state = self.env["res.country.state"].search(
+        #             [
+        #                 ("name", "ilike", census.provincia),
+        #                 ("code", "not in", caba_codes),
+        #                 ("country_id.code", "=", "AR"),
+        #             ],
+        #             limit=1,
+        #         )
+        #     if state:
+        #         vals["state_id"] = state.id
 
         if imp_iva == "NI" and census.monotributo == "S":
             vals["l10n_ar_afip_responsibility_type_id"] = self.env.ref(

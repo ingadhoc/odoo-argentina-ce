@@ -20,9 +20,11 @@
         "views/afipws_connection_view.xml",
         "views/res_config_settings.xml",
         "views/res_partner.xml",
+        "views/res_state_view.xml",
         "security/ir.model.access.csv",
         "security/security.xml",
         "data/ir.actions.url_data.xml",
+        "data/res.country.state.csv",
     ],
     "demo": [
         "demo/certificate_demo.xml",
