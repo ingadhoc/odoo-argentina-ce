@@ -125,8 +125,8 @@ class ResPartner(models.Model):
                 raise UserError(_("Not confirmed certificate found on database"))
             company = certificate.alias_id.company_id
 
-        # consultamos a5 ya que extiende a4 y tiene validez de constancia
-        padron = company.get_connection("ws_sr_padron_a5").connect()
+        # consultamos ws_sr_constancia_inscripcion ya que extiende a4 ya5. tiene validez de constancia
+        padron = company.get_connection("ws_sr_constancia_inscripcion").connect()
         error_msg = _(
             "No pudimos actualizar desde padron afip al partner %s (%s).\n"
             "Recomendamos verificar manualmente en la página de AFIP.\n"
