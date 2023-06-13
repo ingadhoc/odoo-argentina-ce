@@ -59,11 +59,11 @@ class ResPartner(models.Model):
             )
 
         # Traigo la direccion usando el domicilio fiscal
-        if census.data and census.data.domicilioFiscal:
-            dom_fiscal = census.data.domicilioFiscal
-            state = self.env['res.country.state'].search([('supa_code', '=', dom_fiscal.idProvincia), ('country_id.code', '=', 'AR')], limit=1)
+        if census.data and census.data.get('domicilioFiscal'):
+            dom_fiscal = census.data.get('domicilioFiscal')
+            state = self.env['res.country.state'].search([('supa_code', '=', dom_fiscal.get('idProvincia')), ('country_id.code', '=', 'AR')], limit=1)
             country = self.env['res.country'].search([('code', '=', 'AR')], limit=1)
-            city = dom_fiscal.localidad
+            city = dom_fiscal.get('localidad')
             vals.update({
                 'state_id': state.id,
                 'country_id': country.id,
