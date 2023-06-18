@@ -78,9 +78,14 @@ class AccountMove(models.Model):
         "- NO: sí el comprobante asociado (original) NO se encuentra rechazado por el comprador",
     )
 
+    def _get_formatted_sequence(self, number=0):
+        pos_number = self._context.get('default_l10n_ar_afip_pos_number', self.journal_id.l10n_ar_afip_pos_number)
+        return "%s %05d-%08d" % (self.l10n_latam_document_type_id.doc_code_prefix,
+                                 pos_number, number)
+
     def _get_starting_sequence(self):
         """ If use documents then will create a new starting sequence using the document type code prefix and the
-        journal document number with a 8 padding number """
+        journal document number with a 8 padding number """           
         if self.journal_id.l10n_latam_use_documents and self.company_id.account_fiscal_country_id.code == "AR" and self.journal_id.afip_ws:
             if self.l10n_latam_document_type_id :
                 number = int(
@@ -96,6 +101,7 @@ class AccountMove(models.Model):
         if self._name == 'account.move' and self.journal_id.l10n_latam_use_documents and self.company_id.account_fiscal_country_id.code == "AR" and self.journal_id.afip_ws:
 
             last_sequence = self._get_last_sequence()
+            print("last sequence", last_sequence)
             new = not last_sequence
             if new:
                 last_sequence = self._get_last_sequence(relaxed=True) or self._get_starting_sequence()
