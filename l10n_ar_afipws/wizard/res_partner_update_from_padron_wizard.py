@@ -59,6 +59,8 @@ class ResPartnerUpdateFromPadronWizard(models.TransientModel):
             "zip",
             "l10n_ar_afip_responsibility_type_id",
             "last_update_census",
+            'state_id',
+            'country_id',
         ]
         return [
             ("model", "=", "res.partner"),
