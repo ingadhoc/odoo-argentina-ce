@@ -1,0 +1,16 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "askForPassword": false,
+            "driver": "PostgreSQL",
+            "name": "danone_prod",
+            "database": "danone_prod",
+            "username": "odoo",
+            "password": "odoo"
+        }
+    ],
+    "esbonio.sphinx.confDir": "",
+}
