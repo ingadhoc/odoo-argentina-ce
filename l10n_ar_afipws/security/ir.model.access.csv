@@ -9,3 +9,4 @@ access_a5_wizard,res.partner.update.from.padron.wizard,model_res_partner_update_
 access_afipws_upload_certificate_wizard,afipws.upload_certificate.wizard,model_afipws_upload_certificate_wizard,base.group_system,1,1,1,1
 access_a5_field,res.partner.update.from.padron.field,model_res_partner_update_from_padron_field,base.group_user,1,1,1,1
 access_res_partner_update_from_padron_field,res.partner.update.from.padron.field,model_res_partner_update_from_padron_field,base.group_user,1,0,0,0
+access_a5_ir_model_fields,ir.model.fields.padron.a5,base.model_ir_model_fields,base.group_user,1,0,0,0
