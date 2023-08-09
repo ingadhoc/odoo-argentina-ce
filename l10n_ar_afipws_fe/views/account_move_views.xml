@@ -28,7 +28,7 @@
                 <label for="afip_auth_code" string="AFIP authorization"/>
                 <div class="oe_inline">
                     <field name="afip_auth_mode" class="oe_inline"/>
-                    <field name="afip_auth_code" class="oe_inline" attrs="{'required': [('afip_auth_mode', '!=', False)]}" placeholder="Code"/> - <field name='afip_result' attrs="{'invisible': [('afip_result', '=', False)]}"/>
+                    <field name="afip_auth_code" class="oe_inline" attrs="{'required': [('afip_auth_mode', '!=', False)]}" placeholder="Code"/> - <field name='afip_result' attrs="{'invisible': [('afip_result', '=', False)]}" readonly="1"/>
                 </div>
             </field>
 
