@@ -25,8 +25,8 @@
 
             </field>
             <field name="l10n_latam_document_number" position="after">
-                <label for="afip_auth_code" string="AFIP authorization"/>
-                <div class="oe_inline">
+                <label for="afip_auth_code" string="AFIP authorization" attrs="{'invisible': [('move_type', 'not in', ['in_invoice', 'in_refund', 'out_invoice', 'out_refund'])]}"/>
+                <div class="oe_inline" attrs="{'invisible': [('move_type', 'not in', ['in_invoice', 'in_refund', 'out_invoice', 'out_refund'])]}">
                     <field name="afip_auth_mode" class="oe_inline"/>
                     <field name="afip_auth_code" class="oe_inline" attrs="{'required': [('afip_auth_mode', '!=', False)]}" placeholder="Code"/> - <field name='afip_result' attrs="{'invisible': [('afip_result', '=', False)]}" readonly="1"/>
                 </div>
