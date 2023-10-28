@@ -2,6 +2,7 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
+# from typing_extensions import Annotated
 from odoo import fields, models, api, _
 from odoo.exceptions import UserError
 from odoo.tools import float_repr
@@ -144,13 +145,20 @@ class AccountMove(models.Model):
         The last thing we do is request the cae because if an error occurs
         after cae requested, the invoice has been already validated on afip
         """
-        res = super().post()
+        
+        res=super().post()
         self.do_pyafipws_request_cae()
         return res
-
+    
     def do_pyafipws_request_cae(self):
         "Request to AFIP the invoices' Authorization Electronic Code (CAE)"
+        # jjvr: Check if there was an error in any invoice of the process
+        has_error = False
+        error_invoice_ids = self.env['account.move']
+        # jjvr: fin 
         for inv in self:
+            # jjvr: Check if there is an error in the current invoice
+            has_err_inv = False
             # Ignore invoices with cae (do not check date)
             if inv.afip_auth_code:
                 continue
@@ -160,10 +168,14 @@ class AccountMove(models.Model):
                 continue
 
             # Ignore invoice if not ws on point of sale
+            # # jjvr: agis
             if not afip_ws:
-                raise UserError(_(
-                    'If you use electronic journals (invoice id %s) you need '
-                    'configure AFIP WS on the journal') % (inv.id))
+                if (len(self) == 1):
+                    raise UserError(_(
+                        'If you use electronic journals (invoice id %s) you need '
+                        'configure AFIP WS on the journal') % (inv.id))
+                else:
+                    has_err_inv = True
 
             # if no validation type and we are on electronic invoice, it means
             # that we are on a testing database without homologation
@@ -194,19 +206,28 @@ class AccountMove(models.Model):
 
             if afip_ws == 'wsfex':
                 if not country:
-                    raise UserError(_(
-                        'For WS "%s" country is required on partner' % (
-                            afip_ws)))
+                    if (len(self) == 1):
+                        raise UserError(_(
+                            'For WS "%s" country is required on partner' % (
+                                afip_ws)))
+                    else:
+                        has_err_inv = True
                 elif not country.code:
-                    raise UserError(_(
-                        'For WS "%s" country code is mandatory'
-                        'Country: %s' % (
-                            afip_ws, country.name)))
+                    if (len(self) == 1):
+                        raise UserError(_(
+                            'For WS "%s" country code is mandatory'
+                            'Country: %s' % (
+                                afip_ws, country.name)))
+                    else:
+                        has_err_inv = True
                 elif not country.l10n_ar_afip_code:
-                    raise UserError(_(
-                        'For WS "%s" country afip code is mandatory'
-                        'Country: %s' % (
-                            afip_ws, country.name)))
+                    if (len(self) == 1):
+                        raise UserError(_(
+                            'For WS "%s" country afip code is mandatory'
+                            'Country: %s' % (
+                                afip_ws, country.name)))
+                    else:
+                        has_err_inv = True
 
             ws_next_invoice_number = int(
                 inv.journal_id.get_pyafipws_last_invoice(inv.l10n_latam_document_type_id)['result']) + 1
@@ -335,9 +356,12 @@ class AccountMove(models.Model):
                     else:
                         cuit_pais_cliente = country.cuit_fisica
                     if not cuit_pais_cliente:
-                        raise UserError(_(
-                            'No vat defined for the partner and also no CUIT '
-                            'set on country'))
+                        if (len(self) == 1):
+                            raise UserError(_(
+                                'No vat defined for the partner and also no CUIT '
+                                'set on country'))
+                        else:
+                            has_err_inv = True
 
                 domicilio_cliente = " - ".join([
                     commercial_partner.name or '',
@@ -396,8 +420,8 @@ class AccountMove(models.Model):
             # TODO ver si en realidad tenemos que usar un vat pero no lo
             # subimos
             if afip_ws not in ['wsfex', 'wsbfe']:
-                vat_taxable = self.env['account.move.line']
-                for line in self.line_ids:
+                vat_taxable = inv.env['account.move.line']
+                for line in inv.line_ids:
                     if any(
                             tax.tax_group_id.l10n_ar_vat_afip_code and tax.tax_group_id.l10n_ar_vat_afip_code
                             not in ['0', '1', '2'] for tax in line.tax_line_id) and line.price_subtotal:
@@ -405,20 +429,20 @@ class AccountMove(models.Model):
                 for vat in vat_taxable:
                     ws.AgregarIva(
                         vat.tax_line_id.tax_group_id.l10n_ar_vat_afip_code,
-                        "%.2f" % sum(self.invoice_line_ids.filtered(lambda x: x.tax_ids.filtered(
+                        "%.2f" % sum(inv.invoice_line_ids.filtered(lambda x: x.tax_ids.filtered(
                             lambda y: y.tax_group_id.l10n_ar_vat_afip_code ==
                             vat.tax_line_id.tax_group_id.l10n_ar_vat_afip_code)).mapped('price_subtotal')),
                         # "%.2f" % abs(vat.base_amount),
                         "%.2f" % vat.price_subtotal,
                     )
 
-                not_vat_taxes = self.line_ids.filtered(
+                not_vat_taxes = inv.line_ids.filtered(
                     lambda x: x.tax_line_id and x.tax_line_id.tax_group_id.l10n_ar_tribute_afip_code)
                 for tax in not_vat_taxes:
                     ws.AgregarTributo(
                         tax.tax_line_id.tax_group_id.l10n_ar_tribute_afip_code,
                         tax.tax_line_id.tax_group_id.name,
-                        "%.2f" % sum(self.invoice_line_ids.filtered(lambda x: x.tax_ids.filtered(
+                        "%.2f" % sum(inv.invoice_line_ids.filtered(lambda x: x.tax_ids.filtered(
                             lambda y: y.tax_group_id.l10n_ar_tribute_afip_code ==
                             tax.tax_line_id.tax_group_id.l10n_ar_tribute_afip_code)).mapped('price_subtotal')),
                         # "%.2f" % abs(tax.base_amount),
@@ -431,21 +455,21 @@ class AccountMove(models.Model):
 
             if CbteAsoc:
                 # fex no acepta fecha
-                doc_number_parts = self._l10n_ar_get_document_number_parts(
+                doc_number_parts = inv._l10n_ar_get_document_number_parts(
                     CbteAsoc.l10n_latam_document_number, CbteAsoc.l10n_latam_document_type_id.code)
                 if afip_ws == 'wsfex':
                     ws.AgregarCmpAsoc(
                         CbteAsoc.l10n_latam_document_type_id.document_type_id.code,
                         doc_number_parts['point_of_sale'],
                         doc_number_parts['invoice_number'],
-                        self.company_id.vat,
+                        inv.company_id.vat,
                     )
                 else:
                     ws.AgregarCmpAsoc(
                         CbteAsoc.l10n_latam_document_type_id.code,
                         doc_number_parts['point_of_sale'],
                         doc_number_parts['invoice_number'],
-                        self.company_id.vat,
+                        inv.company_id.vat,
                         afip_ws != 'wsmtxca' and CbteAsoc.invoice_date.strftime(
                             '%Y%m%d') or CbteAsoc.invoice_date.strftime('%Y-%m-%d'),
                     )
@@ -461,9 +485,12 @@ class AccountMove(models.Model):
                     if not line.product_uom_id:
                         umed = '7'
                     elif not line.product_uom_id.l10n_ar_afip_code:
-                        raise UserError(_(
-                            'Not afip code con producto UOM %s' % (
-                                line.product_uom_id.name)))
+                        if (len(self) == 1):
+                            raise UserError(_(
+                                'Not afip code con producto UOM %s' % (
+                                    line.product_uom_id.name)))
+                        else:
+                            has_err_inv = True
                     else:
                         umed = line.product_uom_id.l10n_ar_afip_code
                     # cod_mtx = line.uom_id.l10n_ar_afip_code
@@ -507,6 +534,17 @@ class AccountMove(models.Model):
                             codigo, ds, qty, umed, precio, "%.2f" % importe,
                             bonif)
 
+            # jjvr: If there was an error in the current invoice
+            if has_err_inv:
+                inv.button_draft()
+                inv.button_cancel()
+                inv.delete_number()
+                inv.button_draft()
+                has_error = True
+                error_invoice_ids += inv
+                continue
+            # jjvr: fin
+
             # Request the authorization! (call the AFIP webservice method)
             vto = None
             msg = False
@@ -540,13 +578,42 @@ class AccountMove(models.Model):
             if msg:
                 _logger.info(_('AFIP Validation Error. %s' % msg) + ' XML Request: %s XML Response: %s' % (
                     ws.XmlRequest, ws.XmlResponse))
-                raise UserError(_('AFIP Validation Error. %s' % msg))
-
+                # raise UserError(_('AFIP Validation Error. %s' % msg))
+                # Inicio jjvr
+                # En caso que sea una unica factura y de error este raise se ejecuta.
+                # Caso contrario, no se ejecutara el RAISE ya que afectara a todo el ciclo FOR.
+                if (len(self) == 1):
+                    raise UserError(_('AFIP Validation Error. %s' % msg))
+                inv.button_draft()
+                inv.button_cancel()
+                inv.delete_number()
+                inv.button_draft()
+                has_error = True
+                error_invoice_ids += inv
+                continue
+                # Fin jjvr
+            
+            # Inicio jjvr
+            if has_error:
+#                ws_next_invoice_number = int(inv.journal_id.get_pyafipws_last_invoice(inv.l10n_latam_document_type_id)['result']) + 1
+                inv.name = inv.name[:-8] + str(ws_next_invoice_number).zfill(8)
+            # Fin jjvr
+            
             msg = u"\n".join([ws.Obs or "", ws.ErrMsg or ""])
             if not ws.CAE or ws.Resultado != 'A':
-                raise UserError(_('AFIP Validation Error. %s' % msg))
+                if (len(self) == 1):
+                    raise UserError(_('AFIP Validation Error. %s' % msg))
+                inv.button_draft()
+                inv.button_cancel()
+                inv.delete_number()
+                inv.button_draft()
+                has_error = True
+                error_invoice_ids += inv
+                continue
+
             # TODO ver que algunso campos no tienen sentido porque solo se
             # escribe aca si no hay errores
+            
             if vto:
                 vto = datetime.strptime(vto, '%Y%m%d').date()
             _logger.info('CAE solicitado con exito. CAE: %s. Resultado %s' % (
@@ -567,3 +634,9 @@ class AccountMove(models.Model):
             # solicitar. Lo mismo podriamos usar para grabar los mensajes de
             # afip de respuesta
             inv._cr.commit()
+        
+        # jjvr: If there was an error in any invoice of the process
+        if has_error:
+            # The numbering of journals_ids with error is synchronized
+            error_invoice_ids.mapped('journal_id').sync_document_local_remote_number()
+        # jjvr: fin 
