@@ -15,26 +15,26 @@
                 <field invisible="1" name="state"/>
                 <header/>
                 <sheet>
-                    <group attrs="{'invisible': [('state', '!=', 'finished')]}" col="1">
+                    <group invisible="state != 'finished'" col="1">
                         <h2>There are no more partners to update for this request...</h2>
                     </group>
-                    <p attrs="{'invisible': [('state', '!=', ('option'))]}" class="oe_grey">Only Partners with cuit are going to be updated.
+                    <p invisible="state != 'option'" class="oe_grey">Only Partners with cuit are going to be updated.
                         <br/>
                         Select the list of fields you want to update.</p>
-                    <group attrs="{'invisible': [('state', 'not in', ('option',))]}">
+                    <group invisible="state not in ('option',)">
                         <field name="field_to_update_ids" options="{'no_create': True}" widget="many2many_tags"/>
                         <field name="update_constancia"/>
                         <field name="title_case"/>
                     </group>
-                    <group attrs="{'invisible': [('state', 'in', ('option', 'finished'))]}" col="1">
+                    <group invisible="state in ('option', 'finished')" col="1">
                         <h1>
-                            <field attrs="{'required': [('state', '=', 'selection')]}" name="partner_id" options="{'no_open': True}"/>
+                            <field required="state == 'selection'" name="partner_id" options="{'no_open': True}"/>
                         </h1>
                         <span>
                             <field name="field_ids" nolabel="1">
                                 <tree create="false" editable="top">
                                     <field name="field"/>
-                                    <field attrs="{'readonly':True}" name="old_value"/>
+                                    <field readonly="True" name="old_value"/>
                                     <field name="new_value"/>
                                 </tree>
                             </field>
@@ -42,13 +42,13 @@
                     </group>
                 </sheet>
                 <footer>
-                    <button attrs="{'invisible': [('state', 'in', ('option', 'finished' ))]}" class="oe_highlight" name="update_selection" string="Update Selection" type="object"/>
-                    <button attrs="{'invisible': [('state', '!=', 'selection')]}" class="oe_link" name="next_cb" string="Skip these partner" type="object"/>
-                    <button attrs="{'invisible': [('state', '!=', 'option')]}" class="oe_highlight" name="start_process_cb" string="Update with Manual Check" type="object"/>
-                    <button attrs="{'invisible': [('state', '!=', 'option')]}" class="oe_highlight" confirm="Are you sure to execute the automatic update of your partners ?" name="automatic_process_cb" string="Update Automatically" type="object"/>
-                    <span attrs="{'invisible': [('state', '=', 'finished')]} " class="or_cancel">or
+                    <button invisible="state in ('option', 'finished')" class="oe_highlight" name="update_selection" string="Update Selection" type="object"/>
+                    <button invisible="state != 'selection'" class="oe_link" name="next_cb" string="Skip these partner" type="object"/>
+                    <button invisible="state != 'option'" class="oe_highlight" name="start_process_cb" string="Update with Manual Check" type="object"/>
+                    <button invisible="state != 'option'" class="oe_highlight" confirm="Are you sure to execute the automatic update of your partners ?" name="automatic_process_cb" string="Update Automatically" type="object"/>
+                    <span invisible="state == 'finished'" class="or_cancel">or
                         <button class="oe_link oe_inline" special="cancel" string="Cancel"/></span>
-                    <span attrs="{'invisible': [('state', '!=', 'finished')]} " class="or_cancel">
+                    <span invisible="state != 'finished'" class="or_cancel">
                         <button class="oe_link oe_inline" special="cancel" string="Close"/>
                     </span>
                 </footer>
