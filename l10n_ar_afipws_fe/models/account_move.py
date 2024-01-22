@@ -2,6 +2,11 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
+import json
+import logging
+import sys
+import traceback
+from datetime import datetime
 from odoo import fields, models, api, _
 from odoo.exceptions import UserError
 from odoo.tools import float_repr
@@ -9,11 +14,6 @@ from odoo.addons.l10n_ar_afipws_fe.afip_utils import get_invoice_number_from_res
 import base64
 
 base64.encodestring = base64.encodebytes
-import json
-import logging
-import sys
-import traceback
-from datetime import datetime
 
 _logger = logging.getLogger(__name__)
 
@@ -25,21 +25,15 @@ class AccountMove(models.Model):
         [("CAE", "CAE"), ("CAI", "CAI"), ("CAEA", "CAEA")],
         string="AFIP authorization mode",
         copy=False,
-        readonly=True,
-        states={"draft": [("readonly", False)]},
     )
     afip_auth_code = fields.Char(
         copy=False,
         string="CAE/CAI/CAEA Code",
-        readonly=True,
         size=24,
-        states={"draft": [("readonly", False)]},
     )
     afip_auth_code_due = fields.Date(
         copy=False,
-        readonly=True,
         string="CAE/CAI/CAEA due Date",
-        states={"draft": [("readonly", False)]},
     )
     afip_associated_period_from = fields.Date(
         'AFIP Period from'
@@ -63,8 +57,6 @@ class AccountMove(models.Model):
     afip_result = fields.Selection(
         [("", "n/a"), ("A", "Aceptado"), ("R", "Rechazado"), ("O", "Observado")],
         "Resultado",
-        readonly=True,
-        states={"draft": [("readonly", False)]},
         copy=False,
         help="AFIP request result",
     )
@@ -80,18 +72,16 @@ class AccountMove(models.Model):
     )
     asynchronous_post = fields.Boolean()
 
-
-    @api.depends('journal_id', 'l10n_latam_document_type_id')
-    def _compute_highest_name(self):
-        manual_records = self.filtered(lambda move: move.journal_id.afip_ws in ['wsfe', 'wsfex', 'wsbfe'])
-        manual_records.highest_name = ''
-        super(AccountMove, self - manual_records)._compute_highest_name()
-
+    # @api.depends('journal_id', 'l10n_latam_document_type_id')
+    # def _compute_highest_name(self):
+    #     manual_records = self.filtered(lambda move: move.journal_id.afip_ws in ['wsfe', 'wsfex', 'wsbfe'])
+    #     manual_records.highest_name = ''
+    #     super(AccountMove, self - manual_records)._compute_highest_name()
 
     def cron_asynchronous_post(self):
         queue_limit = self.env['ir.config_parameter'].sudo().get_param('l10n_ar_afipws_fe.queue_limit', 20)
         queue = self.search([
-            ('asynchronous_post', '=', True),'|',
+            ('asynchronous_post', '=', True), '|',
             ('afip_result', '=', False),
             ('afip_result', '=', ''),
         ], limit=queue_limit)
@@ -102,7 +92,7 @@ class AccountMove(models.Model):
         """ If use documents then will create a new starting sequence using the document type code prefix and the
         journal document number with a 8 padding number """
         if self.journal_id.l10n_latam_use_documents and self.company_id.account_fiscal_country_id.code == "AR" and self.journal_id.afip_ws:
-            if self.l10n_latam_document_type_id :
+            if self.l10n_latam_document_type_id:
                 number = int(
                     self.journal_id.get_pyafipws_last_invoice(
                         self.l10n_latam_document_type_id
@@ -127,23 +117,21 @@ class AccountMove(models.Model):
         super()._set_next_sequence()
 
     # TODO Esto se deprecaria si la secuencia solo viene de  result de afip 
-    # def _get_last_sequence(self, relaxed=False, with_prefix=None, lock=True):
-    #     if self._name == 'account.move' and \
-    #         self.journal_id.l10n_latam_use_documents and \
-    #         self.company_id.account_fiscal_country_id.code == "AR" and \
-    #         not self.afip_auth_code and \
-    #         self.journal_id.afip_ws and  self.l10n_latam_document_type_id:
-    #         number = int(
-    #             self.journal_id.get_pyafipws_last_invoice(
-    #                 self.l10n_latam_document_type_id
-    #             )
-    #         )
-    #         res = self._get_formatted_sequence(number)
-    #     else:
-    #         res = super()._get_last_sequence(relaxed=relaxed, with_prefix=with_prefix, lock=lock)
-    #     return res
-
-
+    def _get_last_sequence(self, relaxed=False, with_prefix=None):
+        if self._name == 'account.move' and \
+            self.journal_id.l10n_latam_use_documents and \
+            self.company_id.account_fiscal_country_id.code == "AR" and \
+            not self.afip_auth_code and \
+            self.journal_id.afip_ws and  self.l10n_latam_document_type_id:
+            number = int(
+                self.journal_id.get_pyafipws_last_invoice(
+                    self.l10n_latam_document_type_id
+                )
+            )
+            res = self._get_formatted_sequence(number)
+        else:
+            res = super()._get_last_sequence(relaxed=relaxed, with_prefix=with_prefix)
+        return res
 
     @api.depends("journal_id", "afip_auth_code")
     def _compute_validation_type(self):
@@ -220,7 +208,7 @@ class AccountMove(models.Model):
             and x.journal_id.afip_ws
             and not x.afip_auth_code
         )
-        a_invoices , r_invoices = request_cae_invoices.do_pyafipws_request_cae()
+        a_invoices, r_invoices = request_cae_invoices.do_pyafipws_request_cae()
         if len(self) == 1 and r_invoices:
             raise (UserError(r_invoices.afip_message))
         return super(AccountMove, self - r_invoices)._post(soft=soft)
@@ -301,18 +289,18 @@ class AccountMove(models.Model):
 
             msg = "\n".join([ws.Obs or "", ws.ErrMsg or ""])
             if not ws.CAE or ws.Resultado != "A":
-                    r_invoices += inv
+                r_invoices += inv
 
-                    vals = {
-                            "name":'/',
-                            "afip_result": 'R',
-                            "afip_message": msg,
-                            "afip_xml_request": ws.XmlRequest or '',
-                            "afip_xml_response": ws.XmlResponse or '',
-                    }
-                    inv.sudo().write(vals)
-                    inv._cr.commit()
-                    continue
+                vals = {
+                        "name": '/',
+                        "afip_result": 'R',
+                        "afip_message": msg,
+                        "afip_xml_request": ws.XmlRequest or '',
+                        "afip_xml_response": ws.XmlResponse or '',
+                }
+                inv.sudo().write(vals)
+                inv._cr.commit()
+                continue
 
             if hasattr(ws, "Vencimiento"):
                 vto = datetime.strptime(ws.Vencimiento, "%Y%m%d").date()
