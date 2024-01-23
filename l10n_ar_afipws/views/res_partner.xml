@@ -8,7 +8,7 @@
             <group name="accounting_entries" position="after">
                 <group name="miPyme" string="Mi pyme">
                     <field name="mipyme_required"/>
-                    <field name="mipyme_from_amount" attrs="{'invisible':[('mipyme_required','=', False)]}"/>
+                    <field name="mipyme_from_amount" invisible="not mipyme_required"/>
                     <button name="l10n_ar_afipws_fe_min_ammount" string="Check mi Pyme status" type="object"/>
                 </group>
             </group>
@@ -24,7 +24,7 @@
                 <button class="oe_stat_button" icon="fa-rss" name="%(action_partner_update)d" type="action">
                     <div class="o_form_field o_stat_info">
                         <span class="o_stat_value">AFIP A5</span>
-                        <span class="o_stat_text"><field name="last_update_census" attrs="{'readonly': True}"/></span>
+                        <span class="o_stat_text"><field name="last_update_census" readonly="True"/></span>
                     </div>
                 </button>
             </div>

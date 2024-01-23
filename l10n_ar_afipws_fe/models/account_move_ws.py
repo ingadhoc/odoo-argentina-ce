@@ -196,8 +196,8 @@ class AccountMove(models.Model):
                 self.company_id.vat,
                 invoice_info["CbteAsoc"].invoice_date.strftime("%Y%m%d"),
             )
-        if  invoice_info["afip_associated_period_from"] and invoice_info["afip_associated_period_to"]:
-            ws.AgregarPeriodoComprobantesAsociados(invoice_info["afip_associated_period_from"],invoice_info["afip_associated_period_to"])
+        if invoice_info["afip_associated_period_from"] and invoice_info["afip_associated_period_to"]:
+            ws.AgregarPeriodoComprobantesAsociados(invoice_info["afip_associated_period_from"], invoice_info["afip_associated_period_to"])
         self.pyafipws_add_tax(ws)
 
     def wsbfe_invoice_add_info(self, ws, invoice_info):
@@ -437,10 +437,9 @@ class AccountMove(models.Model):
                 "fecha_serv_hasta"
             ].strftime("%Y%m%d")
 
-        if  invoice_info["afip_associated_period_from"] and invoice_info["afip_associated_period_to"]:
+        if invoice_info["afip_associated_period_from"] and invoice_info["afip_associated_period_to"]:
             invoice_info["afip_associated_period_from"] = invoice_info["afip_associated_period_from"].strftime("%Y%m%d")
             invoice_info["afip_associated_period_to"] = invoice_info["afip_associated_period_to"].strftime("%Y%m%d")
-
 
         invoice_info["zona"] = 1  # Nacional (la unica devuelta por afip)
         # los responsables no inscriptos no se usan mas
@@ -484,7 +483,7 @@ class AccountMove(models.Model):
                     "Country: %s" % (self.journal_id.afip_ws, country.name)
                 )
             )
-        if  invoice_info["afip_associated_period_from"] and invoice_info["afip_associated_period_to"]:
+        if invoice_info["afip_associated_period_from"] and invoice_info["afip_associated_period_to"]:
             invoice_info["afip_associated_period_from"] = invoice_info["afip_associated_period_from"].strftime("%Y%m%d")
             invoice_info["afip_associated_period_to"] = invoice_info["afip_associated_period_to"].strftime("%Y%m%d")
 

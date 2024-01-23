@@ -23,5 +23,4 @@ class ValidateAccountMove(models.TransientModel):
             return {'type': 'ir.actions.act_window_close'}
 
         else:
-           return super().validate_move()
-
+            return super().validate_move()
