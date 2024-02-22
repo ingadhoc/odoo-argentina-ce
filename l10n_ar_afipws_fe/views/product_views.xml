@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="product_template_form_view_l10n_ar_afipws" model="ir.ui.view">
+        <field name="name">product.template.common.form.l10n_ar_afipws_fe</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='categ_id']" position="after">
+                <field name="l10n_ar_ncm"></field>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
