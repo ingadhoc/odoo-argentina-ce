@@ -8,3 +8,4 @@ from . import afipws_connection
 from . import account_journal
 from . import account_journal_ws
 from . import res_config_settings
+from . import product

@@ -618,7 +618,7 @@ class AccountMove(models.Model):
         lines = []
         for line in self.invoice_line_ids.filtered(lambda x: not x.display_type):
             line_temp = {}
-            line_temp["codigo"] = line.product_id.default_code
+            line_temp["codigo"] = line.product_id.l10n_ar_ncm or line.product_id.default_code
             # unidad de referencia del producto si se comercializa
             # en una unidad distinta a la de consumo
             # uom is not mandatory, if no UOM we use "unit"
