@@ -251,10 +251,10 @@ class AccountMove(models.Model):
                 self.company_id.vat,
                 invoice_info["CbteAsoc"].invoice_date.strftime("%Y%m%d"),
             )
-        for line in invoice_info["line"]:
+        for line in invoice_info["lines"]:
             ws.AgregarItem(
                 line["codigo"],
-                line["sec"],
+                line.get('sec', ""), # ["sec"],
                 line["ds"],
                 line["qty"],
                 line["umed"],
@@ -278,14 +278,14 @@ class AccountMove(models.Model):
                 self.company_id.vat,
             )
 
-        for line in invoice_info["line"]:
+        for line in invoice_info["lines"]:
             ws.AgregarItem(
                 line["codigo"],
                 line["ds"],
                 line["qty"],
                 line["umed"],
                 line["precio"],
-                "%.2f" % line["importe"],
+                line["importe"],
                 line["bonif"],
             )
 
@@ -644,8 +644,11 @@ class AccountMove(models.Model):
                 )
                 or None
             )
-            line_temp["iva_id"] = line.vat_tax_id.tax_group_id.l10n_ar_vat_afip_code
-            vat_taxes_amounts = line.vat_tax_id.compute_all(
+            vat_tax_id = line.tax_ids.filtered(lambda x: x.tax_group_id.l10n_ar_vat_afip_code)
+            if len(vat_tax_id) > 1:
+                raise UserError('Debe tener al menos un impuesto de IVA por linea')
+            line_temp["iva_id"] = vat_tax_id.tax_group_id.l10n_ar_vat_afip_code
+            vat_taxes_amounts = vat_tax_id.compute_all(
                 line.price_unit,
                 self.currency_id,
                 line.quantity,
