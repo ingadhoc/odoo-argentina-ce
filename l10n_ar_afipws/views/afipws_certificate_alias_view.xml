@@ -24,7 +24,7 @@
                         />
                     <button name="action_cancel"
                         type="object"
-                        invisible="state not in ('draft' ,'confirmed')"
+                        invisible="state != 'draft' and state != 'confirmed')"
                         string="Cancel"
                         />
                     <button name="action_to_draft"
