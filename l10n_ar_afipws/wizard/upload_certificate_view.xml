@@ -6,7 +6,7 @@
         <field name="arch" type="xml">
             <form string="Upload Certificate">
                 <group>
-                    <field name="certificate_id" invisible="1"/>
+                    <field name="certificate_id" column_invisible="1"/>
                     <field name="certificate_file"/>
                 </group>
                 <footer>
