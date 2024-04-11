@@ -7,10 +7,10 @@
          <field name="inherit_id" ref="l10n_ar.view_move_form"/>
         <field name="arch" type="xml">
             <!-- we change button labels for better usability -->
-            <button name="action_post" position="attributes">
+            <!-- <button name="action_post" position="attributes">
                 <attribute name="attrs">{'invisible': ['|', ('state', '!=', 'draft'), ('validation_type', '!=', False)]}</attribute>
                 <attribute name="states"></attribute>
-            </button>
+            </button> -->
             <button name="action_post" position="after">
                 <button name="action_post" type="object" attrs="{'invisible': ['|', ('state', '!=', 'draft'), ('validation_type', '!=', 'production')]}" string="Validar en AFIP" class="oe_highlight" groups="account.group_account_invoice"/>
                 <button name="action_post" type="object" attrs="{'invisible': ['|', ('state', '!=', 'draft'), ('validation_type', '!=', 'homologation')]}" string="Validar en HOMOLOGACION" class="oe_highlight" groups="account.group_account_invoice"/>
