@@ -30,14 +30,14 @@ class AfipwsCertificate(models.Model):
     )
     csr = fields.Text(
         "Request Certificate",
-        readonly=True,
-        states={"draft": [("readonly", False)]},
+        #readonly=True,
+        #states={"draft": [("readonly", False)]},
         help="Certificate Request in PEM format.",
     )
     crt = fields.Text(
         "Certificate",
-        readonly=True,
-        states={"draft": [("readonly", False)]},
+        #readonly=True,
+        #states={"draft": [("readonly", False)]},
         help="Certificate in PEM format.",
     )
     state = fields.Selection(
