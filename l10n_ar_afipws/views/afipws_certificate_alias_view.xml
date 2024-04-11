@@ -6,30 +6,30 @@
         <field name="model">afipws.certificate_alias</field>
         <field name="arch" type="xml">
             <form string="AFIP Certificates">
-                <field name="service_type" invisible="1"/>
+                <field name="service_type" column_invisible="1"/>
 
                 <header>
                     <button name="action_confirm"
                         type="object"
-                        states="draft"
+                        invisible="state != 'draft'"
                         string="Confirm"
                         class="oe_highlight"
                         help="Confirm and generate Key"
                         />
                     <button name="action_create_certificate_request"
                         type="object"
-                        states="confirmed"
+                        invisible="state != 'confirmed'"
                         class="oe_highlight"
                         string="Create Certificate Request"
                         />
                     <button name="action_cancel"
                         type="object"
-                        states="draft,confirmed"
+                        invisible="state not in ('draft' ,'confirmed')"
                         string="Cancel"
                         />
                     <button name="action_to_draft"
                         type="object"
-                        states="cancel"
+                        invisible="state != 'cancel'"
                         string="To Draft"
                         />
                     <field name="state" widget="statusbar"/>
@@ -40,8 +40,8 @@
                             <field name="company_id" groups="base.group_multi_company"/>
                             <field name="type"/>
                             <field name="service_type" groups="base.group_no_one"/>
-                            <field name="service_provider_cuit" attrs="{'invisible':[('service_type','!=','outsourced')],'required':[('service_type','=','outsourced')]}"/>
-                            <field name="company_cuit" attrs="{'invisible':[('service_type','!=','in_house')],'required':[('service_type','=','in_house')]}"/>
+                            <field name="service_provider_cuit" invisible="service_type != 'outsourced'" required="service_type == 'outsourced'"/>
+                            <field name="company_cuit" invisible="service_type != 'in_house'" required="service_type == 'in_house'"/>
                         </group>
                         <group>
                             <field name="common_name"/>
