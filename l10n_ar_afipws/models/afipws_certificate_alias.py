@@ -35,21 +35,21 @@ class AfipwsCertificateAlias(models.Model):
         size=64,
         default="AFIP WS",
         help="Just a name, you can leave it this way",
-        states={"draft": [("readonly", False)]},
-        readonly=True,
+        #states={"draft": [("readonly", False)]},
+        #readonly=True,
         required=True,
     )
     key = fields.Text(
         "Private Key",
-        readonly=True,
-        states={"draft": [("readonly", False)]},
+        #readonly=True,
+        #states={"draft": [("readonly", False)]},
     )
     company_id = fields.Many2one(
         "res.company",
         "Company",
         required=True,
-        states={"draft": [("readonly", False)]},
-        readonly=True,
+        #states={"draft": [("readonly", False)]},
+        #readonly=True,
         default=lambda self: self.env.company,
         auto_join=True,
         index=True,
@@ -57,27 +57,27 @@ class AfipwsCertificateAlias(models.Model):
     country_id = fields.Many2one(
         "res.country",
         "Country",
-        states={"draft": [("readonly", False)]},
-        readonly=True,
+        #states={"draft": [("readonly", False)]},
+        #readonly=True,
         required=True,
     )
     state_id = fields.Many2one(
         "res.country.state",
         "State",
-        states={"draft": [("readonly", False)]},
-        readonly=True,
+        #states={"draft": [("readonly", False)]},
+        #readonly=True,
     )
     city = fields.Char(
         "City",
-        states={"draft": [("readonly", False)]},
-        readonly=True,
+        #states={"draft": [("readonly", False)]},
+        #readonly=True,
         required=True,
     )
     department = fields.Char(
         "Department",
         default="IT",
-        states={"draft": [("readonly", False)]},
-        readonly=True,
+        #states={"draft": [("readonly", False)]},
+        #readonly=True,
         required=True,
     )
     cuit = fields.Char(
@@ -88,20 +88,20 @@ class AfipwsCertificateAlias(models.Model):
     company_cuit = fields.Char(
         "Company CUIT",
         size=16,
-        states={"draft": [("readonly", False)]},
-        readonly=True,
+        #states={"draft": [("readonly", False)]},
+        #readonly=True,
     )
     service_provider_cuit = fields.Char(
         "Service Provider CUIT",
         size=16,
-        states={"draft": [("readonly", False)]},
-        readonly=True,
+        #states={"draft": [("readonly", False)]},
+        #readonly=True,
     )
     certificate_ids = fields.One2many(
         "afipws.certificate",
         "alias_id",
         "Certificates",
-        states={"cancel": [("readonly", True)]},
+        #states={"cancel": [("readonly", True)]},
         auto_join=True,
     )
     service_type = fields.Selection(
@@ -109,8 +109,8 @@ class AfipwsCertificateAlias(models.Model):
         "Service Type",
         default="in_house",
         required=True,
-        readonly=True,
-        states={"draft": [("readonly", False)]},
+        #readonly=True,
+        #states={"draft": [("readonly", False)]},
     )
     state = fields.Selection(
         [
@@ -134,8 +134,8 @@ class AfipwsCertificateAlias(models.Model):
         "Type",
         required=True,
         default="production",
-        readonly=True,
-        states={"draft": [("readonly", False)]},
+        #readonly=True,
+        #states={"draft": [("readonly", False)]},
     )
 
     @api.onchange("company_id")
