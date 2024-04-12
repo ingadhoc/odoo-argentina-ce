@@ -24,7 +24,7 @@
                         />
                     <button name="action_cancel"
                         type="object"
-                        invisible="state != not in ('draft', 'confirmed')"
+                        invisible="state not in ('draft', 'confirmed')"
                         string="Cancel"
                         />
                     <field name="state" widget="statusbar"/>
