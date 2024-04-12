@@ -7,12 +7,11 @@
          <field name="inherit_id" ref="l10n_ar.view_move_form"/>
         <field name="arch" type="xml">
             <!-- we change button labels for better usability -->
-            <!-- <button name="action_post" position="attributes">
-                <attribute name="attrs">{'invisible': ['|', ('state', '!=', 'draft'), ('validation_type', '!=', False)]}</attribute>
-                <attribute name="states"></attribute>
-            </button> -->
+            <button name="action_post" position="attributes">
+                <attribute name="invisible">state != 'draft' or validation_type</attribute>
+            </button>
             <button name="action_post" position="after">
-                <button name="action_post" type="object" invisible="state '!= 'draft' or 'validation_type' != 'production'" string="Validar en AFIP" class="oe_highlight" groups="account.group_account_invoice"/>
+                <button name="action_post" type="object" invisible="state != 'draft' or 'validation_type' != 'production'" string="Validar en AFIP" class="oe_highlight" groups="account.group_account_invoice"/>
                 <button name="action_post" type="object" invisible="state != 'draft' or 'validation_type' != 'homologation'" string="Validar en HOMOLOGACION" class="oe_highlight" groups="account.group_account_invoice"/>
             </button>
             <field name="l10n_ar_afip_concept" position="after">
@@ -25,16 +24,16 @@
 
             </field>
             <notebook>
-                <page string="AFIP" name="afip">
+                <page string="AFIP" name="afip" invisible="move_type not in ('out_invoice', 'out_refund')">
                     <group>
-                        <field name='validation_type' column_invisible="1"/>
+                        <field name='validation_type' invisible="1"/>
                         <label for="afip_auth_code" string="AFIP authorization"/>
                         <div class="oe_inline">
-                            <field name="afip_auth_mode" class="oe_inline"/>
-                            <field name="afip_auth_code" class="oe_inline" required="afip_auth_mode != False" placeholder="Code"/> - 
+                            <field name="afip_auth_mode" class="oe_inline" readonly="state != 'draf'"/>
+                            <field name="afip_auth_code" class="oe_inline" readonly="state != 'draft'" required="afip_auth_mode" placeholder="Code"/> 
                         </div>
-                        <field name='afip_auth_code_due'/>
-                        <field name='afip_result'/>
+                        <field name='afip_auth_code_due' readonly="state != 'draft'"/>
+                        <field name='afip_result' readonly="state != 'draft'"/>
                         <field name='afip_message'/>
                         <field name='afip_xml_request' widget="ace" groups="base.group_no_one"/>
                         <field name='afip_xml_response'  widget="ace" groups="base.group_no_one"/>
