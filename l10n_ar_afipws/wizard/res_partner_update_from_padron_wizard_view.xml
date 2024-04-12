@@ -12,7 +12,7 @@
         <field name="model">res.partner.update.from.padron.wizard</field>
         <field name="arch" type="xml">
             <form string="Update From Padron AFIP">
-                <field column_invisible="1" name="state"/>
+                <field invisible="1" name="state"/>
                 <header/>
                 <sheet>
                     <group invisible="state != 'finished'" col="1">
@@ -26,7 +26,7 @@
                         <field name="update_constancia"/>
                         <field name="title_case"/>
                     </group>
-                    <group invisible="state != 'option'" col="1">
+                    <group invisible="state in ('option', 'finished')" col="1">
                         <h1>
                             <field required="state == 'selection'" name="partner_id" options="{'no_open': True}"/>
                         </h1>
@@ -42,7 +42,7 @@
                     </group>
                 </sheet>
                 <footer>
-                    <button invisible="state not in ('option', 'finished')" class="oe_highlight" name="update_selection" string="Update Selection" type="object"/>
+                    <button invisible="state in ('option', 'finished')" class="oe_highlight" name="update_selection" string="Update Selection" type="object"/>
                     <button invisible="state != 'selection'" class="oe_link" name="next_cb" string="Skip these partner" type="object"/>
                     <button invisible="state != 'option'" class="oe_highlight" name="start_process_cb" string="Update with Manual Check" type="object"/>
                     <button invisible="state != 'option'" class="oe_highlight" confirm="Are you sure to execute the automatic update of your partners ?" name="automatic_process_cb" string="Update Automatically" type="object"/>
