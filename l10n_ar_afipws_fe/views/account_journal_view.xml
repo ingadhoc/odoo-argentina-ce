@@ -14,8 +14,8 @@
                     <button name="test_pyafipws_dummy" string="Dummy Test" help="Dummy test to check connection to selected webservice" type="object" invisible="not afip_ws"/>
                     <button name="test_pyafipws_point_of_sales" string="Get Points Of Sale" help="Get Enable Point of Sales for this webservice" type="object" invisible="not afip_ws"/>
                     <button name="get_pyafipws_cuit_document_classes" string="Get Document Types" help="Get valid document types for this webservice" type="object" invisible="not afip_ws"/>
-                    <button name="get_pyafipws_zonas" string="Get Zones" help="Get zones for this webservice" type="object" invisible="afip_ws != wsbfe"/>
-                    <button name="get_pyafipws_NCM" string="Get NCM" help="Obtener códigos del Nomenclador Común del Mercosur" type="object" invisible="afip_ws != wsbfe"/>
+                    <button name="get_pyafipws_zonas" string="Get Zones" help="Get zones for this webservice" type="object" invisible="afip_ws != 'wsbfe'"/>
+                    <button name="get_pyafipws_NCM" string="Get NCM" help="Obtener códigos del Nomenclador Común del Mercosur" type="object" invisible="afip_ws != 'wsbfe'"/>
                     <button name="get_pyafipws_post_invoice_numbers" string="Get next Inv" help="Obtener numeros de factura" type="object" invisible="not afip_ws"/>
                 </header>
             </sheet>
