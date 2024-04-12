@@ -31,10 +31,10 @@
                 </header>
                 <sheet string="AFIP Certificates">
                     <group>
-                        <field name="csr" groups="base.group_no_one"/>
-                        <field name="request_filename" column_invisible="1"/>
+                        <field name="csr" groups="base.group_no_one" readonly="state != 'draft'"/>
+                        <field name="request_filename" invisible="1"/>
                         <field name="request_file" filename="request_filename"/>
-                        <field name="crt" groups="base.group_no_one"/>
+                        <field name="crt" groups="base.group_no_one" readonly="state != 'draft'"/>
                     </group>
                 </sheet>
             </form>
