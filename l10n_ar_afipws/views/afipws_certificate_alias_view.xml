@@ -6,7 +6,7 @@
         <field name="model">afipws.certificate_alias</field>
         <field name="arch" type="xml">
             <form string="AFIP Certificates">
-                <field name="service_type" column_invisible="1"/>
+                <field name="service_type" invisible="1"/>
 
                 <header>
                     <button name="action_confirm"
