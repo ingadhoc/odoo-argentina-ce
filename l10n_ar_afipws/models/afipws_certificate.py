@@ -31,7 +31,6 @@ class AfipwsCertificate(models.Model):
     csr = fields.Text(
         "Request Certificate",
         readonly=True,
-        #states={"draft": [("readonly", False)]},
         help="Certificate Request in PEM format.",
     )
     crt = fields.Text(
