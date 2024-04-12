@@ -7,7 +7,7 @@
     "website": "http://www.sipecu.com.ar",
     "license": "LGPL-3",
     "category": "Localization/Argentina",
-    "version": "16.0.1.0.0",
+    "version": "17.0.1.0.0",
     "depends": ["l10n_ar_afipws_fe"],
     "data": [
         "security/ir.model.access.csv",
