@@ -40,7 +40,7 @@ class AfipwsCertificateAlias(models.Model):
     )
     key = fields.Text(
         "Private Key",
-        readonly=True,
+        #readonly=True,
     )
     company_id = fields.Many2one(
         "res.company",
@@ -54,17 +54,17 @@ class AfipwsCertificateAlias(models.Model):
     country_id = fields.Many2one(
         "res.country",
         "Country",
-        readonly=True,
+        #readonly=True,
         required=True,
     )
     state_id = fields.Many2one(
         "res.country.state",
         "State",
-        readonly=True,
+        #readonly=True,
     )
     city = fields.Char(
         "City",
-        readonly=True,
+        #readonly=True,
         required=True,
     )
     department = fields.Char(
@@ -81,7 +81,7 @@ class AfipwsCertificateAlias(models.Model):
     company_cuit = fields.Char(
         "Company CUIT",
         size=16,
-        readonly=True,
+        #readonly=True,
     )
     service_provider_cuit = fields.Char(
         "Service Provider CUIT",
@@ -99,7 +99,7 @@ class AfipwsCertificateAlias(models.Model):
         "Service Type",
         default="in_house",
         required=True,
-        readonly=True,
+        #readonly=True,
     )
     state = fields.Selection(
         [
@@ -123,7 +123,7 @@ class AfipwsCertificateAlias(models.Model):
         "Type",
         required=True,
         default="production",
-        readonly=True,
+        #readonly=True,
     )
 
     @api.onchange("company_id")
