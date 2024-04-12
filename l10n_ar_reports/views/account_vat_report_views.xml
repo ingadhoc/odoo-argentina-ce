@@ -35,14 +35,14 @@
                             <field name="company_id" widget="selection" groups="base.group_multi_company"/>
                             <field name="date_from"/>
                             <field name="date_to"/>
-                            <field name="presented_ledger_name" column_invisible="1"/>
+                            <field name="presented_ledger_name" invisible="1"/>
                             <field name="presented_ledger" filename="presented_ledger_name"/>
                         </group>
                         <group>
                             <field name="first_page"/>
                             <field name="last_page"/>
                             <field name="prorate_tax_credit"/>
-                            <field name="prorate_type" invisible="prorate_tax_credit == False" required="prorate_tax_credit == True"/>
+                            <field name="prorate_type" invisible="not prorate_tax_credit" required="prorate_tax_credit == True"/>
                             <field name="reference"/>
                         </group>
                     </group>
@@ -56,9 +56,9 @@
                         <page string="Archivos TXT" name="txt_files">
                             <button name="compute_txt_data" type="object" string="Compute TXT Data" invisible="state != 'draft'"/>
                             <group>
-                                <field name="vouchers_filename" column_invisible="1"/>
-                                <field name="aliquots_filename" column_invisible="1"/>
-                                <field name="import_aliquots_filename" column_invisible="1"/>
+                                <field name="vouchers_filename" invisible="1"/>
+                                <field name="aliquots_filename" invisible="1"/>
+                                <field name="import_aliquots_filename" invisible="1"/>
                                 <group>
                                     <field name="vouchers_file" filename="vouchers_filename"/>
                                     <field name="aliquots_file" filename="aliquots_filename"/>
