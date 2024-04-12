@@ -26,7 +26,7 @@
         #'web.assets_backend': ['/l10n_ar_afipws_caea/static/src/js/systray_afip_caea.js'],
         #'web.assets_qweb': ['/l10n_ar_afipws_caea/static/src/xml/systray_afip_caea.xml'],
     },
-    'installable': False,
+    'installable': True,
     "auto_install": False,
     "application": False,
 }

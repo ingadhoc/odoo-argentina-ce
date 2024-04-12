@@ -27,15 +27,15 @@
                     </header>
                     <sheet>
                         <h1>
-                            <field attrs="{'readonly': True}" name="name"/>
+                            <field readonly="1" name="name"/>
                         </h1>
                         <group col="6">
-                            <field attrs="{'readonly':[('name','!=','/')]}" name="month"/>
-                            <field attrs="{'readonly':[('name','!=','/')]}" name="year"/>
-                            <field attrs="{'readonly':[('name','!=','/')]}" name="order"/>
+                            <field readonly="name != '/'" name="month"/>
+                            <field readonly="name != '/'" name="year"/>
+                            <field readonly="name != '/'" name="order"/>
                         </group>
                         <group>
-                            <field attrs="{'invisible':True}" name="period"/>
+                            <field invisible="1" name="period"/>
                             <field groups="base.group_multi_company" name="company_id"/>
                             <field name="date_from"/>
                             <field name="date_to"/>
@@ -46,7 +46,7 @@
                                     <button name="action_send_invoices" states="active" string="Send invoices" type="object"/>
                                 </group>
                                 <group>
-                                    <field attrs="{'readonly':True}" name="move_ids">
+                                    <field readonly="1" name="move_ids">
                                         <tree string="invoices">
                                             <field invisible="True" name="id"/>
                                             <field name="name"/>
@@ -62,9 +62,9 @@
                                     <!-- <button name="report_no_invoices" states="active" string="report no invoices" type="object"/> -->
                                 </group>
                                 <group>
-                                    <field attrs="{'readonly':True}" name="journal_ids">
+                                    <field readonly="1" name="journal_ids">
                                         <tree string="invoices">
-                                            <field invisible="True" name="id"/>
+                                            <field invisible="1" name="id"/>
                                             <field name="name"/>
                                             <field name="l10n_ar_afip_pos_number"/>
                                             <field name="l10n_ar_afip_pos_system"/>
