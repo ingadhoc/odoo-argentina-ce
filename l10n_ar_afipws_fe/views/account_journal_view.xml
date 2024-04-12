@@ -6,11 +6,11 @@
         <field name="inherit_id" ref="account.view_account_journal_form"/>
         <field name="arch" type="xml">
             <form>
-                <field name="afip_ws" column_invisible="1"/>
+                <field name="afip_ws" invisible="1"/>
             </form>
             <sheet position="before">
                 <header>
-                    <button name="action_get_connection" string="Get Connection" help="Get Connection For this webservice and create it if no valid" type="object" invisible="'afip_ws' == False"/>
+                    <button name="action_get_connection" string="Get Connection" help="Get Connection For this webservice and create it if no valid" type="object" invisible="not 'afip_ws'"/>
                     <button name="test_pyafipws_dummy" string="Dummy Test" help="Dummy test to check connection to selected webservice" type="object" invisible="'afip_ws' == False"/>
                     <button name="test_pyafipws_point_of_sales" string="Get Points Of Sale" help="Get Enable Point of Sales for this webservice" type="object" invisible="'afip_ws' == False"/>
                     <button name="get_pyafipws_cuit_document_classes" string="Get Document Types" help="Get valid document types for this webservice" type="object" invisible="'afip_ws' == False"/>
