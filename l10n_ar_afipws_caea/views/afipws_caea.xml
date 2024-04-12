@@ -43,7 +43,7 @@
                         <notebook>
                             <page name="moves" string="Invoices">
                                 <group>
-                                    <button name="action_send_invoices" states="active" string="Send invoices" type="object"/>
+                                    <button name="action_send_invoices" invisible="state != 'active'" string="Send invoices" type="object"/>
                                 </group>
                                 <group>
                                     <field readonly="1" name="move_ids">
@@ -58,7 +58,7 @@
                             </page>
                             <page name="journals" string="Autorized CAEA journals">
                                 <group>
-                                    <button name="action_get_caea_pos" states="active" string="Update autorized CAEA pos" type="object"/>
+                                    <button name="action_get_caea_pos" invisible="state != 'active'" string="Update autorized CAEA pos" type="object"/>
                                     <!-- <button name="report_no_invoices" states="active" string="report no invoices" type="object"/> -->
                                 </group>
                                 <group>
