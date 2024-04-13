@@ -27,7 +27,7 @@ class AccountVatLedgerXlsx(models.AbstractModel):
             titles[3] = "Tipo Comprobante"
             titles[4] = "Responsabilidad AFIP"
             titles[5] = "N° Comprobante"
-            titles[6] = "NO gravado/Excento"
+            titles[6] = "NO gravado/Exento"
             titles[7] = "Monto gravado 2,5%"
             titles[8] = "IVA 2,5%"
             titles[9] = "Monto gravado 5%"

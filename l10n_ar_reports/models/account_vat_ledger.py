@@ -20,7 +20,7 @@ class AccountVatLedger(models.Model):
         string="Company",
         required=True,
         readonly=True,
-        states={"draft": [("readonly", False)]},
+        #states={"draft": [("readonly", False)]},
         default=lambda self: self.env["res.company"]._company_default_get(
             "account.vat.ledger"
         ),
@@ -32,13 +32,13 @@ class AccountVatLedger(models.Model):
         string="Start Date",
         required=True,
         readonly=True,
-        states={"draft": [("readonly", False)]},
+        #states={"draft": [("readonly", False)]},
     )
     date_to = fields.Date(
         string="End Date",
         required=True,
         readonly=True,
-        states={"draft": [("readonly", False)]},
+        #states={"draft": [("readonly", False)]},
     )
     journal_ids = fields.Many2many(
         "account.journal",
@@ -48,23 +48,23 @@ class AccountVatLedger(models.Model):
         string="Journals",
         required=True,
         readonly=True,
-        states={"draft": [("readonly", False)]},
+        #states={"draft": [("readonly", False)]},
     )
     first_page = fields.Integer(
         "First Page",
         required=True,
         readonly=True,
-        states={"draft": [("readonly", False)]},
+        #states={"draft": [("readonly", False)]},
     )
     last_page = fields.Integer(
         "Last Page",
         readonly=True,
-        states={"draft": [("readonly", False)]},
+        #states={"draft": [("readonly", False)]},
     )
     presented_ledger = fields.Binary(
         "Presented Ledger",
         readonly=True,
-        states={"draft": [("readonly", False)]},
+        #states={"draft": [("readonly", False)]},
     )
     presented_ledger_name = fields.Char()
     state = fields.Selection(
