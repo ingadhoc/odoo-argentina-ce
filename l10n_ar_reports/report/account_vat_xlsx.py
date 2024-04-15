@@ -22,12 +22,12 @@ class AccountVatLedgerXlsx(models.AbstractModel):
             sheet.write(1, 0, vat_ledger.display_name, bold)
             titles = [None] * 24
             titles[0] = "Fecha"
-            titles[1] = "Cliente/Proveedor"
+            titles[1] = "Razón Social"
             titles[2] = "CUIT"
             titles[3] = "Tipo Comprobante"
             titles[4] = "Responsabilidad AFIP"
             titles[5] = "N° Comprobante"
-            titles[6] = "NO gravado/Exento"
+            titles[6] = "No gravado/Exento"
             titles[7] = "Monto gravado 2,5%"
             titles[8] = "IVA 2,5%"
             titles[9] = "Monto gravado 5%"
