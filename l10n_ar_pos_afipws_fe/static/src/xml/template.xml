@@ -1,7 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="point_of_sale.template" xml:space="preserve">
         <t owl="1" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension" t-name="OrderReceipt">
-                <xpath expr="//div[hasclass('before-footer')]" position="after">
+                <t t-if="receipt.company.vat" position="before">
+                        <t t-if="receipt.company.vat">
+                                <div><t t-esc="receipt.company.l10n_ar_afip_responsibility_type_id[1]" /></div>
+                        </t>
+                </t>
+                <t t-if="receipt.company.vat" position="after">
+                        <div>IBB: <t t-esc="receipt.company.l10n_ar_gross_income_number" /><t t-esc="receipt.company.l10n_ar_gross_income_type" /></div>
+                        <div>Inicio actividades: <t t-esc="receipt.company.l10n_ar_afip_start_date" /></div>
+                </t>
+
+
+                <!-- <xpath expr="//div[hasclass('before-footer')]" position="after">
                         <t t-if="receipt.l10n_ar_afip_auth_code">
                                 <div class="afip-cae-info" style="text-align: center; font-size: 75%;">
                                         <t t-if="receipt.l10n_ar_afip_qr_image">
@@ -17,6 +28,6 @@
                                         </div>
                                 </div>
                         </t>
-                </xpath>
+                </xpath> -->
         </t>
 </templates>

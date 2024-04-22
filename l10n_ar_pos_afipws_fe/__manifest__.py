@@ -13,10 +13,10 @@
     "external_dependencies": {},
     "data": [],
     "demo": [],
-    "assets": {
-        #"point_of_sale.assets": [
-        #    "l10n_ar_pos_afipws_fe/static/src/js/pos_order.js",
-        #]
+    'assets': {
+        'point_of_sale.assets': [
+            'l10n_ar_pos_afipws_fe/static/src/**/*'
+        ],
     },
     "images": [],
     'installable': True,
