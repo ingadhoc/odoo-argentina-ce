@@ -18,6 +18,7 @@
         "views/account_journal_view.xml",
         "views/report_invoice.xml",
         "views/res_config_settings.xml",
+        "views/res_partner_bank_views.xml",
         "views/menuitem.xml",
     ],
     "demo": [],

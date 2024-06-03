@@ -194,7 +194,7 @@ class AccountMove(models.Model):
     def wsfe_invoice_add_info(self, ws, invoice_info):
         if invoice_info["mipyme_fce"]:
             # agregamos cbu para factura de credito electronica
-            ws.AgregarOpcional(opcional_id=2101, valor=self.partner_bank_id.acc_number)
+            ws.AgregarOpcional(opcional_id=2101, valor=self.partner_bank_id.afipws_cbu)
             # agregamos tipo de transmision si esta definido
             transmission_type = (
                 self.env["ir.config_parameter"]

@@ -9,3 +9,4 @@ from . import account_journal
 from . import account_journal_ws
 from . import res_config_settings
 from . import product
+from . import res_partner_bank
