@@ -2,7 +2,8 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from odoo import models, api, fields, _
+from markupsafe import Markup
+from odoo import models, _
 import logging
 from odoo.exceptions import UserError
 
@@ -14,7 +15,6 @@ _logger = logging.getLogger(__name__)
 
 class AccountJournalWs(models.Model):
     _inherit = "account.journal"
-
 
     def get_pyafipws_post_invoice_numbers(self):
         for journal_id in self:
@@ -29,8 +29,7 @@ class AccountJournalWs(models.Model):
                 document_type = document_line.split(',')
                 # call the webservice method to get the last invoice at AFIP:
                 if hasattr(self, "%s_get_pyafipws_last_invoice" % afip_ws):
-                    obj_document_type = type('obj', (object,), {'code' : document_type[0]})
-
+                    obj_document_type = type('obj', (object,), {'code': document_type[0]})
                     document_type.append(getattr(self, "%s_get_pyafipws_last_invoice" % afip_ws)(
                         journal_id.l10n_ar_afip_pos_number, obj_document_type, ws
                     ))
@@ -41,13 +40,12 @@ class AccountJournalWs(models.Model):
                     int(document_type[0]),
                     int(document_type[-1])
                 ))
-            journal_id.message_post(body = '<br/>\n'.join(msg))
+            journal_id.message_post(body=Markup('<br/>\n').join(msg))
 
     def get_pyafipws_last_invoice(self, document_type):
         self.ensure_one()
         company = self.company_id
         afip_ws = self.afip_ws
-
         if not afip_ws:
             return _("No AFIP WS selected on point of sale %s") % (self.name)
         ws = company.get_connection(afip_ws).connect()
@@ -59,7 +57,6 @@ class AccountJournalWs(models.Model):
                 )
             else:
                 return _("AFIP WS %s not implemented") % afip_ws
-            msg = " - ".join([ws.Excepcion, ws.ErrMsg, ws.Obs])
             return last
 
         except ValueError as error:
@@ -80,6 +77,7 @@ class AccountJournalWs(models.Model):
         if not afip_ws:
             raise UserError(_("No AFIP WS selected"))
         ws = self.company_id.get_connection(afip_ws).connect()
+        notification_type = "success"
         if hasattr(self, "%s_pyafipws_point_of_sales" % afip_ws):
             ret = getattr(self, "%s_pyafipws_point_of_sales" % afip_ws)(ws)
         else:
@@ -91,7 +89,18 @@ class AccountJournalWs(models.Model):
             " - ".join([ws.Excepcion, ws.ErrMsg, ws.Obs]),
         )
         title = _("Enabled Point Of Sales on AFIP\n")
-        raise UserError(title + msg)
+
+        notification = {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": title + msg,
+                "type": notification_type,
+                "sticky": True,  # True/False will display for few seconds if false
+            },
+        }
+
+        return notification
 
     def get_pyafipws_cuit_document_classes(self):
         self.ensure_one()
@@ -106,10 +115,21 @@ class AccountJournalWs(models.Model):
                 _("Get document types for ws %s is not implemented yet") % (afip_ws)
             )
         msg = _("Authorized Document Clases on AFIP\n%s\n. \nObservations: %s") % (
-            "\n ".join(ret),
-            ".\n".join([ws.Excepcion, ws.ErrMsg, ws.Obs]),
+            "<br/> ".join(ret),
+            ".<br/>".join([ws.Excepcion, ws.ErrMsg, ws.Obs]),
         )
-        raise UserError(msg)
+
+        notification = {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": Markup(msg),
+                "type": "success",
+                "sticky": True,  # True/False will display for few seconds if false
+            },
+        }
+
+        return notification
 
     def get_pyafipws_zonas(self):
         self.ensure_one()

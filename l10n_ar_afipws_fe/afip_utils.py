@@ -1,5 +1,6 @@
 from pysimplesoap.client import SimpleXMLElement
-#import xml.etree.ElementTree as ET
+# import xml.etree.ElementTree as ET
+
 
 def _get_response_info(xml_response):
     return SimpleXMLElement(xml_response)
@@ -7,7 +8,7 @@ def _get_response_info(xml_response):
 
 def get_invoice_number_from_response(xml_response, afip_ws='wsfe'):
     if not xml_response:
-        return  False
+        return False
     try:
         xml = _get_response_info(xml_response)
         return int(xml('CbteDesde'))
@@ -26,7 +27,7 @@ def get_invoice_number_from_response(xml_response, afip_ws='wsfe'):
         #                '/a:CbteDesde' , namespaces)[0].text
         # return int(number)
     except:
-        return  False
+        return False
 
 
 def check_invoice_number(account_move):
