@@ -32,11 +32,11 @@
                         </h1>
                         <span>
                             <field name="field_ids" nolabel="1">
-                                <tree create="false" editable="top">
+                                <list create="false" editable="top">
                                     <field name="field"/>
                                     <field readonly="True" name="old_value"/>
                                     <field name="new_value"/>
-                                </tree>
+                                </list>
                             </field>
                         </span>
                     </group>

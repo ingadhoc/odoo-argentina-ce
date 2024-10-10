@@ -166,7 +166,7 @@ class AccountMove(models.Model):
                     "nroCmp": number_parts["invoice_number"],
                     "importe": float(float_repr(rec.amount_total, 2)),
                     "moneda": rec.currency_id.l10n_ar_afip_code,
-                    "ctz": float(float_repr(rec.l10n_ar_currency_rate, 2)),
+                    "ctz": float(float_repr(rec.invoice_currency_rate, 2)),
                     "tipoCodAut": "E" if rec.afip_auth_mode == "CAE" else "A",
                     "codAut": int(rec.afip_auth_code),
                 }

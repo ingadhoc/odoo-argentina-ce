@@ -1,8 +1,7 @@
 {
     "name": "Punto de venta Factura Electrónica Argentina",
-    "version": "16.0.1.0.0",
+    "version": "18.0.1.0.0",
     "category": "Localization/Argentina",
-    "sequence": 14,
     "author": "ADHOC SA, Filoquin",
     "license": "AGPL-3",
     "summary": "",
@@ -14,12 +13,9 @@
     "data": [],
     "demo": [],
     "assets": {
-        #"point_of_sale.assets": [
-        #    "l10n_ar_pos_afipws_fe/static/src/js/pos_order.js",
-        #]
     },
     "images": [],
-    'installable': False,
+    'installable': True,
     "auto_install": False,
     "application": False,
 }

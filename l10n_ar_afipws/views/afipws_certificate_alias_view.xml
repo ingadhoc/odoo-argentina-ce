@@ -73,15 +73,15 @@
     </record>
 
     <record id="view_afipws_certificate_alias_tree" model="ir.ui.view">
-        <field name="name">afipws.certificate_alias.tree</field>
+        <field name="name">afipws.certificate_alias.list</field>
         <field name="model">afipws.certificate_alias</field>
         <field name="arch" type="xml">
-            <tree string="AFIP Certificates">
+            <list string="AFIP Certificates">
                 <field name="type"/>
                 <field name="common_name"/>
                 <field name="company_id"/>
                 <field name="state"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -89,7 +89,7 @@
         <field name="name">AFIP Certificate</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">afipws.certificate_alias</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
     </record>
 
     <menuitem name="Certificates" action="act_afipws_certificate_alias" id="menu_action_afipws_certificate_alias" parent="menu_afipws"/>

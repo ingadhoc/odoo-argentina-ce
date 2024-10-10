@@ -70,7 +70,7 @@ class AfipwsCertificate(models.Model):
         for rec in self:
             rec.request_filename = "request.csr"
             if rec.csr:
-                rec.request_file = base64.encodestring(self.csr.encode("utf-8"))
+                rec.request_file = base64.encodebytes(self.csr.encode("utf-8"))
             else:
                 rec.request_file = False
 
