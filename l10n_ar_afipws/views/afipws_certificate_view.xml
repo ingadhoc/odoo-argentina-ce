@@ -38,13 +38,13 @@
     </record>
 
     <record id="view_afipws_certificate_tree" model="ir.ui.view">
-        <field name="name">afipws.certificate.tree</field>
+        <field name="name">afipws.certificate.list</field>
         <field name="model">afipws.certificate</field>
         <field name="arch" type="xml">
-            <tree string="AFIP Certificates">
+            <list string="AFIP Certificates">
                 <field name="create_date"/>
                 <field name="state"/>
-            </tree>
+            </list>
         </field>
     </record>
 </odoo>
