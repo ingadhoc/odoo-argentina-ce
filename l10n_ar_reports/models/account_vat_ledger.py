@@ -328,7 +328,7 @@ class AccountVatLedger(models.Model):
             # si no existe la factura en alicuotas es porque no tienen ninguna
             cant_alicuotas = len(alicuotas.get(inv))
 
-            currency_rate = inv.l10n_ar_currency_rate
+            currency_rate = inv.invoice_currency_rate
             currency_code = inv.currency_id.l10n_ar_afip_code
 
             invoice_number, pos_number = self._get_pos_and_invoice_invoice_number(inv)
