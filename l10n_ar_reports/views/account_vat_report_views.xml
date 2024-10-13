@@ -22,39 +22,39 @@
                 <field name="type" invisible="1"/>
                 <field name="company_id"  invisible="1"/>
                 <header>
-                    <button name="action_print" string="Print" states="draft" type="object" class="oe_highlight"/>
-                    <button name="action_print" string="Print" states="cancel,presented" type="object"/>
-                    <button name="action_present" string="Present" states="draft" type="object" class="oe_highlight"/>
-                    <button name="action_cancel" string="Cancel" states="draft,presented" type="object"/>
-                    <button name="action_to_draft" string="To Draft" states="cancel" type="object"/>
+                    <button name="action_print" string="Print" invisible="state != 'draft'" type="object" class="oe_highlight"/>
+                    <button name="action_print" string="Print" invisible="state not in ('cancel','presented')" type="object"/>
+                    <button name="action_present" string="Present" invisible="state != 'draft'" type="object" class="oe_highlight"/>
+                    <button name="action_cancel" string="Cancel" invisible="state not in ('draft','presented')" type="object"/>
+                    <button name="action_to_draft" string="To Draft" invisible="state != 'cancel'" type="object"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,presented"/>
                 </header>
                 <sheet>
                     <group>
                         <group>
-                            <field name="company_id" widget="selection" groups="base.group_multi_company"/>
-                            <field name="date_from"/>
-                            <field name="date_to"/>
+                            <field name="company_id" widget="selection"  readonly="state != 'draft'"  groups="base.group_multi_company"/>
+                            <field name="date_from" readonly="state != 'draft'"/>
+                            <field name="date_to" readonly="state != 'draft'"/>
                             <field name="presented_ledger_name" invisible="1"/>
                             <field name="presented_ledger" filename="presented_ledger_name"/>
                         </group>
                         <group>
-                            <field name="first_page"/>
-                            <field name="last_page"/>
-                            <field name="prorate_tax_credit"/>
-                            <field name="prorate_type" attrs="{'invisible':[('prorate_tax_credit','=',False)],'required':[('prorate_tax_credit','=',True)]}"/>
-                            <field name="reference"/>
+                            <field name="first_page" readonly="state != 'draft'"/>
+                            <field name="last_page" readonly="state != 'draft'"/>
+                            <field name="prorate_tax_credit" readonly="state != 'draft'"/>
+                            <field name="prorate_type" invisible="not prorate_tax_credit"  readonly="state != 'draft'" required="prorate_tax_credit"/>
+                            <field name="reference" readonly="state != 'draft'"/>
                         </group>
                     </group>
                     <notebook>
                         <page string="Invoices" name="invoices">
-                            <field name="invoice_ids"/>
+                            <field name="invoice_ids" readonly="state != 'draft'"/>
                         </page>
                         <page string="Journals" name="journal_ids">
-                            <field name="journal_ids" domain="[('type', '=', type), ('company_id', '=', company_id), ('l10n_latam_use_documents', '=', True)]"/>
+                            <field name="journal_ids" readonly="state != 'draft'" domain="[('type', '=', type), ('company_id', '=', company_id), ('l10n_latam_use_documents', '=', True)]"/>
                         </page>
                         <page string="Archivos TXT" name="txt_files">
-                            <button name="compute_txt_data" type="object" string="Compute TXT Data" states="draft"/>
+                            <button name="compute_txt_data" type="object" string="Compute TXT Data" invisible="state != 'draft'"/>
                             <group>
                                 <field name="vouchers_filename" invisible="1"/>
                                 <field name="aliquots_filename" invisible="1"/>
@@ -69,7 +69,7 @@
                                 <!-- <field name="REGINFO_CV_CABECERA"/> -->
                                 <field name="REGINFO_CV_CBTE"/>
                                 <field name="REGINFO_CV_ALICUOTAS"/>
-                                <field name="REGINFO_CV_COMPRAS_IMPORTACIONES" attrs="{'invisible': [('type', '!=', 'purchase')]}"/>
+                                <field name="REGINFO_CV_COMPRAS_IMPORTACIONES" invisible="type != 'purchase'"/>
                             </group>
                         </page>
                         <page string="Notes" name="notes">
