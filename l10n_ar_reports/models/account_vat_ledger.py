@@ -20,7 +20,6 @@ class AccountVatLedger(models.Model):
         string="Company",
         required=True,
         readonly=True,
-        states={"draft": [("readonly", False)]},
         default=lambda self: self.env["res.company"]._company_default_get(
             "account.vat.ledger"
         ),
@@ -32,13 +31,11 @@ class AccountVatLedger(models.Model):
         string="Start Date",
         required=True,
         readonly=True,
-        states={"draft": [("readonly", False)]},
     )
     date_to = fields.Date(
         string="End Date",
         required=True,
         readonly=True,
-        states={"draft": [("readonly", False)]},
     )
     journal_ids = fields.Many2many(
         "account.journal",
@@ -48,18 +45,15 @@ class AccountVatLedger(models.Model):
         string="Journals",
         required=True,
         readonly=True,
-        states={"draft": [("readonly", False)]},
     )
     first_page = fields.Integer(
         "First Page",
         required=True,
         readonly=True,
-        states={"draft": [("readonly", False)]},
     )
     last_page = fields.Integer(
         "Last Page",
         readonly=True,
-        states={"draft": [("readonly", False)]},
     )
     presented_ledger = fields.Binary(
         "Presented Ledger",
@@ -225,7 +219,7 @@ class AccountVatLedger(models.Model):
                 self.date_to,
                 # self.period_id.name
             )
-            self.aliquots_file = base64.encodestring(
+            self.aliquots_file = base64.encodebytes(
                 self.REGINFO_CV_ALICUOTAS.encode("ISO-8859-1")
             )
         else:
@@ -237,7 +231,7 @@ class AccountVatLedger(models.Model):
                 self.date_to,
                 # self.period_id.name
             )
-            self.import_aliquots_file = base64.encodestring(
+            self.import_aliquots_file = base64.encodebytes(
                 self.REGINFO_CV_COMPRAS_IMPORTACIONES.encode("ISO-8859-1")
             )
         else:
@@ -249,7 +243,7 @@ class AccountVatLedger(models.Model):
                 self.date_to,
                 # self.period_id.name
             )
-            self.vouchers_file = base64.encodestring(
+            self.vouchers_file = base64.encodebytes(
                 self.REGINFO_CV_CBTE.encode("ISO-8859-1")
             )
         else:
