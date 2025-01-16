@@ -281,7 +281,7 @@ class AccountMove(models.Model):
                     ]
             if msg:
                 _logger.error(
-                    _("AFIP Validation Error. %s" % msg)
+                     _('AFIP Validation Error. %s') % msg
                     + " XML Request: %s XML Response: %s"
                     % (ws.XmlRequest, ws.XmlResponse)
                 )
