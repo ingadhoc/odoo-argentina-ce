@@ -28,11 +28,9 @@ class AfipwsConnection(models.Model):
         readonly=True,
     )
     token = fields.Text(
-        "Token",
         readonly=True,
     )
     sign = fields.Text(
-        "Sign",
         readonly=True,
     )
     generationtime = fields.Datetime("Generation Time", readonly=True)
@@ -47,7 +45,6 @@ class AfipwsConnection(models.Model):
     )
     type = fields.Selection(
         [("production", "Production"), ("homologation", "Homologation")],
-        "Type",
         required=True,
     )
     afip_ws = fields.Selection(
