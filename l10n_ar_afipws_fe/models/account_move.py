@@ -61,7 +61,6 @@ class AccountMove(models.Model):
         help="AFIP request result",
     )
     validation_type = fields.Char(
-        "Validation Type",
         compute="_compute_validation_type",
     )
     afip_fce_es_anulacion = fields.Boolean(
