@@ -82,7 +82,6 @@ class ResPartnerUpdateFromPadronWizard(models.TransientModel):
 
     state = fields.Selection(
         [("option", "Option"), ("selection", "Selection"), ("finished", "Finished")],
-        "State",
         readonly=True,
         required=True,
         default="option",
@@ -109,7 +108,6 @@ class ResPartnerUpdateFromPadronWizard(models.TransientModel):
         default=True,
     )
     title_case = fields.Boolean(
-        string="Title Case",
         help="Converts retreived text fields to Title Case.",
         default=_get_default_title_case,
     )
