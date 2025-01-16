@@ -31,7 +31,6 @@ class AfipwsCertificateAlias(models.Model):
     """
 
     common_name = fields.Char(
-        "Common Name",
         size=64,
         default="AFIP WS",
         help="Just a name, you can leave it this way",
@@ -63,12 +62,10 @@ class AfipwsCertificateAlias(models.Model):
         readonly=True,
     )
     city = fields.Char(
-        "City",
         readonly=True,
         required=True,
     )
     department = fields.Char(
-        "Department",
         default="IT",
         readonly=True,
         required=True,
@@ -96,7 +93,6 @@ class AfipwsCertificateAlias(models.Model):
     )
     service_type = fields.Selection(
         [("in_house", "In House"), ("outsourced", "Outsourced")],
-        "Service Type",
         default="in_house",
         required=True,
         readonly=True,
@@ -120,7 +116,6 @@ class AfipwsCertificateAlias(models.Model):
     )
     type = fields.Selection(
         [("production", "Production"), ("homologation", "Homologation")],
-        "Type",
         required=True,
         default="production",
         readonly=True,
