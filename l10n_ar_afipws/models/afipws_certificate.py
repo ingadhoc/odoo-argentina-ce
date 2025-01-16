@@ -44,7 +44,6 @@ class AfipwsCertificate(models.Model):
             ("confirmed", "Confirmed"),
             ("cancel", "Cancelled"),
         ],
-        "State",
         index=True,
         readonly=True,
         default="draft",
