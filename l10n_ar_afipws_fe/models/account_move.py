@@ -10,7 +10,7 @@ from datetime import datetime
 from odoo import fields, models, api, _
 from odoo.exceptions import UserError
 from odoo.tools import float_repr
-from odoo.addons.l10n_ar_afipws_fe.afip_utils import get_invoice_number_from_response
+from ..afip_utils import get_invoice_number_from_response
 import base64
 
 base64.encodestring = base64.encodebytes
