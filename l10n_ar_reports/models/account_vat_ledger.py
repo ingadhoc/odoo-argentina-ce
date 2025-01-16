@@ -26,7 +26,7 @@ class AccountVatLedger(models.Model):
         ),
     )
     type = fields.Selection(
-        [("sale", "Sale"), ("purchase", "Purchase")], "Type", required=True
+        [("sale", "Sale"), ("purchase", "Purchase")], required=True
     )
     date_from = fields.Date(
         string="Start Date",
@@ -51,34 +51,28 @@ class AccountVatLedger(models.Model):
         states={"draft": [("readonly", False)]},
     )
     first_page = fields.Integer(
-        "First Page",
         required=True,
         readonly=True,
         states={"draft": [("readonly", False)]},
     )
     last_page = fields.Integer(
-        "Last Page",
         readonly=True,
         states={"draft": [("readonly", False)]},
     )
     presented_ledger = fields.Binary(
-        "Presented Ledger",
         readonly=True,
         states={"draft": [("readonly", False)]},
     )
     presented_ledger_name = fields.Char()
     state = fields.Selection(
         [("draft", "Draft"), ("presented", "Presented"), ("cancel", "Cancel")],
-        "State",
         required=True,
         default="draft",
     )
     note = fields.Html("Notes")
     # Computed fields
-    name = fields.Char("Titile", compute="_compute_name")
-    reference = fields.Char(
-        "Reference",
-    )
+    name = fields.Char("Title", compute="_compute_name")
+    reference = fields.Char()
     invoice_ids = fields.Many2many(
         "account.ar.vat.line", string="Invoices", compute="_compute_invoices"
     )
