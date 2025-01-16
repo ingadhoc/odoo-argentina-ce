@@ -464,24 +464,15 @@ class AccountMove(models.Model):
         country = invoice_info["country"]
         if not country:
             raise UserError(
-                _(
-                    'For WS "%s" country is required on partner'
-                    % (self.journal_id.afip_ws)
-                )
+                 _('For WS "%s" country is required on partner') % self.journal_id.afip_ws
             )
         elif not country.code:
             raise UserError(
-                _(
-                    'For WS "%s" country code is mandatory'
-                    "Country: %s" % (self.journal_id.afip_ws, country.name)
-                )
+                 _('For WS "%s" country code is mandatoryCountry: %s') % (self.journal_id.afip_ws, country.name)
             )
         elif not country.l10n_ar_afip_code:
             raise UserError(
-                _(
-                    'For WS "%s" country afip code is mandatory'
-                    "Country: %s" % (self.journal_id.afip_ws, country.name)
-                )
+                _('For WS "%s" country afip code is mandatoryCountry: %s') % (self.journal_id.afip_ws, country.name)
             )
         if invoice_info["afip_associated_period_from"] and invoice_info["afip_associated_period_to"]:
             invoice_info["afip_associated_period_from"] = invoice_info["afip_associated_period_from"].strftime("%Y%m%d")
@@ -602,7 +593,7 @@ class AccountMove(models.Model):
                 line_temp["umed"] = "7"
             elif not line.product_uom_id.l10n_ar_afip_code:
                 raise UserError(
-                    _("Not afip code con producto UOM %s" % (line.product_uom_id.name))
+                    _('Not afip code con producto UOM %s') % line.product_uom_id.name
                 )
             else:
                 line_temp["umed"] = line.product_uom_id.l10n_ar_afip_code
