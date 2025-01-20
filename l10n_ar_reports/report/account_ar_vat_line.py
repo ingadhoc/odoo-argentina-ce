@@ -76,7 +76,7 @@ class AccountArVatLine(models.Model):
         readonly=True, string="Not taxed/ex", currency_field="company_currency_id"
     )
     other_taxes = fields.Monetary(
-        readonly=True, string="Other Taxes", currency_field="company_currency_id"
+        readonly=True, currency_field="company_currency_id"
     )
     total = fields.Monetary(readonly=True, currency_field="company_currency_id")
     state = fields.Selection(
