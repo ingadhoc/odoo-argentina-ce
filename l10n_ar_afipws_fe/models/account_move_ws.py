@@ -9,6 +9,8 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
+# TODO: unir AccountMoveWs con AccountMove ya que ambos heredan account.move
+# pylint: disable=R8180
 
 class AccountMove(models.Model):
     _inherit = "account.move"
