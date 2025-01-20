@@ -9,6 +9,9 @@ from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
+# TODO: unir AccountJournalWs con AccountJournal ya que ambos heredan account.journal
+# pylint: disable=R8180
+
 # Coloco las funciones de WS aqui para limpiar el codigo
 # de funciones que no ayudan a su lectura
 
