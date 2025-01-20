@@ -149,7 +149,7 @@ class AfipwsConnection(models.Model):
 
         if not ws:
             raise UserError(
-                _('AFIP Webservice %s not implemented yet') % self.afip_ws instead
+                _('AFIP Webservice %s not implemented yet') % self.afip_ws
             )
         # TODO implementar cache y proxy
         # create the proxy and get the configuration system parameters:
