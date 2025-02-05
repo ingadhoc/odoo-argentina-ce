@@ -2,7 +2,7 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from odoo import fields, models, api, _
+from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
 try:
@@ -179,9 +179,7 @@ class AfipwsCertificateAlias(models.Model):
             req.get_subject().O = self.company_id.name.encode("ascii", "ignore")
             req.get_subject().OU = self.department.encode("ascii", "ignore")
             req.get_subject().CN = self.common_name.encode("ascii", "ignore")
-            req.get_subject().serialNumber = "CUIT %s" % self.cuit.encode(
-                "ascii", "ignore"
-            )
+            req.get_subject().serialNumber = "CUIT %s" % self.cuit.encode("ascii", "ignore")
             k = crypto.load_privatekey(crypto.FILETYPE_PEM, self.key)
             self.key = crypto.dump_privatekey(crypto.FILETYPE_PEM, k)
             req.set_pubkey(k)
@@ -197,6 +195,4 @@ class AfipwsCertificateAlias(models.Model):
     @api.constrains("common_name")
     def check_common_name_len(self):
         if self.filtered(lambda x: x.common_name and len(x.common_name) > 50):
-            raise ValidationError(
-                _("The Common Name must be lower than 50 characters long")
-            )
+            raise ValidationError(_("The Common Name must be lower than 50 characters long"))

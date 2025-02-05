@@ -12,10 +12,9 @@
     "external_dependencies": {},
     "data": [],
     "demo": [],
-    "assets": {
-    },
+    "assets": {},
     "images": [],
-    'installable': True,
+    "installable": True,
     "auto_install": False,
     "application": False,
 }

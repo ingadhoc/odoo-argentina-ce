@@ -6,7 +6,6 @@ from odoo import fields, models
 
 
 class ResConfigSettings(models.TransientModel):
-
     _inherit = "res.config.settings"
 
     l10n_ar_afip_fce_transmission = fields.Selection(

@@ -2,15 +2,17 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from odoo import fields, models, api, _
-from odoo.exceptions import UserError
-from datetime import datetime
 import logging
+from datetime import datetime
+
+from odoo import _, fields, models
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
 # TODO: unir AccountMoveWs con AccountMove ya que ambos heredan account.move
 # pylint: disable=R8180
+
 
 class AccountMove(models.Model):
     _inherit = "account.move"
@@ -25,9 +27,7 @@ class AccountMove(models.Model):
         if not afip_ws:
             return
         if hasattr(self, "%s_pyafipws_create_invoice" % afip_ws):
-            return getattr(self, "%s_pyafipws_create_invoice" % afip_ws)(
-                ws, invoice_info
-            )
+            return getattr(self, "%s_pyafipws_create_invoice" % afip_ws)(ws, invoice_info)
         else:
             return _("AFIP WS %s not implemented") % afip_ws
 
@@ -104,7 +104,6 @@ class AccountMove(models.Model):
         )
 
     def wsbfe_pyafipws_create_invoice(self, ws, invoice_info):
-
         ws.CrearFactura(
             invoice_info["tipo_doc"],
             invoice_info["nro_doc"],
@@ -143,11 +142,10 @@ class AccountMove(models.Model):
     def pyafipws_add_tax(self, ws):
         vat_items = self._get_vat()
         for item in vat_items:
-            ws.AgregarIva(item['Id'], "%.2f" % item['BaseImp'], "%.2f" % item['Importe'])
+            ws.AgregarIva(item["Id"], "%.2f" % item["BaseImp"], "%.2f" % item["Importe"])
 
         not_vat_taxes = self.line_ids.filtered(
-            lambda x: x.tax_line_id
-            and x.tax_line_id.tax_group_id.l10n_ar_tribute_afip_code
+            lambda x: x.tax_line_id and x.tax_line_id.tax_group_id.l10n_ar_tribute_afip_code
         )
         for tax in not_vat_taxes:
             ws.AgregarTributo(
@@ -176,9 +174,7 @@ class AccountMove(models.Model):
             ws.AgregarOpcional(opcional_id=2101, valor=self.partner_bank_id.acc_number)
             # agregamos tipo de transmision si esta definido
             transmission_type = (
-                self.env["ir.config_parameter"]
-                .sudo()
-                .get_param("l10n_ar_afipws_fe.fce_transmission", "")
+                self.env["ir.config_parameter"].sudo().get_param("l10n_ar_afipws_fe.fce_transmission", "")
             )
             if transmission_type:
                 ws.AgregarOpcional(opcional_id=27, valor=transmission_type)
@@ -199,7 +195,9 @@ class AccountMove(models.Model):
                 invoice_info["CbteAsoc"].invoice_date.strftime("%Y%m%d"),
             )
         if invoice_info["afip_associated_period_from"] and invoice_info["afip_associated_period_to"]:
-            ws.AgregarPeriodoComprobantesAsociados(invoice_info["afip_associated_period_from"], invoice_info["afip_associated_period_to"])
+            ws.AgregarPeriodoComprobantesAsociados(
+                invoice_info["afip_associated_period_from"], invoice_info["afip_associated_period_to"]
+            )
         self.pyafipws_add_tax(ws)
 
     def wsbfe_invoice_add_info(self, ws, invoice_info):
@@ -208,9 +206,7 @@ class AccountMove(models.Model):
             ws.AgregarOpcional(opcional_id=2101, valor=self.partner_bank_id.acc_number)
             # agregamos tipo de transmision si esta definido
             transmission_type = (
-                self.env["ir.config_parameter"]
-                .sudo()
-                .get_param("l10n_ar_afipws_fe.fce_transmission", "")
+                self.env["ir.config_parameter"].sudo().get_param("l10n_ar_afipws_fe.fce_transmission", "")
             )
             if transmission_type:
                 ws.AgregarOpcional(opcional_id=27, valor=transmission_type)
@@ -244,7 +240,6 @@ class AccountMove(models.Model):
             )
 
     def wsfex_invoice_add_info(self, ws, invoice_info):
-
         if invoice_info["CbteAsoc"]:
             doc_number_parts = self._l10n_ar_get_document_number_parts(
                 invoice_info["CbteAsoc"].l10n_latam_document_number,
@@ -269,7 +264,6 @@ class AccountMove(models.Model):
             )
 
     def wsmtxca_invoice_add_info(self, ws, invoice_info):
-
         if invoice_info["CbteAsoc"]:
             doc_number_parts = self._l10n_ar_get_document_number_parts(
                 invoice_info["CbteAsoc"].l10n_latam_document_number,
@@ -330,29 +324,18 @@ class AccountMove(models.Model):
         invoice_info["pos_number"] = journal.l10n_ar_afip_pos_number
         invoice_info["doc_afip_code"] = self.l10n_latam_document_type_id.code
         invoice_info["ws_next_invoice_number"] = (
-            int(
-                self.journal_id.get_pyafipws_last_invoice(
-                    self.l10n_latam_document_type_id
-                )
-            )
-            + 1
+            int(self.journal_id.get_pyafipws_last_invoice(self.l10n_latam_document_type_id)) + 1
         )
 
         invoice_info["partner_id_code"] = invoice_info[
             "commercial_partner"
         ].l10n_latam_identification_type_id.l10n_ar_afip_code
         invoice_info["tipo_doc"] = invoice_info["partner_id_code"] or "99"
-        invoice_info["nro_doc"] = (
-            invoice_info["partner_id_code"]
-            and invoice_info["commercial_partner"].vat
-            or "0"
-        )
-        invoice_info["cbt_desde"] = invoice_info["cbt_hasta"] = invoice_info[
-            "cbte_nro"
-        ] = invoice_info["ws_next_invoice_number"]
-        invoice_info["concepto"] = invoice_info["tipo_expo"] = int(
-            self.l10n_ar_afip_concept
-        )
+        invoice_info["nro_doc"] = invoice_info["partner_id_code"] and invoice_info["commercial_partner"].vat or "0"
+        invoice_info["cbt_desde"] = invoice_info["cbt_hasta"] = invoice_info["cbte_nro"] = invoice_info[
+            "ws_next_invoice_number"
+        ]
+        invoice_info["concepto"] = invoice_info["tipo_expo"] = int(self.l10n_ar_afip_concept)
 
         invoice_info["fecha_cbte"] = self.invoice_date or fields.Date.today()
         invoice_info["mipyme_fce"] = int(invoice_info["doc_afip_code"]) in [
@@ -406,18 +389,12 @@ class AccountMove(models.Model):
         invoice_info = self.base_map_invoice_info()
         invoice_info["fecha_cbte"] = invoice_info["fecha_cbte"].strftime("%Y%m%d")
         if invoice_info["fecha_venc_pago"]:
-            invoice_info["fecha_venc_pago"] = invoice_info["fecha_venc_pago"].strftime(
-                "%Y%m%d"
-            )
+            invoice_info["fecha_venc_pago"] = invoice_info["fecha_venc_pago"].strftime("%Y%m%d")
         if invoice_info["fecha_serv_desde"]:
-            invoice_info["fecha_serv_desde"] = invoice_info[
-                "fecha_serv_desde"
-            ].strftime("%Y%m%d")
+            invoice_info["fecha_serv_desde"] = invoice_info["fecha_serv_desde"].strftime("%Y%m%d")
         if invoice_info["fecha_serv_hasta"]:
-            invoice_info["fecha_serv_hasta"] = invoice_info[
-                "fecha_serv_hasta"
-            ].strftime("%Y%m%d")
-        if  invoice_info["afip_associated_period_from"] and invoice_info["afip_associated_period_to"]:
+            invoice_info["fecha_serv_hasta"] = invoice_info["fecha_serv_hasta"].strftime("%Y%m%d")
+        if invoice_info["afip_associated_period_from"] and invoice_info["afip_associated_period_to"]:
             invoice_info["afip_associated_period_from"] = invoice_info["afip_associated_period_from"].strftime("%Y%m%d")
             invoice_info["afip_associated_period_to"] = invoice_info["afip_associated_period_to"].strftime("%Y%m%d")
 
@@ -427,17 +404,11 @@ class AccountMove(models.Model):
         invoice_info = self.base_map_invoice_info()
         invoice_info["fecha_cbte"] = invoice_info["fecha_cbte"].strftime("%Y%m%d")
         if invoice_info["fecha_venc_pago"]:
-            invoice_info["fecha_venc_pago"] = invoice_info["fecha_venc_pago"].strftime(
-                "%Y%m%d"
-            )
+            invoice_info["fecha_venc_pago"] = invoice_info["fecha_venc_pago"].strftime("%Y%m%d")
         if invoice_info["fecha_serv_desde"]:
-            invoice_info["fecha_serv_desde"] = invoice_info[
-                "fecha_serv_desde"
-            ].strftime("%Y%m%d")
+            invoice_info["fecha_serv_desde"] = invoice_info["fecha_serv_desde"].strftime("%Y%m%d")
         if invoice_info["fecha_serv_hasta"]:
-            invoice_info["fecha_serv_hasta"] = invoice_info[
-                "fecha_serv_hasta"
-            ].strftime("%Y%m%d")
+            invoice_info["fecha_serv_hasta"] = invoice_info["fecha_serv_hasta"].strftime("%Y%m%d")
 
         if invoice_info["afip_associated_period_from"] and invoice_info["afip_associated_period_to"]:
             invoice_info["afip_associated_period_from"] = invoice_info["afip_associated_period_from"].strftime("%Y%m%d")
@@ -449,8 +420,7 @@ class AccountMove(models.Model):
         invoice_info["imp_iibb"] = invoice_info["amounts"]["iibb_perc_amount"]
         invoice_info["imp_perc_mun"] = invoice_info["amounts"]["mun_perc_amount"]
         invoice_info["imp_internos"] = (
-            invoice_info["amounts"]["intern_tax_amount"]
-            + invoice_info["amounts"]["other_taxes_amount"]
+            invoice_info["amounts"]["intern_tax_amount"] + invoice_info["amounts"]["other_taxes_amount"]
         )
         invoice_info["imp_perc"] = (
             invoice_info["amounts"]["vat_perc_amount"]
@@ -465,12 +435,10 @@ class AccountMove(models.Model):
         invoice_info = self.base_map_invoice_info()
         country = invoice_info["country"]
         if not country:
-            raise UserError(
-                 _('For WS "%s" country is required on partner') % self.journal_id.afip_ws
-            )
+            raise UserError(_('For WS "%s" country is required on partner') % self.journal_id.afip_ws)
         elif not country.code:
             raise UserError(
-                 _('For WS "%s" country code is mandatoryCountry: %s') % (self.journal_id.afip_ws, country.name)
+                _('For WS "%s" country code is mandatoryCountry: %s') % (self.journal_id.afip_ws, country.name)
             )
         elif not country.l10n_ar_afip_code:
             raise UserError(
@@ -490,10 +458,7 @@ class AccountMove(models.Model):
             # por lo que verificamos, se pide permiso existente solo
             # si es tipo expo 1 y es factura (codigo 19), para todo el
             # resto pasamos cadena vacia
-            if (
-                int(invoice_info["doc_afip_code"]) == 19
-                and invoice_info["tipo_expo"] == 1
-            ):
+            if int(invoice_info["doc_afip_code"]) == 19 and invoice_info["tipo_expo"] == 1:
                 # TODO investigar si hay que pasar si ("S")
                 invoice_info["permiso_existente"] = "N"
             else:
@@ -533,20 +498,11 @@ class AccountMove(models.Model):
             elif invoice_info["country"].code != "AR" and invoice_info["nro_doc"]:
                 invoice_info["id_impositivo"] = None
                 if self.commercial_partner.is_company:
-                    invoice_info["cuit_pais_cliente"] = invoice_info[
-                        "country"
-                    ].cuit_juridica
+                    invoice_info["cuit_pais_cliente"] = invoice_info["country"].cuit_juridica
                 else:
-                    invoice_info["cuit_pais_cliente"] = invoice_info[
-                        "country"
-                    ].cuit_fisica
+                    invoice_info["cuit_pais_cliente"] = invoice_info["country"].cuit_fisica
                 if not invoice_info["cuit_pais_cliente"]:
-                    raise UserError(
-                        _(
-                            "No vat defined for the partner and also no CUIT "
-                            "set on country"
-                        )
-                    )
+                    raise UserError(_("No vat defined for the partner and also no CUIT " "set on country"))
 
                 invoice_info["domicilio_cliente"] = " - ".join(
                     [
@@ -557,9 +513,7 @@ class AccountMove(models.Model):
                         self.commercial_partner.city or "",
                     ]
                 )
-                invoice_info[
-                    "pais_dst_cmp"
-                ] = self.commercial_partner.country_id.l10n_ar_afip_code
+                invoice_info["pais_dst_cmp"] = self.commercial_partner.country_id.l10n_ar_afip_code
         invoice_info["lines"] = self.invoice_map_info_lines()
 
         return invoice_info
@@ -568,17 +522,11 @@ class AccountMove(models.Model):
         invoice_info = self.base_map_invoice_info()
         invoice_info["fecha_cbte"] = invoice_info["fecha_cbte"].strftime("%Y%m%d")
         if invoice_info["fecha_venc_pago"]:
-            invoice_info["fecha_venc_pago"] = invoice_info["fecha_venc_pago"].strftime(
-                "%Y%m%d"
-            )
+            invoice_info["fecha_venc_pago"] = invoice_info["fecha_venc_pago"].strftime("%Y%m%d")
         if invoice_info["fecha_serv_desde"]:
-            invoice_info["fecha_serv_desde"] = invoice_info[
-                "fecha_serv_desde"
-            ].strftime("%Y%m%d")
+            invoice_info["fecha_serv_desde"] = invoice_info["fecha_serv_desde"].strftime("%Y%m%d")
         if invoice_info["fecha_serv_hasta"]:
-            invoice_info["fecha_serv_hasta"] = invoice_info[
-                "fecha_serv_hasta"
-            ].strftime("%Y%m%d")
+            invoice_info["fecha_serv_hasta"] = invoice_info["fecha_serv_hasta"].strftime("%Y%m%d")
         invoice_info["obs_generales"] = self.comment
         invoice_info["lines"] = self.invoice_map_info_lines()
         return invoice_info
@@ -594,9 +542,7 @@ class AccountMove(models.Model):
             if not line.product_uom_id:
                 line_temp["umed"] = "7"
             elif not line.product_uom_id.l10n_ar_afip_code:
-                raise UserError(
-                    _('Not afip code con producto UOM %s') % line.product_uom_id.name
-                )
+                raise UserError(_("Not afip code con producto UOM %s") % line.product_uom_id.name)
             else:
                 line_temp["umed"] = line.product_uom_id.l10n_ar_afip_code
             # cod_mtx = line.uom_id.l10n_ar_afip_code
@@ -606,12 +552,7 @@ class AccountMove(models.Model):
             line_temp["importe"] = line.price_subtotal
             # calculamos bonificacion haciendo teorico menos importe
             line_temp["bonif"] = (
-                line.discount
-                and str(
-                    "%.2f"
-                    % (line_temp["precio"] * line_temp["qty"] - line_temp["importe"])
-                )
-                or None
+                line.discount and str("%.2f" % (line_temp["precio"] * line_temp["qty"] - line_temp["importe"])) or None
             )
             line_temp["iva_id"] = line.vat_tax_id.tax_group_id.l10n_ar_vat_afip_code
             vat_taxes_amounts = line.vat_tax_id.compute_all(
@@ -621,9 +562,7 @@ class AccountMove(models.Model):
                 product=line.product_id,
                 partner=self.partner_id,
             )
-            line_temp["imp_iva"] = sum(
-                [x["amount"] for x in vat_taxes_amounts["taxes"]]
-            )
+            line_temp["imp_iva"] = sum([x["amount"] for x in vat_taxes_amounts["taxes"]])
             lines.append(line_temp)
 
             return lines

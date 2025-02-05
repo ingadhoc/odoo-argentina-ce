@@ -1,7 +1,8 @@
-from odoo import models, api, fields, _
-from ast import literal_eval
-from odoo.exceptions import UserError
 import logging
+from ast import literal_eval
+
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
@@ -42,9 +43,7 @@ class ResPartnerUpdateFromPadronWizard(models.TransientModel):
         if context.get("active_model") == "res.partner" and context.get("active_ids"):
             partners = self.get_partners()
             if not partners:
-                raise UserError(
-                    _("No se encontró ningún partner con CUIT para actualizar")
-                )
+                raise UserError(_("No se encontró ningún partner con CUIT para actualizar"))
             elif len(partners) == 1:
                 res["state"] = "selection"
                 res["partner_id"] = partners[0].id
@@ -67,11 +66,7 @@ class ResPartnerUpdateFromPadronWizard(models.TransientModel):
 
     @api.model
     def _get_default_title_case(self):
-        parameter = (
-            self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("use_title_case_on_padron_afip")
-        )
+        parameter = self.env["ir.config_parameter"].sudo().get_param("use_title_case_on_padron_afip")
         if parameter == "False" or parameter == "0":
             return False
         return True

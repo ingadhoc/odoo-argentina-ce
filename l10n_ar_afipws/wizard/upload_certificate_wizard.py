@@ -2,8 +2,9 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from odoo import fields, api, models
 import base64
+
+from odoo import api, fields, models
 
 
 class L10nArAfipwsUploadCertificate(models.TransientModel):
