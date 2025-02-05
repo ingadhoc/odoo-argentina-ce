@@ -2,8 +2,8 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
-from odoo import fields, models, api, _
 
 try:
     from OpenSSL import crypto
@@ -97,10 +97,7 @@ class AfipwsCertificate(models.Model):
             msg = False
 
             if not crt:
-                msg = _(
-                    "Invalid action! Please, set the certification string to "
-                    "continue."
-                )
+                msg = _("Invalid action! Please, set the certification string to " "continue.")
             certificate = rec.get_certificate()
             if certificate is None:
                 msg = _(
@@ -119,9 +116,7 @@ class AfipwsCertificate(models.Model):
         self.ensure_one()
         if self.crt:
             try:
-                certificate = crypto.load_certificate(
-                    crypto.FILETYPE_PEM, self.crt.encode("ascii")
-                )
+                certificate = crypto.load_certificate(crypto.FILETYPE_PEM, self.crt.encode("ascii"))
             except Exception as e:
                 if "Expecting: CERTIFICATE" in e[0]:
                     raise UserError(
@@ -131,9 +126,7 @@ class AfipwsCertificate(models.Model):
                         )
                     )
                 else:
-                    raise UserError(
-                        _("Unknown error.\nX509 return this message:\n %s") % (e[0])
-                    )
+                    raise UserError(_("Unknown error.\nX509 return this message:\n %s") % (e[0]))
         else:
             certificate = None
         return certificate

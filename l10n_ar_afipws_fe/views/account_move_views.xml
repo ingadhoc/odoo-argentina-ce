@@ -31,7 +31,7 @@
                         <label for="afip_auth_code" string="AFIP authorization"/>
                         <div class="oe_inline">
                             <field name="afip_auth_mode" class="oe_inline" readonly="state != 'draft'"/>
-                            <field name="afip_auth_code" class="oe_inline" readonly="state != 'draft'" required="afip_auth_mode" placeholder="Code"/> - 
+                            <field name="afip_auth_code" class="oe_inline" readonly="state != 'draft'" required="afip_auth_mode" placeholder="Code"/> -
                         </div>
                         <field name='afip_auth_code_due' readonly="state != 'draft'"/>
                         <field name='afip_result' readonly="state != 'draft'"/>

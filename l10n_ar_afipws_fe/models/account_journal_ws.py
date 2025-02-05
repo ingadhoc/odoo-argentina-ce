@@ -2,9 +2,10 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from markupsafe import Markup
-from odoo import models, _
 import logging
+
+from markupsafe import Markup
+from odoo import _, models
 from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
@@ -29,21 +30,19 @@ class AccountJournalWs(models.Model):
             ret = getattr(self, "%s_pyafipws_cuit_document_classes" % afip_ws)(ws)
 
             for document_line in ret:
-                document_type = document_line.split(',')
+                document_type = document_line.split(",")
                 # call the webservice method to get the last invoice at AFIP:
                 if hasattr(self, "%s_get_pyafipws_last_invoice" % afip_ws):
-                    obj_document_type = type('obj', (object,), {'code': document_type[0]})
-                    document_type.append(getattr(self, "%s_get_pyafipws_last_invoice" % afip_ws)(
-                        journal_id.l10n_ar_afip_pos_number, obj_document_type, ws
-                    ))
+                    obj_document_type = type("obj", (object,), {"code": document_type[0]})
+                    document_type.append(
+                        getattr(self, "%s_get_pyafipws_last_invoice" % afip_ws)(
+                            journal_id.l10n_ar_afip_pos_number, obj_document_type, ws
+                        )
+                    )
                 else:
                     raise UserError(_("AFIP WS %s not implemented") % afip_ws)
-                msg.append("%s %05d-%08d" % (
-                    document_type[1],
-                    int(document_type[0]),
-                    int(document_type[-1])
-                ))
-            journal_id.message_post(body=Markup('<br/>\n').join(msg))
+                msg.append("%s %05d-%08d" % (document_type[1], int(document_type[0]), int(document_type[-1])))
+            journal_id.message_post(body=Markup("<br/>\n").join(msg))
 
     def get_pyafipws_last_invoice(self, document_type):
         self.ensure_one()
@@ -68,10 +67,7 @@ class AccountJournalWs(models.Model):
                 raise UserError(_("Servicio AFIP Ocupado reintente en unos minutos"))
             else:
                 raise UserError(
-                    _(
-                        "Hubo un error al conectarse a AFIP, contacte a su"
-                        " proveedor de Odoo para mas información"
-                    )
+                    _("Hubo un error al conectarse a AFIP, contacte a su" " proveedor de Odoo para mas información")
                 )
 
     def test_pyafipws_point_of_sales(self):
@@ -84,9 +80,7 @@ class AccountJournalWs(models.Model):
         if hasattr(self, "%s_pyafipws_point_of_sales" % afip_ws):
             ret = getattr(self, "%s_pyafipws_point_of_sales" % afip_ws)(ws)
         else:
-            raise UserError(
-                _("Get point of sale for ws %s is not implemented yet") % (afip_ws)
-            )
+            raise UserError(_("Get point of sale for ws %s is not implemented yet") % (afip_ws))
         msg = _(" %s %s") % (
             ". ".join(ret),
             " - ".join([ws.Excepcion, ws.ErrMsg, ws.Obs]),
@@ -114,9 +108,7 @@ class AccountJournalWs(models.Model):
         if hasattr(self, "%s_pyafipws_cuit_document_classes" % afip_ws):
             ret = getattr(self, "%s_pyafipws_cuit_document_classes" % afip_ws)(ws)
         else:
-            raise UserError(
-                _("Get document types for ws %s is not implemented yet") % (afip_ws)
-            )
+            raise UserError(_("Get document types for ws %s is not implemented yet") % (afip_ws))
         msg = _("Authorized Document Clases on AFIP\n%s\n. \nObservations: %s") % (
             "<br/> ".join(ret),
             ".<br/>".join([ws.Excepcion, ws.ErrMsg, ws.Obs]),
@@ -191,22 +183,14 @@ class AccountJournalWs(models.Model):
     def wsfe_pyafipws_point_of_sales(self, ws):
         return ws.ParamGetPtosVenta(sep=" ")
 
-    def wsfe_get_pyafipws_last_invoice(
-        self, l10n_ar_afip_pos_number, document_type, ws
-    ):
+    def wsfe_get_pyafipws_last_invoice(self, l10n_ar_afip_pos_number, document_type, ws):
         return ws.CompUltimoAutorizado(document_type.code, l10n_ar_afip_pos_number)
 
-    def wsmtxca_get_pyafipws_last_invoice(
-        self, l10n_ar_afip_pos_number, document_type, ws
-    ):
+    def wsmtxca_get_pyafipws_last_invoice(self, l10n_ar_afip_pos_number, document_type, ws):
         return ws.CompUltimoAutorizado(document_type.code, l10n_ar_afip_pos_number)
 
-    def wsfex_get_pyafipws_last_invoice(
-        self, l10n_ar_afip_pos_number, document_type, ws
-    ):
+    def wsfex_get_pyafipws_last_invoice(self, l10n_ar_afip_pos_number, document_type, ws):
         return ws.GetLastCMP(document_type.code, l10n_ar_afip_pos_number)
 
-    def wsbfe_get_pyafipws_last_invoice(
-        self, l10n_ar_afip_pos_number, document_type, ws
-    ):
+    def wsbfe_get_pyafipws_last_invoice(self, l10n_ar_afip_pos_number, document_type, ws):
         return ws.GetLastCMP(document_type.code, l10n_ar_afip_pos_number)

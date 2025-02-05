@@ -2,8 +2,9 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from odoo import models, api, fields, _
 import logging
+
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
@@ -12,9 +13,7 @@ _logger = logging.getLogger(__name__)
 class AccountJournal(models.Model):
     _inherit = "account.journal"
 
-    afip_ws = fields.Selection(
-        selection="_get_afip_ws", compute="_compute_afip_ws", string="AFIP WS"
-    )
+    afip_ws = fields.Selection(selection="_get_afip_ws", compute="_compute_afip_ws", string="AFIP WS")
 
     def _get_afip_ws(self):
         return [
@@ -85,9 +84,7 @@ class AccountJournal(models.Model):
             "type": "ir.actions.client",
             "tag": "display_notification",
             "params": {
-                "title": _(
-                    "Great, everything seems fine. The connection did not fail."
-                ),
+                "title": _("Great, everything seems fine. The connection did not fail."),
                 "type": "success",
                 "sticky": True,  # True/False will display for few seconds if false
             },

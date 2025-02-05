@@ -2,15 +2,15 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from odoo import fields, models, api, _
-from odoo.exceptions import UserError, RedirectWarning
 import logging
+
+from odoo import _, api, fields, models
+from odoo.exceptions import RedirectWarning, UserError
 
 _logger = logging.getLogger(__name__)
 
 
 class AfipwsConnection(models.Model):
-
     _name = "afipws.connection"
     _description = "AFIP WS Connection"
     _rec_name = "afip_ws"
@@ -87,31 +87,17 @@ class AfipwsConnection(models.Model):
         afip_ws_url = False
         if afip_ws == "ws_sr_padron_a4":
             if environment_type == "production":
-                afip_ws_url = (
-                    "https://aws.afip.gov.ar/sr-padron/webservices/"
-                    "personaServiceA4?wsdl"
-                )
+                afip_ws_url = "https://aws.afip.gov.ar/sr-padron/webservices/" "personaServiceA4?wsdl"
             else:
-                afip_ws_url = (
-                    "https://awshomo.afip.gov.ar/sr-padron/webservices/"
-                    "personaServiceA4?wsdl"
-                )
+                afip_ws_url = "https://awshomo.afip.gov.ar/sr-padron/webservices/" "personaServiceA4?wsdl"
         elif afip_ws == "ws_sr_padron_a5":
             if environment_type == "production":
-                afip_ws_url = (
-                    "https://aws.afip.gov.ar/sr-padron/webservices/"
-                    "personaServiceA5?wsdl"
-                )
+                afip_ws_url = "https://aws.afip.gov.ar/sr-padron/webservices/" "personaServiceA5?wsdl"
             else:
-                afip_ws_url = (
-                    "https://awshomo.afip.gov.ar/sr-padron/webservices/"
-                    "personaServiceA5?wsdl"
-                )
+                afip_ws_url = "https://awshomo.afip.gov.ar/sr-padron/webservices/" "personaServiceA5?wsdl"
         elif afip_ws == "wsfecred":
             if environment_type == "production":
-                afip_ws_url = (
-                    "https://serviciosjava.afip.gob.ar/wsfecred/FECredService?wsdl"
-                )
+                afip_ws_url = "https://serviciosjava.afip.gob.ar/wsfecred/FECredService?wsdl"
             else:
                 afip_ws_url = "https://fwshomo.afip.gov.ar/wsfecred/FECredService?wsdl"
 
@@ -122,10 +108,7 @@ class AfipwsConnection(models.Model):
         self.ensure_one()
         if self.afip_ws != afip_ws:
             raise UserError(
-                _(
-                    "This method is for %s connections and you call it from an"
-                    " %s connection"
-                )
+                _("This method is for %s connections and you call it from an" " %s connection")
                 % (afip_ws, self.afip_ws)
             )
 
@@ -134,10 +117,7 @@ class AfipwsConnection(models.Model):
         Method to be called
         """
         self.ensure_one()
-        _logger.info(
-            "Getting connection to ws %s from libraries on "
-            "connection id %s" % (self.afip_ws, self.id)
-        )
+        _logger.info("Getting connection to ws %s from libraries on " "connection id %s" % (self.afip_ws, self.id))
         ws = self._get_ws(self.afip_ws)
 
         # parche por este error que da al consultar por esa opción de homo
@@ -148,9 +128,7 @@ class AfipwsConnection(models.Model):
             ws.HOMO = False
 
         if not ws:
-            raise UserError(
-                _('AFIP Webservice %s not implemented yet') % self.afip_ws
-            )
+            raise UserError(_("AFIP Webservice %s not implemented yet") % self.afip_ws)
         # TODO implementar cache y proxy
         # create the proxy and get the configuration system parameters:
         # cfg = self.pool.get('ir.config_parameter').sudo()
@@ -167,17 +145,13 @@ class AfipwsConnection(models.Model):
                 "ExpatError" in repr(error)
                 or "mismatched tag" in repr(error)
                 or "Conexión reinicializada por la máquina remota" in repr(error)
-                or "module 'httplib2' has no attribute 'SSLHandshakeError'"
-                in repr(error)
+                or "module 'httplib2' has no attribute 'SSLHandshakeError'" in repr(error)
             ):
                 action = self.env.ref("l10n_ar_afipws.action_afip_padron")
-                msg = _(
-                    "It seems like AFIP service is not available.\nPlease try again later or try manually"
-                )
+                msg = _("It seems like AFIP service is not available.\nPlease try again later or try manually")
                 raise RedirectWarning(msg, action.id, _("Go and find data manually"))
             raise UserError(
-                "There was a connection problem to AFIP. Contact your Odoo Provider. Error\n\n%s"
-                % repr(error)
+                "There was a connection problem to AFIP. Contact your Odoo Provider. Error\n\n%s" % repr(error)
             )
 
         cuit = self.company_id.partner_id.ensure_vat()

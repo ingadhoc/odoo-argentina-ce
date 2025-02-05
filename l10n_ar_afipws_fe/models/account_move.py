@@ -2,16 +2,18 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
+import base64
 import json
 import logging
 import sys
 import traceback
 from datetime import datetime
-from odoo import fields, models, api, _
+
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools import float_repr
+
 from ..afip_utils import get_invoice_number_from_response
-import base64
 
 base64.encodestring = base64.encodebytes
 
@@ -35,12 +37,8 @@ class AccountMove(models.Model):
         copy=False,
         string="CAE/CAI/CAEA due Date",
     )
-    afip_associated_period_from = fields.Date(
-        'AFIP Period from'
-    )
-    afip_associated_period_to = fields.Date(
-        'AFIP Period to'
-    )
+    afip_associated_period_from = fields.Date("AFIP Period from")
+    afip_associated_period_to = fields.Date("AFIP Period to")
     afip_qr_code = fields.Char(compute="_compute_qr_code", string="AFIP QR code")
     afip_message = fields.Text(
         string="AFIP Message",
@@ -78,25 +76,29 @@ class AccountMove(models.Model):
     #     super(AccountMove, self - manual_records)._compute_highest_name()
 
     def cron_asynchronous_post(self):
-        queue_limit = self.env['ir.config_parameter'].sudo().get_param('l10n_ar_afipws_fe.queue_limit', 20)
-        queue = self.search([
-            ('asynchronous_post', '=', True), '|',
-            ('afip_result', '=', False),
-            ('afip_result', '=', ''),
-        ], limit=queue_limit)
+        queue_limit = self.env["ir.config_parameter"].sudo().get_param("l10n_ar_afipws_fe.queue_limit", 20)
+        queue = self.search(
+            [
+                ("asynchronous_post", "=", True),
+                "|",
+                ("afip_result", "=", False),
+                ("afip_result", "=", ""),
+            ],
+            limit=queue_limit,
+        )
         if queue:
             queue._post()
 
     def _get_starting_sequence(self):
-        """ If use documents then will create a new starting sequence using the document type code prefix and the
-        journal document number with a 8 padding number """
-        if self.journal_id.l10n_latam_use_documents and self.company_id.account_fiscal_country_id.code == "AR" and self.journal_id.afip_ws:
+        """If use documents then will create a new starting sequence using the document type code prefix and the
+        journal document number with a 8 padding number"""
+        if (
+            self.journal_id.l10n_latam_use_documents
+            and self.company_id.account_fiscal_country_id.code == "AR"
+            and self.journal_id.afip_ws
+        ):
             if self.l10n_latam_document_type_id:
-                number = int(
-                    self.journal_id.get_pyafipws_last_invoice(
-                        self.l10n_latam_document_type_id
-                    )
-                )
+                number = int(self.journal_id.get_pyafipws_last_invoice(self.l10n_latam_document_type_id))
                 return self._get_formatted_sequence(number)
         return super()._get_starting_sequence()
 
@@ -107,26 +109,25 @@ class AccountMove(models.Model):
             if invoice_number:
                 last_sequence = self._get_formatted_sequence(invoice_number)
                 format, format_values = self._get_sequence_format_param(last_sequence)
-                format_values['year'] = self[self._sequence_date_field].year % (10 ** format_values['year_length'])
-                format_values['month'] = self[self._sequence_date_field].month
-                format_values['seq'] = invoice_number
+                format_values["year"] = self[self._sequence_date_field].year % (10 ** format_values["year_length"])
+                format_values["month"] = self[self._sequence_date_field].month
+                format_values["seq"] = invoice_number
 
                 self[self._sequence_field] = format.format(**format_values)
                 return
         super()._set_next_sequence()
 
-    # TODO Esto se deprecaria si la secuencia solo viene de  result de afip 
+    # TODO Esto se deprecaria si la secuencia solo viene de  result de afip
     def _get_last_sequence(self, relaxed=False, with_prefix=None):
-        if self._name == 'account.move' and \
-            self.journal_id.l10n_latam_use_documents and \
-            self.company_id.account_fiscal_country_id.code == "AR" and \
-            not self.afip_auth_code and \
-            self.journal_id.afip_ws and  self.l10n_latam_document_type_id:
-            number = int(
-                self.journal_id.get_pyafipws_last_invoice(
-                    self.l10n_latam_document_type_id
-                )
-            )
+        if (
+            self._name == "account.move"
+            and self.journal_id.l10n_latam_use_documents
+            and self.company_id.account_fiscal_country_id.code == "AR"
+            and not self.afip_auth_code
+            and self.journal_id.afip_ws
+            and self.l10n_latam_document_type_id
+        ):
+            number = int(self.journal_id.get_pyafipws_last_invoice(self.l10n_latam_document_type_id))
             res = self._get_formatted_sequence(number)
         else:
             res = super()._get_last_sequence(relaxed=relaxed, with_prefix=with_prefix)
@@ -169,19 +170,12 @@ class AccountMove(models.Model):
                     "tipoCodAut": "E" if rec.afip_auth_mode == "CAE" else "A",
                     "codAut": int(rec.afip_auth_code),
                 }
-                if (
-                    len(rec.commercial_partner_id.l10n_latam_identification_type_id)
-                    and rec.commercial_partner_id.vat
-                ):
+                if len(rec.commercial_partner_id.l10n_latam_identification_type_id) and rec.commercial_partner_id.vat:
                     qr_dict["tipoDocRec"] = int(
                         rec.commercial_partner_id.l10n_latam_identification_type_id.l10n_ar_afip_code
                     )
-                    qr_dict["nroDocRec"] = int(
-                        rec.commercial_partner_id.vat.replace("-", "").replace(".", "")
-                    )
-                qr_data = base64.encodestring(
-                    json.dumps(qr_dict, indent=None).encode("ascii")
-                ).decode("ascii")
+                    qr_dict["nroDocRec"] = int(rec.commercial_partner_id.vat.replace("-", "").replace(".", ""))
+                qr_data = base64.encodestring(json.dumps(qr_dict, indent=None).encode("ascii")).decode("ascii")
                 qr_data = str(qr_data).replace("\n", "")
                 rec.afip_qr_code = "https://www.afip.gob.ar/fe/qr/?p=%s" % qr_data
             else:
@@ -214,10 +208,9 @@ class AccountMove(models.Model):
 
     def do_pyafipws_request_cae(self):
         "Request to AFIP the invoices' Authorization Electronic Code (CAE)"
-        a_invoices = r_invoices = self.env['account.move']
+        a_invoices = r_invoices = self.env["account.move"]
 
         for inv in self:
-
             afip_ws = inv.journal_id.afip_ws
             if not afip_ws:
                 continue
@@ -276,14 +269,11 @@ class AccountMove(models.Model):
                     msg = ws.Excepcion
                 else:
                     # avoid encoding problem when raising error
-                    msg = traceback.format_exception_only(sys.exc_type, sys.exc_value)[
-                        0
-                    ]
+                    msg = traceback.format_exception_only(sys.exc_type, sys.exc_value)[0]
             if msg:
                 _logger.error(
-                     _('AFIP Validation Error. %s') % msg
-                    + " XML Request: %s XML Response: %s"
-                    % (ws.XmlRequest, ws.XmlResponse)
+                    _("AFIP Validation Error. %s") % msg
+                    + " XML Request: %s XML Response: %s" % (ws.XmlRequest, ws.XmlResponse)
                 )
 
             msg = "\n".join([ws.Obs or "", ws.ErrMsg or ""])
@@ -291,11 +281,11 @@ class AccountMove(models.Model):
                 r_invoices += inv
 
                 vals = {
-                        "name": '/',
-                        "afip_result": 'R',
-                        "afip_message": msg,
-                        "afip_xml_request": ws.XmlRequest or '',
-                        "afip_xml_response": ws.XmlResponse or '',
+                    "name": "/",
+                    "afip_result": "R",
+                    "afip_message": msg,
+                    "afip_xml_request": ws.XmlRequest or "",
+                    "afip_xml_response": ws.XmlResponse or "",
                 }
                 inv.sudo().write(vals)
                 inv._cr.commit()
@@ -306,18 +296,15 @@ class AccountMove(models.Model):
             if hasattr(ws, "FchVencCAE"):
                 vto = datetime.strptime(ws.FchVencCAE, "%Y%m%d").date()
 
-            _logger.info(
-                "CAE solicitado con exito. CAE: %s. Resultado %s"
-                % (ws.CAE, ws.Resultado)
-            )
+            _logger.info("CAE solicitado con exito. CAE: %s. Resultado %s" % (ws.CAE, ws.Resultado))
             vals = {
-                    "afip_auth_mode": "CAE",
-                    "afip_auth_code": ws.CAE,
-                    "afip_auth_code_due": vto,
-                    "afip_result": ws.Resultado,
-                    "afip_message": msg,
-                    "afip_xml_request": ws.XmlRequest,
-                    "afip_xml_response": ws.XmlResponse,
+                "afip_auth_mode": "CAE",
+                "afip_auth_code": ws.CAE,
+                "afip_auth_code_due": vto,
+                "afip_result": ws.Resultado,
+                "afip_message": msg,
+                "afip_xml_request": ws.XmlRequest,
+                "afip_xml_response": ws.XmlResponse,
             }
 
             inv.sudo().write(vals)

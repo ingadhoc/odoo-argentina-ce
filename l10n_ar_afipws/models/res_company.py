@@ -2,23 +2,23 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from odoo import fields, models, api, _
-import logging
-from odoo.exceptions import UserError
-import dateutil.parser
-import pytz
-import odoo.tools as tools
-import os
 import hashlib
-import time
+import logging
+import os
 import sys
+import time
 import traceback
+
+import dateutil.parser
+import odoo.tools as tools
+import pytz
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
 
 class ResCompany(models.Model):
-
     _inherit = "res.company"
 
     alias_ids = fields.One2many(
@@ -46,9 +46,7 @@ class ResCompany(models.Model):
         * 'test' or 'develop' -->  homologation
         * other or no parameter -->  production
         """
-        parameter_env_type = (
-            self.env["ir.config_parameter"].sudo().get_param("afip.ws.env.type")
-        )
+        parameter_env_type = self.env["ir.config_parameter"].sudo().get_param("afip.ws.env.type")
         if parameter_env_type == "production":
             environment_type = "production"
         elif parameter_env_type == "homologation":
@@ -112,9 +110,9 @@ class ResCompany(models.Model):
             if pkey_path and cert_path:
                 try:
                     if os.path.isfile(pkey_path) and os.path.isfile(cert_path):
-                        with open(pkey_path, "r") as pkey_file:
+                        with open(pkey_path) as pkey_file:
                             pkey = pkey_file.read()
-                        with open(cert_path, "r") as cert_file:
+                        with open(cert_path) as cert_file:
                             cert = cert_file.read()
                     msg = "Could not find %s or %s files" % (pkey_path, cert_path)
                 except Exception:
@@ -127,9 +125,7 @@ class ResCompany(models.Model):
 
     def get_connection(self, afip_ws):
         self.ensure_one()
-        _logger.info(
-            "Getting connection for company %s and ws %s" % (self.name, afip_ws)
-        )
+        _logger.info("Getting connection for company %s and ws %s" % (self.name, afip_ws))
         now = fields.Datetime.now()
         environment_type = self._get_environment_type()
 
@@ -173,14 +169,10 @@ class ResCompany(models.Model):
         )
 
         auth_data["generationtime"] = (
-            dateutil.parser.parse(auth_data["generationtime"])
-            .astimezone(pytz.utc)
-            .replace(tzinfo=None)
+            dateutil.parser.parse(auth_data["generationtime"]).astimezone(pytz.utc).replace(tzinfo=None)
         )
         auth_data["expirationtime"] = (
-            dateutil.parser.parse(auth_data["expirationtime"])
-            .astimezone(pytz.utc)
-            .replace(tzinfo=None)
+            dateutil.parser.parse(auth_data["expirationtime"]).astimezone(pytz.utc).replace(tzinfo=None)
         )
 
         _logger.info("Successful Connection to AFIP.")
@@ -213,12 +205,7 @@ class ResCompany(models.Model):
         DEFAULT_TTL = 60 * 60 * 5
 
         # make md5 hash of the parameter for caching...
-        fn = (
-            "%s.xml"
-            % hashlib.md5(
-                (service + certificate + private_key).encode("utf-8")
-            ).hexdigest()
-        )
+        fn = "%s.xml" % hashlib.md5((service + certificate + private_key).encode("utf-8")).hexdigest()
         if cache:
             fn = os.path.join(cache, fn)
         else:
@@ -226,10 +213,7 @@ class ResCompany(models.Model):
 
         try:
             # read the access ticket (if already authenticated)
-            if (
-                not os.path.exists(fn)
-                or os.path.getmtime(fn) + (DEFAULT_TTL) < time.time()
-            ):
+            if not os.path.exists(fn) or os.path.getmtime(fn) + (DEFAULT_TTL) < time.time():
                 # access ticket (TA) outdated, create new access request
                 # ticket (TRA)
                 tra = wsaa.CreateTRA(service=service, ttl=DEFAULT_TTL)
@@ -245,7 +229,7 @@ class ResCompany(models.Model):
                 open(fn, "w").write(ta)
             else:
                 # get the access ticket from the previously written file
-                ta = open(fn, "r").read()
+                ta = open(fn).read()
             # analyze the access ticket xml and extract the relevant fields
             wsaa.AnalizarXml(xml=ta)
             token = wsaa.ObtenerTagXml("token")
@@ -260,12 +244,8 @@ class ResCompany(models.Model):
                 err_msg = wsaa.Excepcion
             else:
                 # avoid encoding problem when reporting exceptions to the user:
-                err_msg = traceback.format_exception_only(sys.exc_type, sys.exc_value)[
-                    0
-                ]
-            raise UserError(
-                _("Could not connect. This is the what we received: %s") % (err_msg)
-            )
+                err_msg = traceback.format_exception_only(sys.exc_type, sys.exc_value)[0]
+            raise UserError(_("Could not connect. This is the what we received: %s") % (err_msg))
         return {
             "uniqueid": uniqueId,
             "generationtime": generationTime,

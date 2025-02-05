@@ -3,9 +3,10 @@
 # directory
 ##############################################################################
 
-from odoo import fields, models, api, _
-from odoo.exceptions import UserError
 import logging
+
+from odoo import _, fields, models
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
@@ -24,7 +25,6 @@ class ResPartner(models.Model):
     # Separo esto para poder heredar de otros
     # modulos y extender los datos
     def parce_census_vals(self, census):
-
         # porque imp_iva activo puede ser S o AC
         imp_iva = census.imp_iva
         if imp_iva == "S":
@@ -53,10 +53,7 @@ class ResPartner(models.Model):
         elif census.monotributo == "S":
             vals["imp_ganancias_padron"] = "NC"
         else:
-            _logger.info(
-                "We couldn't get impuesto a las ganancias from padron, you"
-                "must set it manually"
-            )
+            _logger.info("We couldn't get impuesto a las ganancias from padron, you" "must set it manually")
 
         if census.provincia:
             # depending on the database, caba can have one of this codes
@@ -81,22 +78,13 @@ class ResPartner(models.Model):
                 vals["state_id"] = state.id
 
         if imp_iva == "NI" and census.monotributo == "S":
-            vals["l10n_ar_afip_responsibility_type_id"] = self.env.ref(
-                "l10n_ar.res_RM"
-            ).id
+            vals["l10n_ar_afip_responsibility_type_id"] = self.env.ref("l10n_ar.res_RM").id
         elif imp_iva == "AC":
-            vals["l10n_ar_afip_responsibility_type_id"] = self.env.ref(
-                "l10n_ar.res_IVARI"
-            ).id
+            vals["l10n_ar_afip_responsibility_type_id"] = self.env.ref("l10n_ar.res_IVARI").id
         elif imp_iva == "EX":
-            vals["l10n_ar_afip_responsibility_type_id"] = self.env.ref(
-                "l10n_ar.res_IVAE"
-            ).id
+            vals["l10n_ar_afip_responsibility_type_id"] = self.env.ref("l10n_ar.res_IVAE").id
         else:
-            _logger.info(
-                "We couldn't infer the AFIP responsability from padron, you"
-                "must set it manually."
-            )
+            _logger.info("We couldn't infer the AFIP responsability from padron, you" "must set it manually.")
 
         return vals
 
@@ -110,9 +98,7 @@ class ResPartner(models.Model):
         company = self.env.user.company_id
         env_type = company._get_environment_type()
         try:
-            certificate = company.get_key_and_certificate(
-                company._get_environment_type()
-            )
+            certificate = company.get_key_and_certificate(company._get_environment_type())
         except Exception:
             certificate = self.env["afipws.certificate"].search(
                 [

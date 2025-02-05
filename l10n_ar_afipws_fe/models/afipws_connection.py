@@ -2,9 +2,10 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from odoo import fields, models, api, _
-from odoo.exceptions import UserError
 import logging
+
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
@@ -60,9 +61,7 @@ class AfipwsConnection(models.Model):
 
     @api.model
     def get_afip_ws_url(self, afip_ws, environment_type):
-        afip_ws_url = super(AfipwsConnection, self).get_afip_ws_url(
-            afip_ws, environment_type
-        )
+        afip_ws_url = super(AfipwsConnection, self).get_afip_ws_url(afip_ws, environment_type)
         if afip_ws_url:
             return afip_ws_url
         elif afip_ws == "wsfe":
