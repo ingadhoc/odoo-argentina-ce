@@ -9,7 +9,10 @@
                 <field name="afip_ws_env_type" position="after">
                     <label for="l10n_ar_afip_fce_transmission"/>
                     <field class="font-weight-bold" name="l10n_ar_afip_fce_transmission"/>
+                    <label for="l10n_ar_payment_foreign_currency"/>
+                    <field class="font-weight-bold" name="l10n_ar_payment_foreign_currency"/>
                 </field>
+
             </field>
         </record>
 </odoo>
