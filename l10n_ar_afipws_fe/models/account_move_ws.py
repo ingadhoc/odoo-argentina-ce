@@ -50,6 +50,8 @@ class AccountMove(models.Model):
             invoice_info["fecha_serv_hasta"],
             invoice_info["moneda_id"],
             invoice_info["moneda_ctz"],
+            cancela_misma_moneda_ext=invoice_info["cancela_misma_moneda_ext"],
+            condicion_iva_receptor_id=invoice_info["condicion_iva_receptor_id"],
         )
 
     def wsmtxca_pyafipws_create_invoice(self, ws, invoice_info):
@@ -74,6 +76,8 @@ class AccountMove(models.Model):
             invoice_info["moneda_id"],
             invoice_info["moneda_ctz"],
             invoice_info["obs_generales"],
+            cancela_misma_moneda_ext=invoice_info["cancela_misma_moneda_ext"],
+            condicion_iva_receptor_id=invoice_info["condicion_iva_receptor_id"],
         )
 
     def wsfex_pyafipws_create_invoice(self, ws, invoice_info):
@@ -99,6 +103,8 @@ class AccountMove(models.Model):
             invoice_info["idioma_cbte"],
             invoice_info["incoterms_ds"],
             invoice_info["fecha_pago"],
+            cancela_misma_moneda_ext=invoice_info["cancela_misma_moneda_ext"],
+            condicion_iva_receptor_id=invoice_info["condicion_iva_receptor_id"],
         )
 
     def wsbfe_pyafipws_create_invoice(self, ws, invoice_info):
@@ -124,6 +130,8 @@ class AccountMove(models.Model):
             invoice_info["moneda_id"],
             invoice_info["moneda_ctz"],
             invoice_info["fecha_venc_pago"],
+            cancela_misma_moneda_ext=invoice_info["cancela_misma_moneda_ext"],
+            condicion_iva_receptor_id=invoice_info["condicion_iva_receptor_id"],
         )
 
     ##########################
@@ -344,6 +352,9 @@ class AccountMove(models.Model):
     def base_map_invoice_info(self):
         journal = self.journal_id
         invoice_info = {}
+
+        invoice_info["cancela_misma_moneda_ext"] = 'N' # Forzamos "N" self.l10n_ar_payment_foreign_currency
+        invoice_info["condicion_iva_receptor_id"] = self.partner_id.l10n_ar_afip_responsibility_type_id.code
 
         invoice_info["commercial_partner"] = self.commercial_partner_id
         invoice_info["country"] = invoice_info["commercial_partner"].country_id
@@ -616,7 +627,7 @@ class AccountMove(models.Model):
         invoice_info["obs_generales"] = self.comment
         invoice_info["lines"] = self.invoice_map_info_lines()
         return invoice_info
-         
+
     def invoice_map_info_lines_fex(self):
         lines = []
         for line in self.invoice_line_ids.filtered(lambda x: not x.display_type):
