@@ -58,7 +58,6 @@ class AccountVatLedger(models.Model):
     presented_ledger = fields.Binary(
         "Presented Ledger",
         readonly=True,
-        states={"draft": [("readonly", False)]},
     )
     presented_ledger_name = fields.Char()
     state = fields.Selection(
