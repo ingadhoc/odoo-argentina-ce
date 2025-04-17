@@ -30,6 +30,7 @@ class AccountJournal(models.Model):
         res.insert(5, ("FEEWS", _("Export Voucher - Web Service")))
         return res
 
+
     @api.model
     def _get_type_mapping(self):
         return {"RAW_MAW": "wsfe", "FEEWS": "wsfex", "BFEWS": "wsbfe"}
@@ -40,6 +41,7 @@ class AccountJournal(models.Model):
         type_mapping = self._get_type_mapping()
         for rec in self:
             rec.afip_ws = type_mapping.get(rec.l10n_ar_afip_pos_system, False)
+
 
     def test_pyafipws_dummy(self):
         """
@@ -94,10 +96,10 @@ class AccountJournal(models.Model):
         }
         return notification
 
-    def get_pyafipws_currency_rate(self, currency):
-        raise UserError(
-            currency.get_pyafipws_currency_rate(
-                afip_ws=self.afip_ws,
-                company=self.company_id,
-            )[1]
-        )
+    # def get_pyafipws_currency_rate(self, currency):
+    #     raise UserError(
+    #         currency.get_pyafipws_currency_rate(
+    #             afip_ws=self.afip_ws,
+    #             company=self.company_id,
+    #         )[1]
+    #     )
