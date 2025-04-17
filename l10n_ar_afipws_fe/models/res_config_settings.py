@@ -18,3 +18,10 @@ class ResConfigSettings(models.TransientModel):
         help="Este campo sera necesario cuando informes comprobantes del tipo FCE MiPyME",
         config_parameter="l10n_ar_afipws_fe.fce_transmission",
     )
+
+    l10n_ar_payment_foreign_currency = fields.Selection(
+        [("S", "Yes"), ("N", "No"), ("account", "Account's Currency Dependant")],
+        related="company_id.l10n_ar_payment_foreign_currency",
+        readonly=False,
+    )
+    
