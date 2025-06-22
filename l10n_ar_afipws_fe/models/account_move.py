@@ -69,6 +69,22 @@ class AccountMove(models.Model):
     )
     asynchronous_post = fields.Boolean()
 
+    l10n_ar_payment_foreign_currency = fields.Selection(
+        [("S", "Yes"), ("N", "No")], compute="_compute_l10n_ar_payment_foreign_currency", store=True, readonly=False
+    )
+    l10n_ar_currency_code = fields.Char("Currency Code", related="currency_id.name")
+
+    @api.onchange("currency_id", "line_ids")
+    @api.depends("currency_id")
+    def _compute_l10n_ar_payment_foreign_currency(self):
+        self.l10n_ar_payment_foreign_currency = False
+        for move in self:
+            default_value = move.company_id.l10n_ar_payment_foreign_currency
+            if default_value == "account":
+                account = move.line_ids.account_id.filtered(lambda x: x.account_type == "asset_receivable")
+                default_value = "S" if account.currency_id and account.currency_id != move.company_currency_id else "N"
+            move.l10n_ar_payment_foreign_currency = default_value
+
     # @api.depends('journal_id', 'l10n_latam_document_type_id')
     # def _compute_highest_name(self):
     #     manual_records = self.filtered(lambda move: move.journal_id.afip_ws in ['wsfe', 'wsfex', 'wsbfe'])
@@ -313,3 +329,12 @@ class AccountMove(models.Model):
             # volver atras
             a_invoices += inv
         return (a_invoices, r_invoices)
+
+    def get_pyafipws_currency_rate(self):
+        self.ensure_one()
+        afip_ws = self.journal_id.afip_ws
+        ws = self.company_id.get_connection(afip_ws).connect()
+        afipws_get_currency_rate = self.pyafipws_get_currency_rate(ws)
+        # TODO: crear cotizacion?
+        self.invoice_currency_rate = 1 / float(afipws_get_currency_rate)
+        self.message_post(body=_("AFIP currency rate: %s") % afipws_get_currency_rate)

@@ -52,6 +52,8 @@ class AccountMove(models.Model):
             invoice_info["fecha_serv_hasta"],
             invoice_info["moneda_id"],
             invoice_info["moneda_ctz"],
+            cancela_misma_moneda_ext=invoice_info["cancela_misma_moneda_ext"],
+            condicion_iva_receptor_id=invoice_info["condicion_iva_receptor_id"],
         )
 
     def wsmtxca_pyafipws_create_invoice(self, ws, invoice_info):
@@ -76,6 +78,8 @@ class AccountMove(models.Model):
             invoice_info["moneda_id"],
             invoice_info["moneda_ctz"],
             invoice_info["obs_generales"],
+            cancela_misma_moneda_ext=invoice_info["cancela_misma_moneda_ext"],
+            condicion_iva_receptor_id=invoice_info["condicion_iva_receptor_id"],
         )
 
     def wsfex_pyafipws_create_invoice(self, ws, invoice_info):
@@ -101,6 +105,8 @@ class AccountMove(models.Model):
             invoice_info["idioma_cbte"],
             invoice_info["incoterms_ds"],
             invoice_info["fecha_pago"],
+            cancela_misma_moneda_ext=invoice_info["cancela_misma_moneda_ext"],
+            condicion_iva_receptor_id=invoice_info["condicion_iva_receptor_id"],
         )
 
     def wsbfe_pyafipws_create_invoice(self, ws, invoice_info):
@@ -125,6 +131,8 @@ class AccountMove(models.Model):
             invoice_info["moneda_id"],
             invoice_info["moneda_ctz"],
             invoice_info["fecha_venc_pago"],
+            cancela_misma_moneda_ext=invoice_info["cancela_misma_moneda_ext"],
+            condicion_iva_receptor_id=invoice_info["condicion_iva_receptor_id"],
         )
 
     ##########################
@@ -318,6 +326,9 @@ class AccountMove(models.Model):
         journal = self.journal_id
         invoice_info = {}
 
+        invoice_info["cancela_misma_moneda_ext"] = self.l10n_ar_payment_foreign_currency
+        invoice_info["condicion_iva_receptor_id"] = self.partner_id.l10n_ar_afip_responsibility_type_id.code
+
         invoice_info["commercial_partner"] = self.commercial_partner_id
         invoice_info["country"] = invoice_info["commercial_partner"].country_id
         invoice_info["journal"] = self.journal_id
@@ -378,7 +389,7 @@ class AccountMove(models.Model):
         invoice_info["imp_trib"] = str("%.2f" % amounts["not_vat_taxes_amount"])
         invoice_info["imp_op_ex"] = str("%.2f" % amounts["vat_exempt_base_amount"])
         invoice_info["moneda_id"] = self.currency_id.l10n_ar_afip_code
-        invoice_info["moneda_ctz"] = self.invoice_currency_rate or 1
+        invoice_info["moneda_ctz"] = 1 / self.invoice_currency_rate or 1
         invoice_info["CbteAsoc"] = self.get_related_invoices_data()
 
         invoice_info["afip_associated_period_from"] = self.afip_associated_period_from
@@ -566,3 +577,16 @@ class AccountMove(models.Model):
             lines.append(line_temp)
 
             return lines
+
+    # def pyafipws_get_currency_rate(self, ws):
+    #     self.ensure_one()
+    #     afip_ws = self.journal_id.afip_ws
+    #     if not afip_ws:
+    #         return
+    #     if hasattr(self, "%s_pyafipws_get_currency_rate" % afip_ws):
+    #         return getattr(self, "%s_pyafipws_get_currency_rate" % afip_ws)(ws)
+    #     else:
+    #         return _("AFIP WS %s not implemented") % afip_ws
+
+    def pyafipws_get_currency_rate(self, ws):
+        return ws.ParamGetCotizacion(self.currency_id.l10n_ar_afip_code)
