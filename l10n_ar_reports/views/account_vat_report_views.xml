@@ -36,7 +36,7 @@
                             <field name="date_from" readonly="state != 'draft'"/>
                             <field name="date_to" readonly="state != 'draft'"/>
                             <field name="presented_ledger_name" invisible="1"/>
-                            <field name="presented_ledger" filename="presented_ledger_name"/>
+                            <field name="presented_ledger" filename="presented_ledger_name" readonly="state != 'draft'"/>
                         </group>
                         <group>
                             <field name="first_page" readonly="state != 'draft'"/>
