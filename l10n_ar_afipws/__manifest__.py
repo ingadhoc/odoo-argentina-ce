@@ -28,7 +28,7 @@
         "demo/parameter_demo.xml",
     ],
     "images": [],
-    "installable": True,
+    'installable': False,
     "auto_install": False,
     "application": False,
 }
