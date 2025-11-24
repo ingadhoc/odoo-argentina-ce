@@ -1,0 +1,29 @@
+<odoo>
+    <record id="arca_login_cms" model="arcaws">
+        <field name="name">Afip LoginCms</field>
+        <field name="code">LoginCms</field>
+        <field name="dummy_method"></field>
+        <field name="production_url">https://wsaa.afip.gov.ar/ws/services/LoginCms?wsdl</field>
+        <field name="homologation_url">https://wsaahomo.afip.gov.ar/ws/services/LoginCms?wsdl</field>
+    </record>
+    <record id="arcawsfe" model="arcaws">
+        <field name="name">Factura electronica</field>
+        <field name="code">wsfe</field>
+        <field name="dummy_method">FEDummy</field>
+        <field name="production_url">https://servicios1.afip.gov.ar/wsfev1/service.asmx?WSDL</field>
+        <field name="homologation_url">https://wswhomo.afip.gov.ar/wsfev1/service.asmx?WSDL</field>
+    </record>
+    <record id="arca_padron_a5" model="arcaws">
+        <field name="name">Padron </field>
+        <field name="code">ws_sr_padron_a5</field>
+        <field name="production_url">https://aws.afip.gov.ar/sr-padron/webservices/personaServiceA5?wsdl</field>
+        <field name="homologation_url">https://awshomo.afip.gov.ar/sr-padron/webservices/personaServiceA5?wsdl</field>
+    </record>
+    <record id="arcawsfecred" model="arcaws">
+        <field name="name">Factura credito electronica</field>
+        <field name="code">wsfecred</field>
+        <field name="production_url">https://fwshomo.afip.gov.ar/wsfecred/FECredService?wsdl</field>
+        <field name="homologation_url">https://serviciosjava.afip.gob.ar/wsfecred/FECredService?wsdl</field>
+    </record>
+
+</odoo>

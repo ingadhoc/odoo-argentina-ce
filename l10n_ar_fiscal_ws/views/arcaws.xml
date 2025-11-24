@@ -1,0 +1,42 @@
+<odoo>
+    <record id="view_arcaws_form" model="ir.ui.view">
+        <field name="name">arcaws.auth.form</field>
+        <field name="model">arcaws</field>
+        <field name="arch" type="xml">
+            <form string="ARCA ws">
+                <sheet string="WS">
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                        <field name="production_url"/>
+                        <field name="homologation_url"/>
+                        <field name="view_id"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_arcaws_tree" model="ir.ui.view">
+        <field name="name">arcaws.auth.list</field>
+        <field name="model">arcaws</field>
+        <field name="arch" type="xml">
+            <list string="ARCA WS">
+                <field name="name"/>
+                <field name="code"/>
+                <button name="action_dummie" string="Dummy test" invisible="not dummy_method" type="object"/>
+            </list>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="act_arcaws">
+        <field name="name">ARCA WS</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">arcaws</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem name="Arca WebService" action="act_arcaws" id="menu_action_arcaws_auth" parent="menu_arcaws"/>
+
+</odoo>
