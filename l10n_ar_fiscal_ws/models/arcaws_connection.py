@@ -60,15 +60,7 @@ class ArcawsConnection(models.Model):
         for rec in self:
             rec.arca_login_url = self.env["arcaws"].get_arca_url("LoginCms", rec.type)
             rec.arcaws_url = self.env["arcaws"].get_arca_url(rec.arcaws.code, rec.type)
-
-    def check_arcaws(self, arcaws):
-        # TODO tal vez cambiar nombre cuando veamos si devuelve otra cosa
-        self.ensure_one()
-        if self.arcaws != arcaws:
-            raise UserError(
-                _("This method is for %s connections and you call it from an" " %s connection") % (arcaws, self.arcaws)
-            )
-
+   
     def _arba_get_auth_dict(self, auth_strategy=False):
         self.ensure_one()
         if auth_strategy == "plain":
@@ -111,6 +103,17 @@ class ArcawsConnection(models.Model):
             raise UserError(f"Error calling ARCA service {method_name}: {error}")
 
         return response
+
+    @api.autovacuum
+    def _gc_doc_index(self):
+        """ Garbage collect the expirated conection. """
+        conection_ids = expirationtime = self.search(
+            [('expirationtime', '<', fields.Datetime.now())],
+        )
+        if conection_ids:
+            total_connection = len(conection_ids)
+            conection_ids.unlink()
+            _logger.info("GC'd %s expirated connections", total_connection)
 
     # def call_arca_xml(self, method_name, xml, **kwargs):
     #     self.ensure_one()
