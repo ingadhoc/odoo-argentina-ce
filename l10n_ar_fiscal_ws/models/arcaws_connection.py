@@ -4,7 +4,7 @@
 ##############################################################################
 import logging
 
-from odoo import _, api, fields, models
+from odoo import api, fields, models
 from odoo.exceptions import UserError
 from zeep import (
     Client,
@@ -60,7 +60,7 @@ class ArcawsConnection(models.Model):
         for rec in self:
             rec.arca_login_url = self.env["arcaws"].get_arca_url("LoginCms", rec.type)
             rec.arcaws_url = self.env["arcaws"].get_arca_url(rec.arcaws.code, rec.type)
-   
+
     def _arba_get_auth_dict(self, auth_strategy=False):
         self.ensure_one()
         if auth_strategy == "plain":
@@ -106,9 +106,9 @@ class ArcawsConnection(models.Model):
 
     @api.autovacuum
     def _gc_doc_index(self):
-        """ Garbage collect the expirated conection. """
+        """Garbage collect the expirated conection."""
         conection_ids = expirationtime = self.search(
-            [('expirationtime', '<', fields.Datetime.now())],
+            [("expirationtime", "<", fields.Datetime.now())],
         )
         if conection_ids:
             total_connection = len(conection_ids)
