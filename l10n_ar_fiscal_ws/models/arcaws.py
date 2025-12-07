@@ -21,6 +21,7 @@ class ArcaWs(models.Model):
     homologation_url = fields.Char(required=True)
     view_id = fields.Many2one("ir.ui.view")
     dummy_method = fields.Char(default="dummy")
+    ws_parameters = fields.Json()
     active = fields.Boolean(default=True)
 
     _arcaws_unique_code = models.Constraint(
@@ -47,4 +48,6 @@ class ArcaWs(models.Model):
         _logger.info("Dummie action called")
         company = self.env.company
         connection = company.arca_get_connection(self.code)
-        raise UserError(f"Dummie action called for connection {connection.call_arca_service(self.dummy_method, {})}")
+        raise UserError(
+            f"Dummie action called for connection {connection.call_arca_service(self.ws_parameters.get('dummy_method'), {})}"
+        )

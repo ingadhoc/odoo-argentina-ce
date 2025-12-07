@@ -304,7 +304,7 @@ class AccountMove(models.Model):
                     "afip_xml_response": ws.XmlResponse or "",
                 }
                 inv.sudo().write(vals)
-                inv._cr.commit()
+                inv.env.cr.commit()
                 continue
 
             if hasattr(ws, "Vencimiento"):
@@ -324,7 +324,7 @@ class AccountMove(models.Model):
             }
 
             inv.sudo().write(vals)
-            inv._cr.commit()
+            inv.env.cr.commit()
             # si obtuvimos el cae hacemos el commit porque estoya no se puede
             # volver atras
             a_invoices += inv
