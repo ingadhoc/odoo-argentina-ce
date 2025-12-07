@@ -6,6 +6,7 @@ import logging
 
 from odoo import api, fields, models
 from odoo.exceptions import UserError
+from odoo.tools.safe_eval import safe_eval
 from zeep import (
     Client,
 )
@@ -61,6 +62,10 @@ class ArcawsConnection(models.Model):
             rec.arca_login_url = self.env["arcaws"].get_arca_url("LoginCms", rec.type)
             rec.arcaws_url = self.env["arcaws"].get_arca_url(rec.arcaws.code, rec.type)
 
+    def _arba_eval_dict(self, dict_definition, **kwargs):
+        ## TODO: Securize me
+        return safe_eval(dict_definition, **kwargs)
+
     def _arba_get_auth_dict(self, auth_strategy=False):
         self.ensure_one()
         if auth_strategy == "plain":
@@ -85,6 +90,15 @@ class ArcawsConnection(models.Model):
                     "token": self.token,
                 }
             }
+        elif auth_strategy == "Auth":
+            return {
+                "Auth": {
+                    "Cuit": self.company_id.partner_id.ensure_vat(),
+                    "Sign": self.sign,
+                    "Token": self.token,
+                }
+            }
+
         return {}
 
     def _arba_render_data(self, template_name, qcontext):
@@ -107,7 +121,7 @@ class ArcawsConnection(models.Model):
     @api.autovacuum
     def _gc_doc_index(self):
         """Garbage collect the expirated conection."""
-        conection_ids = expirationtime = self.search(
+        conection_ids = self.search(
             [("expirationtime", "<", fields.Datetime.now())],
         )
         if conection_ids:
