@@ -9,9 +9,10 @@ import sys
 import traceback
 from datetime import datetime
 
-from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools import float_repr
+
+from odoo import _, api, fields, models
 
 from ..afip_utils import get_invoice_number_from_response
 
@@ -70,7 +71,10 @@ class AccountMove(models.Model):
     asynchronous_post = fields.Boolean()
 
     l10n_ar_payment_foreign_currency = fields.Selection(
-        [("S", "Yes"), ("N", "No")], compute="_compute_l10n_ar_payment_foreign_currency", store=True, readonly=False
+        [("S", "Yes"), ("N", "No")],
+        compute="_compute_l10n_ar_payment_foreign_currency",
+        store=True,
+        readonly=False,
     )
     l10n_ar_currency_code = fields.Char("Currency Code", related="currency_id.name")
 
@@ -81,29 +85,22 @@ class AccountMove(models.Model):
         for move in self:
             default_value = move.company_id.l10n_ar_payment_foreign_currency
             if default_value == "account":
-                account = move.line_ids.account_id.filtered(lambda x: x.account_type == "asset_receivable")
-                default_value = "S" if account.currency_id and account.currency_id != move.company_currency_id else "N"
+                account = move.line_ids.account_id.filtered(
+                    lambda x: x.account_type == "asset_receivable"
+                )
+                default_value = (
+                    "S"
+                    if account.currency_id
+                    and account.currency_id != move.company_currency_id
+                    else "N"
+                )
             move.l10n_ar_payment_foreign_currency = default_value
 
     # @api.depends('journal_id', 'l10n_latam_document_type_id')
     # def _compute_highest_name(self):
-    #     manual_records = self.filtered(lambda move: move.journal_id.afip_ws in ['wsfe', 'wsfex', 'wsbfe'])
+    #     manual_records = self.filtered(lambda move: move.journal_id.arcaws in ['wsfe', 'wsfex', 'wsbfe'])
     #     manual_records.highest_name = ''
     #     super(AccountMove, self - manual_records)._compute_highest_name()
-
-    def cron_asynchronous_post(self):
-        queue_limit = self.env["ir.config_parameter"].sudo().get_param("l10n_ar_afipws_fe.queue_limit", 20)
-        queue = self.search(
-            [
-                ("asynchronous_post", "=", True),
-                "|",
-                ("afip_result", "=", False),
-                ("afip_result", "=", ""),
-            ],
-            limit=queue_limit,
-        )
-        if queue:
-            queue._post()
 
     def _get_starting_sequence(self):
         """If use documents then will create a new starting sequence using the document type code prefix and the
@@ -111,21 +108,29 @@ class AccountMove(models.Model):
         if (
             self.journal_id.l10n_latam_use_documents
             and self.company_id.account_fiscal_country_id.code == "AR"
-            and self.journal_id.afip_ws
+            and self.journal_id.arcaws
         ):
             if self.l10n_latam_document_type_id:
-                number = int(self.journal_id.get_pyafipws_last_invoice(self.l10n_latam_document_type_id))
+                number = int(
+                    self.journal_id._get_last_invoice_number(
+                        self.l10n_latam_document_type_id
+                    )
+                )
                 return self._get_formatted_sequence(number)
         return super()._get_starting_sequence()
 
     def _set_next_sequence(self):
         self.ensure_one()
-        if self.afip_auth_code and self.journal_id.afip_ws and self.afip_xml_response:
-            invoice_number = get_invoice_number_from_response(self.afip_xml_response, self.journal_id.afip_ws)
+        if self.afip_auth_code and self.journal_id.arcaws and self.afip_xml_response:
+            invoice_number = get_invoice_number_from_response(
+                self.afip_xml_response, self.journal_id.arcaws
+            )
             if invoice_number:
                 last_sequence = self._get_formatted_sequence(invoice_number)
                 format, format_values = self._get_sequence_format_param(last_sequence)
-                format_values["year"] = self[self._sequence_date_field].year % (10 ** format_values["year_length"])
+                format_values["year"] = self[self._sequence_date_field].year % (
+                    10 ** format_values["year_length"]
+                )
                 format_values["month"] = self[self._sequence_date_field].month
                 format_values["seq"] = invoice_number
 
@@ -140,10 +145,14 @@ class AccountMove(models.Model):
             and self.journal_id.l10n_latam_use_documents
             and self.company_id.account_fiscal_country_id.code == "AR"
             and not self.afip_auth_code
-            and self.journal_id.afip_ws
+            and self.journal_id.arcaws
             and self.l10n_latam_document_type_id
         ):
-            number = int(self.journal_id.get_pyafipws_last_invoice(self.l10n_latam_document_type_id))
+            number = int(
+                self.journal_id._get_last_invoice_number(
+                    self.l10n_latam_document_type_id
+                )
+            )
             res = self._get_formatted_sequence(number)
         else:
             res = super()._get_last_sequence(relaxed=relaxed, with_prefix=with_prefix)
@@ -152,7 +161,7 @@ class AccountMove(models.Model):
     @api.depends("journal_id", "afip_auth_code")
     def _compute_validation_type(self):
         for rec in self:
-            if rec.journal_id.afip_ws and not rec.afip_auth_code:
+            if rec.journal_id.arcaws and not rec.afip_auth_code:
                 validation_type = self.env["res.company"]._get_environment_type()
                 # if we are on homologation env and we dont have certificates
                 # we validate only locally
@@ -186,12 +195,19 @@ class AccountMove(models.Model):
                     "tipoCodAut": "E" if rec.afip_auth_mode == "CAE" else "A",
                     "codAut": int(rec.afip_auth_code),
                 }
-                if len(rec.commercial_partner_id.l10n_latam_identification_type_id) and rec.commercial_partner_id.vat:
+                if (
+                    len(rec.commercial_partner_id.l10n_latam_identification_type_id)
+                    and rec.commercial_partner_id.vat
+                ):
                     qr_dict["tipoDocRec"] = int(
                         rec.commercial_partner_id.l10n_latam_identification_type_id.l10n_ar_afip_code
                     )
-                    qr_dict["nroDocRec"] = int(rec.commercial_partner_id.vat.replace("-", "").replace(".", ""))
-                qr_data = base64.encodestring(json.dumps(qr_dict, indent=None).encode("ascii")).decode("ascii")
+                    qr_dict["nroDocRec"] = int(
+                        rec.commercial_partner_id.vat.replace("-", "").replace(".", "")
+                    )
+                qr_data = base64.encodestring(
+                    json.dumps(qr_dict, indent=None).encode("ascii")
+                ).decode("ascii")
                 qr_data = str(qr_data).replace("\n", "")
                 rec.afip_qr_code = "https://www.afip.gob.ar/fe/qr/?p=%s" % qr_data
             else:
@@ -214,7 +230,7 @@ class AccountMove(models.Model):
             lambda x: x.company_id.country_id.code == "AR"
             and x.is_invoice()
             and x.move_type in ["out_invoice", "out_refund"]
-            and x.journal_id.afip_ws
+            and x.journal_id.arcaws
             and not x.afip_auth_code
         )
         a_invoices, r_invoices = request_cae_invoices.do_pyafipws_request_cae()
@@ -227,8 +243,8 @@ class AccountMove(models.Model):
         a_invoices = r_invoices = self.env["account.move"]
 
         for inv in self:
-            afip_ws = inv.journal_id.afip_ws
-            if not afip_ws:
+            arcaws = inv.journal_id.arcaws
+            if not arcaws:
                 continue
 
             # if no validation type and we are on electronic invoice, it means
@@ -253,10 +269,10 @@ class AccountMove(models.Model):
                 continue
 
             # Inicio conexion
-            ws = inv.company_id.get_connection(afip_ws).connect()
+            ws = inv.company_id.get_connection(arcaws).connect()
 
             # Preparo los datos
-            invoice_info = inv.map_invoice_info(afip_ws)
+            invoice_info = inv.map_invoice_info(arcaws)
 
             # Esto no es necesario ahora ya que el numero se obtiene desde el result
             # document_number = inv._get_formatted_sequence(int(invoice_info["ws_next_invoice_number"]))
@@ -269,14 +285,14 @@ class AccountMove(models.Model):
             inv.pyafipws_create_invoice(ws, invoice_info)
 
             # Agrego informacion a la factura dentro de pyafipws
-            inv.pyafipws_add_info(ws, afip_ws, invoice_info)
+            inv.pyafipws_add_info(ws, arcaws, invoice_info)
 
             # Request the authorization! (call the AFIP webservice method)
             vto = None
             msg = False
             try:
                 # Pido autorizacion
-                inv.pyafipws_request_autorization(ws, afip_ws)
+                inv.pyafipws_request_autorization(ws, arcaws)
             except Exception as e:
                 msg = e
             except Exception:
@@ -285,11 +301,14 @@ class AccountMove(models.Model):
                     msg = ws.Excepcion
                 else:
                     # avoid encoding problem when raising error
-                    msg = traceback.format_exception_only(sys.exc_type, sys.exc_value)[0]
+                    msg = traceback.format_exception_only(sys.exc_type, sys.exc_value)[
+                        0
+                    ]
             if msg:
                 _logger.error(
                     _("AFIP Validation Error. %s") % msg
-                    + " XML Request: %s XML Response: %s" % (ws.XmlRequest, ws.XmlResponse)
+                    + " XML Request: %s XML Response: %s"
+                    % (ws.XmlRequest, ws.XmlResponse)
                 )
 
             msg = "\n".join([ws.Obs or "", ws.ErrMsg or ""])
@@ -312,7 +331,10 @@ class AccountMove(models.Model):
             if hasattr(ws, "FchVencCAE"):
                 vto = datetime.strptime(ws.FchVencCAE, "%Y%m%d").date()
 
-            _logger.info("CAE solicitado con exito. CAE: %s. Resultado %s" % (ws.CAE, ws.Resultado))
+            _logger.info(
+                "CAE solicitado con exito. CAE: %s. Resultado %s"
+                % (ws.CAE, ws.Resultado)
+            )
             vals = {
                 "afip_auth_mode": "CAE",
                 "afip_auth_code": ws.CAE,
@@ -332,8 +354,8 @@ class AccountMove(models.Model):
 
     def get_pyafipws_currency_rate(self):
         self.ensure_one()
-        afip_ws = self.journal_id.afip_ws
-        ws = self.company_id.get_connection(afip_ws).connect()
+        arcaws = self.journal_id.arcaws
+        ws = self.company_id.get_connection(arcaws).connect()
         afipws_get_currency_rate = self.pyafipws_get_currency_rate(ws)
         # TODO: crear cotizacion?
         self.invoice_currency_rate = 1 / float(afipws_get_currency_rate)

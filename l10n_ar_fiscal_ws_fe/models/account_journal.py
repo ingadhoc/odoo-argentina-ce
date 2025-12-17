@@ -99,3 +99,21 @@ class AccountJournal(models.Model):
         method = self.arcaws.ws_parameters.get("cuit_document_classes")
         auth = self.arcaws.ws_parameters.get("auth")
         raise ArcaError(connection.call_arca_service(method, {}, auth=auth))
+
+    def _get_last_invoice_number(self, l10n_latam_document_type):
+        self.ensure_one()
+        if not self.arcaws:
+            raise ArcaError(_("No ARCA WS selected"))
+        connection = self.company_id.arca_get_connection(self.arcaws.code)
+        last_invoice_info = self.arcaws.ws_parameters.get("last_invoice")
+
+        method = last_invoice_info.get("method")
+        auth = self.arcaws.ws_parameters.get("auth")
+        pos_number = self.l10n_ar_afip_pos_number
+        doc_type_code = l10n_latam_document_type.code
+        params = {
+            last_invoice_info.get("ptovta"): pos_number,
+            last_invoice_info.get("tipocbte"): doc_type_code,
+        }
+        response = connection.call_arca_service(method, params, auth=auth)
+        return response[last_invoice_info.get("cbtenro")]
