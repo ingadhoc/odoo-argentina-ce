@@ -3,24 +3,27 @@
     <record id="arcawsfe" model="arcaws">
         <field name="name">Factura electronica sin detalle RG2485 (WSFEv1)</field>
         <field name="code">wsfe</field>
-        <field name="ws_parameters" eval="{'dummy_method': 'FEDummy','last_invoice':'FECompUltimoAutorizado','cuit_document_classes':'FEParamGetTiposCbte','get_point_of_sale': 'FEParamGetPtosVenta', 'auth': 'Auth'}"></field>
+        <field name="ws_parameters" eval="{'dummy_method': 'FEDummy',
+                'last_invoice':{'method':'FECompUltimoAutorizado', 'ptovta':'PtoVta','tipocbte':'CbteTipo', 'cbtenro':'CbteNro'},
+                'cuit_document_classes':'FEParamGetTiposCbte',
+                'get_point_of_sale': 'FEParamGetPtosVenta',
+                'auth': 'Auth'}"></field>
         <field name="production_url">https://servicios1.afip.gov.ar/wsfev1/service.asmx?WSDL</field>
         <field name="homologation_url">https://wswhomo.afip.gov.ar/wsfev1/service.asmx?WSDL</field>
     </record>
     <record id="wsfex" model="arcaws">
         <field name="name">Factura electronica exportacion (WSFEXv1)</field>
         <field name="code">wsfex</field>
-        <field name="ws_parameters" eval="{'dummy_method': 'plain', 'last_invoice':'FEXGetLast_CMP','cuit_document_classes':'FEXGetPARAM_Cbte_Tipo','get_point_of_sale': 'FEXGetPARAM_PtoVenta', 'auth': 'Auth'}"></field>
+        <field name="ws_parameters" eval="{'dummy_method': 'plain', 'last_invoice':{'method':'FEXGetLast_CMP', 'ptovta':'Pto_venta','tipocbte':'Tipo_cbte', 'cbtenro':'Cbte_nro'},'cuit_document_classes':'FEXGetPARAM_Cbte_Tipo','get_point_of_sale': 'FEXGetPARAM_PtoVenta', 'auth': 'Auth'}"></field>
         <field name="production_url">https://servicios1.afip.gov.ar/wsfexv1/service.asmx?WSDL</field>
         <field name="homologation_url">https://wswhomo.afip.gov.ar/wsfexv1/service.asmx?WSDL</field>
     </record>
     <record id="wsbfe" model="arcaws">
         <field name="name">Bono fiscal con detalle RG2485 (WSBFE)</field>
         <field name="code">wsbfe</field>
-        <field name="ws_parameters" eval="{'dummy_method': 'BFEDummy', 'last_invoice':'BFEGetLast_CMP','cuit_document_classes':'BFEParamGetTiposCbte','get_point_of_sale': 'BFEParamGetPtosVenta', 'auth': 'Auth'}"></field>
+        <field name="ws_parameters" eval="{'dummy_method': 'BFEDummy', 'last_invoice':{'method':'BFEGetLast_CMP', 'ptovta':'Pto_venta','tipocbte':'Tipo_cbte', 'cbtenro':'Cbte_nro'},'cuit_document_classes':'BFEParamGetTiposCbte','get_point_of_sale': 'BFEParamGetPtosVenta', 'auth': 'Auth'}"></field>
         <field name="production_url">https://servicios1.afip.gov.ar/wsbfe/service.asmx?WSDL</field>
         <field name="homologation_url">https://wswhomo.afip.gov.ar/wsbfe/service.asmx?WSDL</field>
     </record>
-    
+
 </odoo>
-    
