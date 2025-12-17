@@ -26,6 +26,12 @@
         "data/ir.actions.url_data.xml",
         "data/arcaws.xml",
     ],
+    "assets": {
+        "web._assets_core": [
+            "l10n_ar_fiscal_ws/static/src/core/errors/error_dialogs.js",
+            "l10n_ar_fiscal_ws/static/src/core/errors/error_dialogs.xml",
+        ]
+    },
     "demo": [
         "demo/certificate_demo.xml",
         "demo/parameter_demo.xml",

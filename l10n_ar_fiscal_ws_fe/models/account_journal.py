@@ -4,13 +4,16 @@
 ##############################################################################
 import logging
 
-from odoo import _, api, fields, models
+from odoo.addons.l10n_ar_fiscal_ws.models.exceptions import ArcaError
 from odoo.exceptions import UserError
+
+from odoo import _, api, fields, models
 
 _logger = logging.getLogger(__name__)
 
 
-ARCA_INVOCING_WS = [('code', 'in', ["wsfe", "wsfex", "wsbfe"])]
+ARCA_INVOCING_WS = [("code", "in", ["wsfe", "wsfex", "wsbfe"])]
+
 
 class AccountJournal(models.Model):
     _inherit = "account.journal"
@@ -36,9 +39,13 @@ class AccountJournal(models.Model):
     @api.depends("l10n_ar_afip_pos_system")
     def _compute_arcaws(self):
         type_mapping = self._get_type_mapping()
-        with_ws_pos_type = self.filtered(lambda x: x.l10n_ar_afip_pos_system in type_mapping.keys())
+        with_ws_pos_type = self.filtered(
+            lambda x: x.l10n_ar_afip_pos_system in type_mapping.keys()
+        )
         for rec in with_ws_pos_type:
-            rec.arcaws = self.env["arcaws"].search([("code", "=", type_mapping[rec.l10n_ar_afip_pos_system])], limit=1)
+            rec.arcaws = self.env["arcaws"].search(
+                [("code", "=", type_mapping[rec.l10n_ar_afip_pos_system])], limit=1
+            )
         (self - with_ws_pos_type).arcaws = False
 
     def test_pyafipws_dummy(self):
@@ -60,7 +67,9 @@ class AccountJournal(models.Model):
             "type": "ir.actions.client",
             "tag": "display_notification",
             "params": {
-                "title": _("Great, everything seems fine. The connection did not fail."),
+                "title": _(
+                    "Great, everything seems fine. The connection did not fail."
+                ),
                 "type": "success",
                 "sticky": True,  # True/False will display for few seconds if false
             },
@@ -73,11 +82,11 @@ class AccountJournal(models.Model):
         """
         self.ensure_one()
         if not self.arcaws:
-            raise UserError(_("No ARCA WS selected"))
+            raise ArcaError(_("No ARCA WS selected"))
         connection = self.company_id.arca_get_connection(self.arcaws.code)
-        method = self.arcaws.ws_parameters.get('get_point_of_sale')
-        auth = self.arcaws.ws_parameters.get('auth')
-        raise UserError(f"Point of sale list: %s" % connection.call_arca_service(method, {}, auth=auth))
+        method = self.arcaws.ws_parameters.get("get_point_of_sale")
+        auth = self.arcaws.ws_parameters.get("auth")
+        raise ArcaError(connection.call_arca_service(method, {}, auth=auth))
 
     def get_pyafipws_cuit_document_classes(self):
         """
@@ -85,8 +94,8 @@ class AccountJournal(models.Model):
         """
         self.ensure_one()
         if not self.arcaws:
-            raise UserError(_("No ARCA WS selected"))
+            raise ArcaError(_("No ARCA WS selected"))
         connection = self.company_id.arca_get_connection(self.arcaws.code)
-        method = self.arcaws.ws_parameters.get('cuit_document_classes')
-        auth = self.arcaws.ws_parameters.get('auth')
-        raise UserError(f"Point of sale list: %s" % connection.call_arca_service(method, {}, auth=auth))
+        method = self.arcaws.ws_parameters.get("cuit_document_classes")
+        auth = self.arcaws.ws_parameters.get("auth")
+        raise ArcaError(connection.call_arca_service(method, {}, auth=auth))

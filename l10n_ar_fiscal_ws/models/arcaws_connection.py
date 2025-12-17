@@ -4,12 +4,11 @@
 ##############################################################################
 import logging
 
-from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.safe_eval import safe_eval
-from zeep import (
-    Client,
-)
+from zeep import Client
+
+from odoo import api, fields, models
 
 _logger = logging.getLogger(__name__)
 
@@ -102,7 +101,9 @@ class ArcawsConnection(models.Model):
         return {}
 
     def _arba_render_data(self, template_name, qcontext):
-        return str(self.env["ir.ui.view"]._render_template(template_name, qcontext)).strip()
+        return str(
+            self.env["ir.ui.view"]._render_template(template_name, qcontext)
+        ).strip()
 
     def call_arca_service(self, method_name, data, **kwargs):
         self.ensure_one()
