@@ -11,6 +11,11 @@
                         invisible="state != 'draft'"
                         class="oe_highlight"
                         string="Upload Certificate"/>
+                    <button name="action_validate_certificate"
+                        string="Validar con AFIP"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="state != 'confirmed'"/>
                     <button name="action_confirm"
                         type="object"
                         invisible="state != 'draft'"
@@ -56,6 +61,22 @@
                             <field name="cert_subject" readonly="1"/>
                             <field name="cert_issuer" readonly="1"/>
                         </group>
+                    </group>
+                    <group string="Validación AFIP" invisible="not crt">
+                        <group>
+                            <field name="certificate_validated" readonly="1"/>
+                            <field name="validation_date" readonly="1"
+                                   invisible="not certificate_validated"/>
+                        </group>
+                        <group>
+                            <field name="afip_services"
+                                   placeholder="wsfe&#10;wsfex&#10;wsbfe&#10;wsmtxca"/>
+                        </group>
+                    </group>
+                    <group string="Error de Validación"
+                           invisible="not validation_error">
+                        <field name="validation_error" readonly="1" nolabel="1"
+                               widget="text" class="text-danger"/>
                     </group>
                 </sheet>
             </form>

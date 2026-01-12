@@ -106,6 +106,29 @@ class AfipwsCertificate(models.Model):
         help="Cantidad de días hasta que expire el certificado",
     )
 
+    # Campos de validación y servicios AFIP
+    afip_services = fields.Text(
+        string="Servicios AFIP",
+        help="Servicios AFIP adheridos a este certificado (uno por línea). " "Ejemplos: wsfe, wsfex, wsbfe, wsmtxca",
+        default="wsfe\nwsfex",
+    )
+    certificate_validated = fields.Boolean(
+        string="Validado con AFIP",
+        default=False,
+        help="Indica si el certificado fue validado contra AFIP WSAA",
+        copy=False,
+    )
+    validation_date = fields.Datetime(
+        string="Fecha Validación",
+        help="Fecha de la última validación exitosa con AFIP",
+        copy=False,
+    )
+    validation_error = fields.Text(
+        string="Error de Validación",
+        help="Último error de validación con AFIP",
+        copy=False,
+    )
+
     @api.depends("csr")
     def _compute_request_file(self):
         for rec in self:
@@ -245,6 +268,340 @@ class AfipwsCertificate(models.Model):
                 record.cert_serial_number = False
                 record.cert_is_expired = False
                 record.cert_days_to_expire = 0
+
+    def _validate_certificate_key_pair(self):
+        """Valida que el certificado y la clave privada correspondan entre sí.
+
+        Returns:
+            tuple: (bool, str) - (es_válido, mensaje_error)
+        """
+        self.ensure_one()
+
+        if not self.crt:
+            return False, _("Falta el certificado")
+
+        if not self.alias_id.key:
+            return False, _("Falta la clave privada en el alias del certificado")
+
+        try:
+            import hashlib
+
+            from cryptography import x509
+            from cryptography.hazmat.backends import default_backend
+            from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat, load_pem_private_key
+
+            _logger.info("Validando par certificado-clave para certificado ID %s", self.id)
+
+            # Cargar certificado
+            try:
+                cert = x509.load_pem_x509_certificate(self.crt.encode("utf-8"), default_backend())
+                _logger.info("✓ Certificado cargado correctamente")
+            except Exception as e:
+                return False, _("Error al cargar el certificado: %s") % str(e)
+
+            # Cargar clave privada
+            try:
+                pkey = load_pem_private_key(self.alias_id.key.encode("utf-8"), password=None, backend=default_backend())
+                _logger.info("✓ Clave privada cargada correctamente")
+            except ValueError as e:
+                if "password" in str(e).lower():
+                    return False, _(
+                        "❌ La clave privada está protegida con contraseña.\n\n"
+                        "AFIP requiere una clave privada SIN contraseña.\n\n"
+                        "Para eliminar la contraseña ejecute:\n"
+                        "openssl rsa -in clave_con_pass.key -out clave_sin_pass.key"
+                    )
+                else:
+                    return False, _(
+                        "❌ La clave privada no es válida o está en formato incorrecto.\n\n"
+                        "Debe estar en formato PEM:\n"
+                        "-----BEGIN PRIVATE KEY----- o -----BEGIN RSA PRIVATE KEY-----\n\n"
+                        "Error: %s"
+                    ) % str(e)
+            except Exception as e:
+                return False, _("❌ Error al cargar la clave privada: %s") % str(e)
+
+            # Obtener claves públicas de ambos
+            try:
+                cert_public_key = cert.public_key()
+                pkey_public_key = pkey.public_key()
+
+                # Serializar a DER para comparación byte a byte
+                cert_pub_bytes = cert_public_key.public_bytes(
+                    encoding=Encoding.DER, format=PublicFormat.SubjectPublicKeyInfo
+                )
+                pkey_pub_bytes = pkey_public_key.public_bytes(
+                    encoding=Encoding.DER, format=PublicFormat.SubjectPublicKeyInfo
+                )
+
+                # Calcular hashes para comparación y log
+                cert_hash = hashlib.sha256(cert_pub_bytes).hexdigest()
+                pkey_hash = hashlib.sha256(pkey_pub_bytes).hexdigest()
+
+                _logger.info("Hash clave pública del certificado: %s", cert_hash)
+                _logger.info("Hash clave pública de la clave privada: %s", pkey_hash)
+
+                # Comparar
+                if cert_pub_bytes != pkey_pub_bytes:
+                    return False, _(
+                        "❌ LA CLAVE PRIVADA NO CORRESPONDE A ESTE CERTIFICADO\n\n"
+                        "Verificación criptográfica falló:\n"
+                        "• Hash del certificado: %s...\n"
+                        "• Hash de la clave privada: %s...\n\n"
+                        "SOLUCIÓN:\n"
+                        "Debe usar la MISMA clave privada que utilizó para generar el CSR.\n\n"
+                        "Si no tiene la clave original, debe:\n"
+                        "1. Generar una nueva clave privada\n"
+                        "2. Generar un nuevo CSR con esa clave\n"
+                        "3. Solicitar un nuevo certificado en AFIP\n"
+                        "4. Subir ambos archivos (la nueva clave + el nuevo certificado)"
+                    ) % (cert_hash[:16], pkey_hash[:16])
+
+                _logger.info("✓ Certificado %s: Par clave-certificado VÁLIDO", self.id)
+                return True, _(
+                    "✅ Certificado y clave privada son un par válido\n\n" "Hash verificado: %s..."
+                ) % cert_hash[:16]
+
+            except Exception as e:
+                _logger.exception("Error comparando claves públicas")
+                return False, _("❌ Error al comparar claves públicas: %s") % str(e)
+
+        except Exception as e:
+            _logger.exception("Error inesperado validando certificado")
+            return False, _("❌ Error inesperado: %s") % str(e)
+
+    def test_wsaa_authentication(self):
+        """Prueba la autenticación con AFIP WSAA usando este certificado.
+
+        Returns:
+            tuple: (bool, str) - (exitoso, mensaje)
+        """
+        self.ensure_one()
+
+        if not self.crt:
+            return False, _("Falta el certificado")
+
+        # PASO 1: Validar SIEMPRE que el par certificado-clave privada sea correcto
+        # Esta validación es criptográfica y funciona para cualquier certificado
+        _logger.info("Validando par certificado-clave privada...")
+        is_valid, msg = self._validate_certificate_key_pair()
+        if not is_valid:
+            _logger.error("❌ Par certificado-clave INVÁLIDO: %s", msg)
+            self.write(
+                {
+                    "certificate_validated": False,
+                    "validation_date": fields.Datetime.now(),
+                    "validation_error": msg,
+                }
+            )
+            return False, msg
+
+        _logger.info("✓ Par certificado-clave VÁLIDO")
+
+        # PASO 2: Detectar si es certificado de testing
+        is_testing_cert = False
+        if self.cert_issuer and ("test" in self.cert_issuer.lower() or "computadores test" in self.cert_issuer.lower()):
+            is_testing_cert = True
+            _logger.info("Certificado de testing detectado: %s", self.cert_issuer)
+
+        # PASO 3: Si es testing en homologación, no intentar autenticar con AFIP
+        env_type = self.alias_id.type
+        if is_testing_cert and env_type == "homologation":
+            _logger.warning("Certificado de testing en homologación - Omitiendo autenticación con AFIP")
+            warning_msg = _(
+                "⚠️ Certificado de Testing (Homologación)\n\n"
+                "✅ El par certificado-clave privada es VÁLIDO (verificación criptográfica OK)\n\n"
+                "Este es un certificado de prueba/testing para desarrollo.\n\n"
+                "Información del certificado:\n"
+                "• Emisor: %s\n"
+                "• Ambiente: %s\n"
+                "• Válido hasta: %s\n\n"
+                "NOTA: Los certificados de testing no pueden validarse con AFIP real,\n"
+                "pero son válidos para desarrollo y pruebas en ambiente de homologación.\n\n"
+                "Para producción necesitará un certificado real de AFIP."
+            ) % (self.cert_issuer or "N/A", env_type, self.cert_valid_to or "N/A")
+
+            # Marcar como "validado" con advertencia en validation_error (NO mostrar mensaje largo)
+            self.write(
+                {
+                    "certificate_validated": True,
+                    "validation_date": fields.Datetime.now(),
+                    "validation_error": warning_msg,  # Guardar el mensaje completo aquí
+                }
+            )
+
+            return True, _("Certificado de testing validado. Ver detalles en campo de validación.")
+
+        # PASO 4: Si es testing en producción, es error
+        if is_testing_cert and env_type == "production":
+            error_msg = _(
+                "❌ Error: Certificado de Testing en Producción\n\n"
+                "✅ El par certificado-clave privada es válido (verificación criptográfica OK)\n\n"
+                "Pero NO puede usar un certificado de testing en ambiente de producción.\n\n"
+                "Debe generar un certificado real de AFIP para producción:\n"
+                "1. Use el script: ./generate_afip_certificate.sh <CUIT> produccion\n"
+                "2. Suba el CSR a AFIP (ambiente Producción)\n"
+                "3. Descargue y configure el certificado real"
+            )
+            self.write(
+                {
+                    "certificate_validated": False,
+                    "validation_date": fields.Datetime.now(),
+                    "validation_error": error_msg,
+                }
+            )
+            return False, error_msg
+
+        # PASO 5: Para certificados reales, intentar autenticar con AFIP
+        _logger.info("Certificado real detectado - Intentando autenticación con AFIP...")
+
+        services = [s.strip() for s in (self.afip_services or "wsfe").split("\n") if s.strip()]
+        if not services:
+            services = ["wsfe"]
+
+        service_to_test = services[0]
+        company = self.alias_id.company_id
+
+        try:
+            _logger.info("Probando autenticación WSAA para servicio '%s' (ambiente: %s)", service_to_test, env_type)
+
+            # Verificar que el certificado esté confirmado en este ambiente
+            if self.state != "confirmed":
+                return False, _("El certificado debe estar confirmado antes de validarlo")
+
+            # Obtener clave y certificado
+            pkey = self.alias_id.key
+            cert = self.crt
+
+            if not pkey or not cert:
+                return False, _("Faltan la clave privada o el certificado")
+
+            # Intentar crear conexión directamente usando el método de la company
+            # Esto forzará la autenticación con WSAA
+            try:
+                _logger.info("Creando conexión WSAA para validar certificado...")
+                connection = company._create_connection(service_to_test, env_type)
+
+                if connection and connection.token:
+                    msg = _(
+                        "✅ Autenticación WSAA exitosa\n\n"
+                        "Servicio probado: %s\n"
+                        "Ambiente: %s\n"
+                        "Token obtenido: %s...\n"
+                        "Expira: %s"
+                    ) % (
+                        service_to_test,
+                        env_type,
+                        (connection.token[:50] if connection.token else "N/A"),
+                        (connection.expirationtime or "N/A"),
+                    )
+
+                    self.write(
+                        {
+                            "certificate_validated": True,
+                            "validation_date": fields.Datetime.now(),
+                            "validation_error": False,
+                        }
+                    )
+
+                    return True, msg
+                else:
+                    error_msg = _(
+                        "❌ Error en autenticación WSAA\n\n"
+                        "No se pudo obtener token válido.\n"
+                        "La conexión se creó pero no tiene token."
+                    )
+
+                    self.validation_error = error_msg
+                    return False, error_msg
+
+            except UserError as ue:
+                # UserError contiene mensajes claros del sistema
+                _logger.error("UserError en validación WSAA: %s", ue.args[0] if ue.args else str(ue))
+
+                # Para certificados reales que fallan, mostrar error completo
+                error_msg = _(
+                    "❌ Error de validación AFIP\n\n%s\n\n"
+                    "Posibles causas:\n"
+                    "- El servicio '%s' no está adherido en AFIP para este certificado\n"
+                    "- El ambiente configurado (%s) no coincide con el del certificado\n"
+                    "- La clave privada no corresponde al certificado (Firma inválida)\n"
+                    "- El certificado está vencido o no es válido aún"
+                ) % (ue.args[0] if ue.args else str(ue), service_to_test, env_type)
+
+                self.validation_error = error_msg
+                return False, error_msg
+
+            except Exception as conn_error:
+                _logger.exception("Error en conexión WSAA")
+
+                # Si es certificado de testing en homologación, solo advertir
+                if is_testing_cert and env_type == "homologation":
+                    warning_msg = _(
+                        "⚠️ Certificado de Testing (Homologación)\n\n"
+                        "Este es un certificado de prueba para desarrollo.\n"
+                        "Válido para ambiente de homologación.\n\n"
+                        "Emisor: %s\n"
+                        "Válido hasta: %s"
+                    ) % (self.cert_issuer or "N/A", self.cert_valid_to or "N/A")
+
+                    self.write(
+                        {
+                            "certificate_validated": True,
+                            "validation_date": fields.Datetime.now(),
+                            "validation_error": warning_msg,
+                        }
+                    )
+
+                    return True, warning_msg
+
+                error_msg = _(
+                    "❌ Error al conectar con AFIP WSAA\n\n"
+                    "Error: %s\n\n"
+                    "Posibles causas:\n"
+                    "- Problemas de conectividad con AFIP\n"
+                    "- El servicio WSAA no está disponible\n"
+                    "- Error en la configuración del certificado"
+                ) % str(conn_error)
+
+                self.validation_error = error_msg
+                return False, error_msg
+
+        except Exception as e:
+            error_msg = _("❌ Error al probar autenticación: %s") % str(e)
+            _logger.exception("Error probando WSAA")
+            self.validation_error = error_msg
+            return False, error_msg
+
+    def action_validate_certificate(self):
+        """Acción para validar el certificado desde la interfaz."""
+        self.ensure_one()
+
+        # Primero validar el par criptográfico
+        is_valid, msg = self._validate_certificate_key_pair()
+        if not is_valid:
+            raise UserError(msg)
+
+        # Luego probar WSAA (o validar si es testing)
+        success, msg = self.test_wsaa_authentication()
+
+        notification_type = "success" if success else "danger"
+
+        # Si es certificado de testing validado, usar tipo warning y mensaje breve
+        if success and self.validation_error and "Testing" in self.validation_error:
+            notification_type = "warning"
+            msg = _("Certificado de testing validado. Ver detalles en 'ERROR DE VALIDACIÓN'.")
+
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": _("Validación de Certificado"),
+                "message": msg,
+                "type": notification_type,
+                "sticky": False,  # Cambiar a False para que no sea pegajoso
+            },
+        }
 
     def action_to_draft(self):
         if self.alias_id.state != "confirmed":

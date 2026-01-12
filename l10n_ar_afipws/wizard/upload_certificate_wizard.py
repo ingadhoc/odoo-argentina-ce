@@ -4,7 +4,8 @@
 ##############################################################################
 import base64
 
-from odoo import api, fields, models
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 
 class L10nArAfipwsUploadCertificate(models.TransientModel):
@@ -24,11 +25,24 @@ class L10nArAfipwsUploadCertificate(models.TransientModel):
     )
     certificate_file = fields.Binary("Upload Certificate", required=True)
 
+    afip_services = fields.Text(
+        string="Servicios AFIP",
+        help="Servicios AFIP adheridos (uno por línea). Ejemplos:\n"
+        "wsfe - Factura Electrónica\n"
+        "wsfex - Factura de Exportación\n"
+        "wsbfe - Bono Fiscal Electrónico\n"
+        "wsmtxca - Remitos Electrónicos",
+        default="wsfe\nwsfex",
+    )
+    validate_on_upload = fields.Boolean(
+        string="Validar con AFIP al subir",
+        default=True,
+        help="Si está marcado, se validará el certificado con AFIP WSAA al subirlo",
+    )
+
     def action_confirm(self):
         """Upload and confirm certificate."""
         self.ensure_one()
-
-        from odoo.exceptions import UserError
 
         try:
             # En Odoo, certificate_file es un campo Binary
@@ -87,8 +101,13 @@ class L10nArAfipwsUploadCertificate(models.TransientModel):
             _logger.info("Longitud del certificado PEM: %s caracteres", len(cert_pem))
             _logger.info("Primeros 100 caracteres: %s...", cert_pem[:100])
 
-            # Escribir el certificado
-            self.certificate_id.write({"crt": cert_pem})
+            # Escribir el certificado con servicios
+            self.certificate_id.write(
+                {
+                    "crt": cert_pem,
+                    "afip_services": self.afip_services,
+                }
+            )
             _logger.info("Certificado escrito correctamente. Estado actual: %s", self.certificate_id.state)
 
             # IMPORTANTE: Forzar el cálculo inmediatamente después de escribir
@@ -105,6 +124,29 @@ class L10nArAfipwsUploadCertificate(models.TransientModel):
             _logger.info("Llamando a action_confirm()...")
             self.certificate_id.action_confirm()
             _logger.info("action_confirm() completado. Nuevo estado: %s", self.certificate_id.state)
+
+            # Validar con AFIP si está marcado
+            if self.validate_on_upload:
+                _logger.info("Validando certificado con AFIP WSAA...")
+                success, validation_msg = self.certificate_id.test_wsaa_authentication()
+
+                if not success:
+                    # Mostrar advertencia pero no fallar
+                    raise UserError(
+                        _(
+                            "⚠️ Certificado subido pero validación WSAA falló\n\n"
+                            "El certificado se subió correctamente pero la validación con AFIP falló:\n\n%s\n\n"
+                            "Posibles causas:\n"
+                            "- Los servicios especificados no están adheridos en AFIP\n"
+                            "- El certificado es de producción pero está en ambiente de homologación (o viceversa)\n"
+                            "- La clave privada no corresponde al certificado\n"
+                            "- Problemas de conectividad con AFIP\n\n"
+                            "Puede intentar validar manualmente desde el certificado."
+                        )
+                        % validation_msg
+                    )
+                else:
+                    _logger.info("✓ Certificado validado exitosamente con AFIP")
 
         except UserError:
             raise
