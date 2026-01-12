@@ -77,8 +77,34 @@ class L10nArAfipwsUploadCertificate(models.TransientModel):
                     "Debe terminar con '-----END CERTIFICATE-----'"
                 )
 
+            # Log del certificado recibido
+            from odoo import _logger
+
+            _logger.info("==== WIZARD: Subiendo certificado ====")
+            _logger.info(
+                "Certificado ID: %s, Alias: %s", self.certificate_id.id, self.certificate_id.alias_id.common_name
+            )
+            _logger.info("Longitud del certificado PEM: %s caracteres", len(cert_pem))
+            _logger.info("Primeros 100 caracteres: %s...", cert_pem[:100])
+
+            # Escribir el certificado
             self.certificate_id.write({"crt": cert_pem})
+            _logger.info("Certificado escrito correctamente. Estado actual: %s", self.certificate_id.state)
+
+            # IMPORTANTE: Forzar el cálculo inmediatamente después de escribir
+            # porque con store=True el @api.depends a veces no se dispara correctamente
+            _logger.info("Forzando _compute_cert_info() después de escribir CRT...")
+            self.certificate_id._compute_cert_info()
+            _logger.info(
+                "Después de compute forzado: valid_to=%s, days=%s",
+                self.certificate_id.cert_valid_to,
+                self.certificate_id.cert_days_to_expire,
+            )
+
+            # Confirmar el certificado
+            _logger.info("Llamando a action_confirm()...")
             self.certificate_id.action_confirm()
+            _logger.info("action_confirm() completado. Nuevo estado: %s", self.certificate_id.state)
 
         except UserError:
             raise

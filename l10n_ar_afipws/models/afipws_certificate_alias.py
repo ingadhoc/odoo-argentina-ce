@@ -71,17 +71,14 @@ class AfipwsCertificateAlias(models.Model):
     cuit = fields.Char(
         "CUIT",
         compute="_compute_cuit",
+        store=True,
         required=True,
-    )
-    company_cuit = fields.Char(
-        "Company CUIT",
-        size=16,
-        readonly=True,
     )
     service_provider_cuit = fields.Char(
         "Service Provider CUIT",
         size=16,
         readonly=True,
+        help="Solo para servicios externalizados. " "Ingrese el CUIT del proveedor.",
     )
     certificate_ids = fields.One2many(
         "afipws.certificate",
@@ -133,6 +130,97 @@ class AfipwsCertificateAlias(models.Model):
         compute="_compute_certificate_alerts",
     )
 
+    @api.model
+    def default_get(self, fields_list):
+        """Set company-related fields on record creation."""
+        res = super().default_get(fields_list)
+
+        # Obtener la compañía (ya establecida o la por defecto)
+        company_id = res.get("company_id") or self.env.company.id
+        if company_id:
+            company = self.env["res.company"].browse(company_id)
+            partner = company.partner_id
+
+            # Autocompletar datos de ubicación desde la compañía
+            if partner:
+                res.update(
+                    {
+                        "country_id": partner.country_id.id,
+                        "state_id": partner.state_id.id,
+                        "city": partner.city,
+                    }
+                )
+
+                # Autocompletar CUIT desde la compañía (para service_type='in_house')
+                # El default de service_type es 'in_house', así que es seguro asumir esto
+                if partner.vat:
+                    res["cuit"] = partner.vat
+
+                # Log de advertencia si faltan datos
+                missing = []
+                if not partner.country_id:
+                    missing.append("País")
+                if not partner.state_id:
+                    missing.append("Estado/Provincia")
+                if not partner.city:
+                    missing.append("Ciudad")
+                if not partner.vat:
+                    missing.append("CUIT/VAT")
+
+                if missing:
+                    _logger.warning(
+                        "La compañía '%s' tiene datos incompletos para crear el certificado AFIP. "
+                        "Falta: %s. Configure estos datos en: "
+                        "Configuración > Usuarios y Compañías > Compañías",
+                        company.name,
+                        ", ".join(missing),
+                    )
+
+        return res
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Populate company-related fields on creation if missing."""
+        for vals in vals_list:
+            company_id = vals.get("company_id")
+
+            if company_id:
+                company = self.env["res.company"].browse(company_id)
+                partner = company.partner_id
+
+                # Auto-poblar campos de ubicación si no están establecidos
+                if not vals.get("country_id") and partner:
+                    vals.update(
+                        {
+                            "country_id": partner.country_id.id,
+                            "state_id": partner.state_id.id,
+                            "city": partner.city,
+                        }
+                    )
+
+                    _logger.info(
+                        "Auto-poblando datos de ubicación desde compañía '%s': " "País=%s, Estado=%s, Ciudad=%s",
+                        company.name,
+                        partner.country_id.name if partner.country_id else "None",
+                        partner.state_id.name if partner.state_id else "None",
+                        partner.city or "None",
+                    )
+
+                # Auto-poblar CUIT si no está establecido
+                # Replicar la lógica del compute _compute_cuit
+                if not vals.get("cuit"):
+                    service_type = vals.get("service_type", "in_house")
+
+                    if service_type == "outsourced":
+                        vals["cuit"] = vals.get("service_provider_cuit")
+                    else:
+                        # Obtener CUIT de la compañía
+                        if partner and partner.vat:
+                            vals["cuit"] = partner.vat
+                            _logger.info("Auto-poblando CUIT desde compañía '%s': %s", company.name, partner.vat)
+
+        return super().create(vals_list)
+
     @api.depends("certificate_ids", "certificate_ids.state", "certificate_ids.crt")
     def _compute_certificate_alerts(self):
         """Computar alertas de certificados vencidos o por vencer"""
@@ -175,27 +263,71 @@ class AfipwsCertificateAlias(models.Model):
             rec.certificate_alert_message = False
             _logger.debug(f"Alias {rec.id}: Sin alertas, todos los certificados OK")
 
-    @api.onchange("company_id")
-    def change_company_name(self):
+    @api.onchange("company_id", "type")
+    def _onchange_company_type(self):
+        """Al cambiar la compañía o tipo, autocompletar todos los datos."""
         if self.company_id:
-            common_name = "AFIP WS %s - %s" % (self.type, self.company_id.name)
+            # Autocompletar el nombre común con el tipo y nombre de compañía
+            type_name = dict(self._fields["type"].selection).get(self.type, self.type or "")
+            common_name = "AFIP WS %s - %s" % (type_name, self.company_id.name)
             self.common_name = common_name[:50]
 
-    @api.depends("company_cuit", "service_provider_cuit", "service_type")
+            # Autocompletar datos de ubicación desde el partner de la compañía
+            partner = self.company_id.partner_id
+            _logger.info(
+                "Autocompletando datos - Company: %s, Partner: %s",
+                self.company_id.name,
+                partner.name if partner else "No partner",
+            )
+            if partner:
+                _logger.info(
+                    "Partner data - Country: %s, State: %s, City: %s",
+                    partner.country_id.name if partner.country_id else "None",
+                    partner.state_id.name if partner.state_id else "None",
+                    partner.city or "None",
+                )
+                self.country_id = partner.country_id
+                self.state_id = partner.state_id
+                self.city = partner.city
+
+                # Advertir si faltan datos importantes
+                missing = []
+                if not partner.country_id:
+                    missing.append("País")
+                if not partner.state_id:
+                    missing.append("Estado/Provincia")
+                if not partner.city:
+                    missing.append("Ciudad")
+
+                if missing:
+                    _logger.warning(
+                        "La compañía '%s' tiene datos incompletos. "
+                        "Falta: %s. Configure estos datos en: "
+                        "Configuración > Usuarios y Compañías > Compañías",
+                        self.company_id.name,
+                        ", ".join(missing),
+                    )
+            # El CUIT se obtiene automáticamente via compute
+
+    @api.depends(
+        "company_id",
+        "company_id.partner_id.vat",
+        "service_provider_cuit",
+        "service_type",
+    )
     def _compute_cuit(self):
+        """Obtener CUIT automáticamente desde la compañía o del
+        proveedor de servicio.
+        """
         for rec in self:
             if rec.service_type == "outsourced":
                 rec.cuit = rec.service_provider_cuit
             else:
-                rec.cuit = rec.company_cuit
-
-    @api.onchange("company_id")
-    def change_company_id(self):
-        if self.company_id:
-            self.country_id = self.company_id.country_id.id
-            self.state_id = self.company_id.state_id.id
-            self.city = self.company_id.city
-            self.company_cuit = self.company_id.vat
+                # Obtener CUIT directamente de la compañía
+                if rec.company_id:
+                    rec.cuit = rec.company_id.partner_id.vat
+                else:
+                    rec.cuit = False
 
     def action_confirm(self):
         if not self.key:
@@ -257,3 +389,57 @@ class AfipwsCertificateAlias(models.Model):
     def check_common_name_len(self):
         if self.filtered(lambda x: x.common_name and len(x.common_name) > 50):
             raise ValidationError(_("The Common Name must be lower than 50 characters long"))
+
+    @api.constrains("company_id", "country_id", "state_id", "city")
+    def _check_company_location_consistency(self):
+        """Ensure location fields match company's location.
+
+        Los campos de ubicación (país, estado, ciudad) son derivados de la
+        compañía y deben mantenerse consistentes con ella.
+        """
+        for record in self:
+            if not record.company_id:
+                continue
+
+            partner = record.company_id.partner_id
+            if not partner:
+                continue
+
+            # Verificar país
+            if record.country_id and partner.country_id:
+                if record.country_id != partner.country_id:
+                    raise ValidationError(
+                        _("El país del certificado (%s) debe coincidir con el país " "de la compañía (%s).")
+                        % (record.country_id.name, partner.country_id.name)
+                    )
+
+            # Verificar estado (solo si ambos tienen valor)
+            if record.state_id and partner.state_id:
+                if record.state_id != partner.state_id:
+                    raise ValidationError(
+                        _("El estado/provincia del certificado (%s) debe coincidir " "con el de la compañía (%s).")
+                        % (record.state_id.name, partner.state_id.name)
+                    )
+
+    @api.constrains("company_id", "service_type", "service_provider_cuit")
+    def _check_cuit_configured(self):
+        """Verificar que haya un CUIT válido configurado según el tipo
+        de servicio.
+        """
+        for rec in self:
+            if rec.service_type == "in_house":
+                if not rec.company_id.partner_id.vat:
+                    raise ValidationError(
+                        _(
+                            "La compañía '%s' no tiene configurado el "
+                            "CUIT/VAT.\n"
+                            "Por favor, configure el CUIT en: "
+                            "Contactos > %s > CUIT"
+                        )
+                        % (rec.company_id.name, rec.company_id.partner_id.name)
+                    )
+            elif rec.service_type == "outsourced":
+                if not rec.service_provider_cuit:
+                    raise ValidationError(
+                        _("Para servicios externalizados debe indicar el " "CUIT del proveedor de servicio.")
+                    )

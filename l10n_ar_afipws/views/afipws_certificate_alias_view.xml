@@ -32,18 +32,18 @@
                 </header>
                 <sheet string="AFIP Certificates">
                     <group>
-                        <group>
-                            <field name="company_id" readonly="state != 'draft'" groups="base.group_multi_company"/>
+                        <group string="Datos Principales">
+                            <field name="company_id" readonly="state != 'draft'" options="{'no_create': True, 'no_open': True}"/>
                             <field name="type" readonly="state != 'draft'"/>
+                            <field name="common_name" readonly="state != 'draft'"/>
                             <field name="service_type" readonly="state != 'draft'" groups="base.group_no_one"/>
                             <field name="service_provider_cuit" readonly="state != 'draft'" invisible="service_type != 'outsourced'" required="service_type == 'outsourced'"/>
-                            <field name="company_cuit" readonly="state != 'draft'" invisible="service_type != 'in_house'" required="service_type == 'in_house'"/>
+                            <field name="cuit" readonly="1" invisible="service_type != 'in_house'"/>
                         </group>
-                        <group>
-                            <field name="common_name" readonly="state != 'draft'"/>
-                            <field name="country_id" readonly="state != 'draft'"/>
-                            <field name="state_id" readonly="state != 'draft'"/>
-                            <field name="city" readonly="state != 'draft'"/>
+                        <group string="Ubicación">
+                            <field name="country_id" readonly="1"/>
+                            <field name="state_id" readonly="1"/>
+                            <field name="city" readonly="1"/>
                             <field name="has_expired_certificate" invisible="1"/>
                             <field name="has_expiring_soon_certificate" invisible="1"/>
                         </group>

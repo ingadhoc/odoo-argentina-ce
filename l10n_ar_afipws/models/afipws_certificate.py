@@ -64,23 +64,46 @@ class AfipwsCertificate(models.Model):
 
     # Campos informativos del certificado
     cert_valid_from = fields.Datetime(
-        string="Válido desde", compute="_compute_cert_info", help="Fecha desde la cual el certificado es válido"
+        string="Válido desde",
+        compute="_compute_cert_info",
+        store=True,
+        help="Fecha desde la cual el certificado es válido",
     )
     cert_valid_to = fields.Datetime(
-        string="Válido hasta", compute="_compute_cert_info", help="Fecha de vencimiento del certificado"
+        string="Válido hasta",
+        compute="_compute_cert_info",
+        store=True,
+        help="Fecha de vencimiento del certificado",
     )
     cert_subject = fields.Char(
-        string="Subject (DN)", compute="_compute_cert_info", help="Distinguished Name del sujeto del certificado"
+        string="Subject (DN)",
+        compute="_compute_cert_info",
+        store=True,
+        help="Distinguished Name del sujeto del certificado",
     )
-    cert_issuer = fields.Char(string="Emisor", compute="_compute_cert_info", help="Entidad que emitió el certificado")
+    cert_issuer = fields.Char(
+        string="Emisor",
+        compute="_compute_cert_info",
+        store=True,
+        help="Entidad que emitió el certificado",
+    )
     cert_serial_number = fields.Char(
-        string="Número de Serie", compute="_compute_cert_info", help="Número de serie del certificado"
+        string="Número de Serie",
+        compute="_compute_cert_info",
+        store=True,
+        help="Número de serie del certificado",
     )
     cert_is_expired = fields.Boolean(
-        string="Certificado Vencido", compute="_compute_cert_info", help="Indica si el certificado está vencido"
+        string="Certificado Vencido",
+        compute="_compute_cert_info",
+        store=True,
+        help="Indica si el certificado está vencido",
     )
     cert_days_to_expire = fields.Integer(
-        string="Días para vencer", compute="_compute_cert_info", help="Cantidad de días hasta que expire el certificado"
+        string="Días para vencer",
+        compute="_compute_cert_info",
+        store=True,
+        help="Cantidad de días hasta que expire el certificado",
     )
 
     @api.depends("csr")
@@ -98,10 +121,13 @@ class AfipwsCertificate(models.Model):
         import traceback
         from datetime import datetime, timezone
 
-        _logger.info(f"=== _compute_cert_info called for {len(self)} certificate(s) ===")
+        _logger.info(f"==== _COMPUTE_CERT_INFO: Procesando {len(self)} certificado(s) ====")
 
         for record in self:
-            _logger.info(f"Processing certificate ID: {record.id}, has_crt: {bool(record.crt)}")
+            _logger.info(
+                f"Certificado ID: {record.id}, has_crt: {bool(record.crt)}, "
+                f"state: {record.state}, crt_length: {len(record.crt) if record.crt else 0}"
+            )
 
             # Inicializar todos los campos primero
             record.cert_valid_from = False
@@ -113,11 +139,13 @@ class AfipwsCertificate(models.Model):
             record.cert_days_to_expire = 0
 
             if not record.crt:
-                _logger.warning(f"Certificado {record.id}: Sin contenido CRT")
+                _logger.warning(f"Certificado {record.id}: Sin contenido CRT, saltando...")
                 continue
 
             try:
+                _logger.info(f"Cert {record.id}: Llamando a get_certificate()...")
                 cert = record.get_certificate()
+                _logger.info(f"Cert {record.id}: get_certificate() retornó tipo: {type(cert)}")
 
                 if not cert:
                     _logger.warning(f"get_certificate() retornó None para certificado {record.id}")
@@ -133,23 +161,54 @@ class AfipwsCertificate(models.Model):
                 _logger.info(f"Procesando certificado {record.id}, tipo: {type(cert)}")
 
                 # Fechas de validez
+                # IMPORTANTE: Odoo requiere datetime "naive" (sin timezone)
+                # pero cryptography devuelve "aware" (con timezone UTC)
                 try:
-                    record.cert_valid_from = cert.not_valid_before_utc
-                    record.cert_valid_to = cert.not_valid_after_utc
-                    now = datetime.now(timezone.utc)
-                    record.cert_is_expired = cert.not_valid_after_utc < now
-                    days_diff = (cert.not_valid_after_utc - now).days
+                    _logger.info(f"Cert {record.id}: Extrayendo fechas (usando _utc)...")
+                    # Obtener datetimes aware y convertir a naive eliminando tzinfo
+                    valid_from_utc = cert.not_valid_before_utc.replace(tzinfo=None)
+                    valid_to_utc = cert.not_valid_after_utc.replace(tzinfo=None)
+
+                    record.cert_valid_from = valid_from_utc
+                    record.cert_valid_to = valid_to_utc
+
+                    # Para comparación, usar datetime naive en UTC
+                    now = datetime.now(timezone.utc).replace(tzinfo=None)
+                    record.cert_is_expired = valid_to_utc < now
+                    days_diff = (valid_to_utc - now).days
                     record.cert_days_to_expire = days_diff if days_diff > 0 else 0
-                    _logger.info(f"Fechas extraídas (UTC): {record.cert_valid_from} - {record.cert_valid_to}")
+
+                    _logger.info(
+                        f"Cert {record.id}: Fechas extraídas OK (UTC → naive): "
+                        f"from={record.cert_valid_from}, to={record.cert_valid_to}, "
+                        f"days={record.cert_days_to_expire}, expired={record.cert_is_expired}"
+                    )
                 except AttributeError as ae:
-                    # Versiones antiguas de cryptography
-                    _logger.info(f"Usando not_valid_before/after (sin _utc): {ae}")
-                    record.cert_valid_from = cert.not_valid_before.replace(tzinfo=timezone.utc)
-                    record.cert_valid_to = cert.not_valid_after.replace(tzinfo=timezone.utc)
-                    now = datetime.now(timezone.utc)
-                    record.cert_is_expired = cert.not_valid_after.replace(tzinfo=timezone.utc) < now
-                    days_diff = (cert.not_valid_after.replace(tzinfo=timezone.utc) - now).days
+                    # Versiones antiguas de cryptography (sin _utc)
+                    _logger.info(f"Cert {record.id}: Usando not_valid_before/after (sin _utc): {ae}")
+                    # Estos ya son naive, solo asegurar que lo sean
+                    valid_from = cert.not_valid_before
+                    valid_to = cert.not_valid_after
+
+                    # Si tienen tzinfo, quitarlo; si no, dejar como están
+                    if hasattr(valid_from, "tzinfo") and valid_from.tzinfo is not None:
+                        valid_from = valid_from.replace(tzinfo=None)
+                    if hasattr(valid_to, "tzinfo") and valid_to.tzinfo is not None:
+                        valid_to = valid_to.replace(tzinfo=None)
+
+                    record.cert_valid_from = valid_from
+                    record.cert_valid_to = valid_to
+
+                    now = datetime.now()  # naive datetime local
+                    record.cert_is_expired = valid_to < now
+                    days_diff = (valid_to - now).days
                     record.cert_days_to_expire = days_diff if days_diff > 0 else 0
+
+                    _logger.info(
+                        f"Cert {record.id}: Fechas extraídas OK (fallback): "
+                        f"from={record.cert_valid_from}, to={record.cert_valid_to}, "
+                        f"days={record.cert_days_to_expire}"
+                    )
 
                 # Subject (DN)
                 subject_parts = []
@@ -167,7 +226,13 @@ class AfipwsCertificate(models.Model):
                 record.cert_serial_number = str(cert.serial_number)
 
                 _logger.info(
-                    f"Certificado {record.id} procesado OK: subject={record.cert_subject}, serial={record.cert_serial_number}"
+                    f"✓ Certificado {record.id} procesado EXITOSAMENTE:\n"
+                    f"  - Subject: {record.cert_subject}\n"
+                    f"  - Serial: {record.cert_serial_number}\n"
+                    f"  - Válido desde: {record.cert_valid_from}\n"
+                    f"  - Válido hasta: {record.cert_valid_to}\n"
+                    f"  - Días restantes: {record.cert_days_to_expire}\n"
+                    f"  - Vencido: {record.cert_is_expired}"
                 )
 
             except Exception as e:
@@ -192,8 +257,62 @@ class AfipwsCertificate(models.Model):
         return True
 
     def action_confirm(self):
+        """Confirmar certificado y calcular información de vencimiento."""
+        self.ensure_one()
+
+        _logger.info("==== ACTION_CONFIRM: Certificado ID %s ====", self.id)
+        _logger.info("Estado antes: %s, Tiene CRT: %s", self.state, bool(self.crt))
+
+        if self.crt:
+            _logger.info("Longitud CRT: %s, Primeros 50 chars: %s...", len(self.crt), self.crt[:50])
+
+        # Verificar el certificado
         self.verify_crt()
+        _logger.info("verify_crt() completado OK")
+
+        # CRÍTICO: El @api.depends("crt") no se dispara si el CRT ya estaba escrito
+        # Por eso DEBEMOS forzar el cálculo manualmente aquí
+        _logger.info("Forzando _compute_cert_info() manualmente...")
+        self._compute_cert_info()
+
+        # Leer valores DESPUÉS del compute forzado
+        _logger.info(
+            "Valores DESPUÉS de compute forzado: valid_to=%s, days_to_expire=%s, is_expired=%s",
+            self.cert_valid_to,
+            self.cert_days_to_expire,
+            self.cert_is_expired,
+        )
+
+        # Cambiar estado
         self.write({"state": "confirmed"})
+        _logger.info("Estado cambiado a 'confirmed'")
+
+        # Log de información del certificado confirmado
+        if self.cert_valid_to:
+            _logger.info(
+                "✓ Certificado confirmado OK: Alias=%s, Vencimiento=%s, Días restantes=%s",
+                self.alias_id.common_name,
+                self.cert_valid_to,
+                self.cert_days_to_expire,
+            )
+
+            # Advertencia si el certificado ya está vencido o vence pronto
+            if self.cert_is_expired:
+                _logger.warning(
+                    "⚠️ ADVERTENCIA: El certificado '%s' YA ESTÁ VENCIDO (venció el %s)",
+                    self.alias_id.common_name,
+                    self.cert_valid_to,
+                )
+            elif self.cert_days_to_expire < 30:
+                _logger.warning(
+                    "⚠️ ADVERTENCIA: El certificado '%s' vence en %s días (%s)",
+                    self.alias_id.common_name,
+                    self.cert_days_to_expire,
+                    self.cert_valid_to,
+                )
+        else:
+            _logger.error("❌ ERROR: cert_valid_to está vacío después del compute. Revisar _compute_cert_info()")
+
         return True
 
     def verify_crt(self):

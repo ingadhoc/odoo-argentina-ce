@@ -26,10 +26,16 @@
                     <field name="state" widget="statusbar"/>
                 </header>
                 <div class="alert alert-danger" role="alert" invisible="not cert_is_expired or state != 'confirmed'">
-                    <strong>⚠ Certificado Vencido</strong> - Este certificado expiró el <field name="cert_valid_to" readonly="1"/>
+                    <i class="fa fa-exclamation-triangle"/> <strong>⚠ Certificado Vencido</strong>
+                    <p>Este certificado expiró el <field name="cert_valid_to" readonly="1" class="oe_inline"/>. Debe renovarlo urgentemente para continuar operando con AFIP.</p>
                 </div>
                 <div class="alert alert-warning" role="alert" invisible="cert_is_expired or cert_days_to_expire > 30 or cert_days_to_expire == 0 or state != 'confirmed'">
-                    <strong>⚠ Certificado próximo a vencer</strong> - Este certificado expira en <field name="cert_days_to_expire" readonly="1"/> días
+                    <i class="fa fa-clock-o"/> <strong>⚠ Certificado próximo a vencer</strong>
+                    <p>Este certificado expira en <field name="cert_days_to_expire" readonly="1" class="oe_inline"/> días (vencimiento: <field name="cert_valid_to" readonly="1" class="oe_inline"/>). Planifique su renovación.</p>
+                </div>
+                <div class="alert alert-success" role="alert" invisible="cert_is_expired or cert_days_to_expire &lt;= 30 or cert_days_to_expire == 0 or state != 'confirmed'">
+                    <i class="fa fa-check-circle"/> <strong>✓ Certificado Válido</strong>
+                    <p>Este certificado está vigente hasta <field name="cert_valid_to" readonly="1" class="oe_inline"/> (faltan <field name="cert_days_to_expire" readonly="1" class="oe_inline"/> días).</p>
                 </div>
                 <sheet string="AFIP Certificates">
                     <group>
@@ -64,9 +70,16 @@
                 <field name="alias_id"/>
                 <field name="create_date"/>
                 <field name="cert_valid_to"/>
-                <field name="cert_days_to_expire" optional="show"/>
+                <field name="cert_days_to_expire"
+                    optional="show"
+                    decoration-danger="cert_days_to_expire == 0 or cert_is_expired"
+                    decoration-warning="cert_days_to_expire > 0 and cert_days_to_expire &lt; 30"/>
                 <field name="cert_is_expired" invisible="1"/>
-                <field name="state" decoration-danger="cert_is_expired and state == 'confirmed'" decoration-warning="cert_days_to_expire > 0 and cert_days_to_expire &lt; 30 and state == 'confirmed'"/>
+                <field name="state"
+                    widget="badge"
+                    decoration-danger="cert_is_expired and state == 'confirmed'"
+                    decoration-warning="cert_days_to_expire > 0 and cert_days_to_expire &lt; 30 and state == 'confirmed'"
+                    decoration-success="not cert_is_expired and (cert_days_to_expire == 0 or cert_days_to_expire >= 30) and state == 'confirmed'"/>
             </list>
         </field>
     </record>
