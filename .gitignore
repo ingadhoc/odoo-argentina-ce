@@ -97,3 +97,11 @@ Temporary Items
 # Archivos personales de documentación
 AGENTS.md
 GUIA_CONTRIBUCION.md
+
+# Archivos experimentales y de desarrollo
+.vscode/
+MIGRACION_ZEEP.md
+test_wsfev1.py
+test_wsfev1_simple.py
+l10n_ar_afipws/tests/
+l10n_ar_afipws_fe/tests/
