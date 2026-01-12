@@ -125,7 +125,7 @@ class AfipwsConnection(models.Model):
             sign = self.sign
 
             # Determinar ambiente
-            environment = "production" if self.env_type == "production" else "homologation"
+            environment = "production" if self.type == "production" else "homologation"
 
             # Crear adaptador con el nuevo cliente
             ws = WSFEv1Adapter(cuit, token, sign, environment)
