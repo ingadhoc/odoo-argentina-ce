@@ -10,7 +10,7 @@
         "l10n_ar",
         "account_debit_note",
     ],
-    "external_dependencies": {},
+    "external_dependencies": {"python": ["zeep", "lxml"]},
     "data": [
         "views/account_move_views.xml",
         "views/account_journal_view.xml",
@@ -22,7 +22,7 @@
     ],
     "demo": [],
     "images": [],
-    "installable": False,
+    "installable": True,
     "auto_install": False,
     "application": False,
 }

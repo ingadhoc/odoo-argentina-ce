@@ -2,14 +2,12 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
+import logging
+
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
-try:
-    from OpenSSL import crypto
-except ImportError:
-    crypto = None
-import logging
+from ..lib import crypto_utils
 
 _logger = logging.getLogger(__name__)
 
@@ -121,6 +119,62 @@ class AfipwsCertificateAlias(models.Model):
         readonly=True,
     )
 
+    # Campos para alertas de certificados
+    has_expired_certificate = fields.Boolean(
+        string="Tiene certificado vencido",
+        compute="_compute_certificate_alerts",
+    )
+    has_expiring_soon_certificate = fields.Boolean(
+        string="Tiene certificado por vencer",
+        compute="_compute_certificate_alerts",
+    )
+    certificate_alert_message = fields.Char(
+        string="Mensaje de alerta",
+        compute="_compute_certificate_alerts",
+    )
+
+    @api.depends("certificate_ids", "certificate_ids.state", "certificate_ids.crt")
+    def _compute_certificate_alerts(self):
+        """Computar alertas de certificados vencidos o por vencer"""
+        for rec in self:
+            confirmed_certs = rec.certificate_ids.filtered(lambda c: c.state == "confirmed")
+
+            if not confirmed_certs:
+                rec.has_expired_certificate = False
+                rec.has_expiring_soon_certificate = False
+                rec.certificate_alert_message = False
+                _logger.debug(f"Alias {rec.id}: Sin certificados confirmados")
+                continue
+
+            _logger.debug(f"Alias {rec.id}: {len(confirmed_certs)} certificados confirmados")
+
+            # Verificar si hay certificados vencidos
+            expired = confirmed_certs.filtered(lambda c: c.cert_is_expired)
+            if expired:
+                rec.has_expired_certificate = True
+                rec.has_expiring_soon_certificate = False
+                rec.certificate_alert_message = "⚠ Tiene certificados vencidos. Debe renovarlos urgentemente."
+                _logger.info(f"Alias {rec.id}: {len(expired)} certificados vencidos")
+                continue
+
+            # Verificar si hay certificados por vencer (menos de 30 días)
+            expiring_soon = confirmed_certs.filtered(lambda c: c.cert_days_to_expire > 0 and c.cert_days_to_expire < 30)
+            if expiring_soon:
+                min_days = min(expiring_soon.mapped("cert_days_to_expire"))
+                rec.has_expired_certificate = False
+                rec.has_expiring_soon_certificate = True
+                rec.certificate_alert_message = (
+                    f"⚠ Tiene certificados que vencen en {min_days} días. Planifique su renovación."
+                )
+                _logger.info(f"Alias {rec.id}: {len(expiring_soon)} certificados por vencer")
+                continue
+
+            # Sin alertas
+            rec.has_expired_certificate = False
+            rec.has_expiring_soon_certificate = False
+            rec.certificate_alert_message = False
+            _logger.debug(f"Alias {rec.id}: Sin alertas, todos los certificados OK")
+
     @api.onchange("company_id")
     def change_company_name(self):
         if self.company_id:
@@ -150,12 +204,10 @@ class AfipwsCertificateAlias(models.Model):
         return True
 
     def generate_key(self, key_length=2048):
-        """ """
-        # TODO reemplazar todo esto por las funciones nativas de pyafipws
+        """Generate RSA private key using cryptography library."""
         for rec in self:
-            k = crypto.PKey()
-            k.generate_key(crypto.TYPE_RSA, key_length)
-            rec.key = crypto.dump_privatekey(crypto.FILETYPE_PEM, k)
+            key_pem = crypto_utils.generate_rsa_key(key_length)
+            rec.key = key_pem.decode("utf-8") if isinstance(key_pem, bytes) else key_pem
 
     def action_to_draft(self):
         self.write({"state": "draft"})
@@ -167,29 +219,38 @@ class AfipwsCertificateAlias(models.Model):
         return True
 
     def action_create_certificate_request(self):
-        """
-        TODO agregar descripcion y ver si usamos pyafipsw para generar esto
-        """
+        """Create Certificate Signing Request (CSR) using cryptography library."""
         for record in self:
-            req = crypto.X509Req()
-            req.get_subject().C = self.country_id.code.encode("ascii", "ignore")
-            if self.state_id:
-                req.get_subject().ST = self.state_id.name.encode("ascii", "ignore")
-            req.get_subject().L = self.city.encode("ascii", "ignore")
-            req.get_subject().O = self.company_id.name.encode("ascii", "ignore")
-            req.get_subject().OU = self.department.encode("ascii", "ignore")
-            req.get_subject().CN = self.common_name.encode("ascii", "ignore")
-            req.get_subject().serialNumber = "CUIT %s" % self.cuit.encode("ascii", "ignore")
-            k = crypto.load_privatekey(crypto.FILETYPE_PEM, self.key)
-            self.key = crypto.dump_privatekey(crypto.FILETYPE_PEM, k)
-            req.set_pubkey(k)
-            req.sign(k, "sha256")
-            csr = crypto.dump_certificate_request(crypto.FILETYPE_PEM, req)
+            # Prepare subject data
+            country_code = record.country_id.code or "AR"
+            state_name = record.state_id.name if record.state_id else ""
+            city = record.city or ""
+            company_name = record.company_id.name or ""
+            department = record.department or "IT"
+            common_name = record.common_name or "AFIP WS"
+            cuit = record.cuit or ""
+
+            # Generate CSR using crypto_utils
+            csr_pem = crypto_utils.create_csr(
+                private_key_pem=record.key.encode("utf-8") if isinstance(record.key, str) else record.key,
+                country_code=country_code,
+                state_name=state_name,
+                city=city,
+                company_name=company_name,
+                department=department,
+                common_name=common_name,
+                cuit=cuit,
+            )
+
+            # Convert to string if needed
+            csr_str = csr_pem.decode("utf-8") if isinstance(csr_pem, bytes) else csr_pem
+
+            # Create certificate record
             vals = {
-                "csr": csr,
+                "csr": csr_str,
                 "alias_id": record.id,
             }
-            self.certificate_ids.create(vals)
+            record.certificate_ids.create(vals)
         return True
 
     @api.constrains("common_name")

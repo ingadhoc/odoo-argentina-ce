@@ -44,8 +44,24 @@
                             <field name="country_id" readonly="state != 'draft'"/>
                             <field name="state_id" readonly="state != 'draft'"/>
                             <field name="city" readonly="state != 'draft'"/>
+                            <field name="has_expired_certificate" invisible="1"/>
+                            <field name="has_expiring_soon_certificate" invisible="1"/>
                         </group>
                     </group>
+
+                    <!-- Alerta de certificado vencido -->
+                    <div class="alert alert-danger" role="alert" invisible="not has_expired_certificate">
+                        <strong>⚠ CERTIFICADO VENCIDO</strong><br/>
+                        <field name="certificate_alert_message" readonly="1" nolabel="1"/>
+                        <p>No podrá facturar electrónicamente hasta que renueve el certificado.</p>
+                    </div>
+
+                    <!-- Alerta de certificado por vencer -->
+                    <div class="alert alert-warning" role="alert" invisible="not has_expiring_soon_certificate or has_expired_certificate">
+                        <strong>⚠ CERTIFICADO PRÓXIMO A VENCER</strong><br/>
+                        <field name="certificate_alert_message" readonly="1" nolabel="1"/>
+                    </div>
+
                     <notebook>
                         <page string="Ceritificates">
                             <field name="certificate_ids"/>

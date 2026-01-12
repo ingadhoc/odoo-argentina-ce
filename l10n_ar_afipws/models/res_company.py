@@ -5,15 +5,15 @@
 import hashlib
 import logging
 import os
-import sys
 import time
-import traceback
 
 import dateutil.parser
 import odoo.tools as tools
 import pytz
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+
+from ..lib import wsaa_client
 
 _logger = logging.getLogger(__name__)
 
@@ -156,9 +156,8 @@ class ResCompany(models.Model):
         )
         login_url = self.env["afipws.connection"].get_afip_login_url(environment_type)
         pkey, cert = self.get_key_and_certificate(environment_type)
-        # because pyafipws wsaa loos for "BEGIN RSA PRIVATE KEY" we change key
-        if pkey.startswith("-----BEGIN PRIVATE KEY-----"):
-            pkey = pkey.replace(" PRIVATE KEY", " RSA PRIVATE KEY")
+        # Ya no necesitamos reemplazar el formato de la clave porque crypto_utils
+        # soporta tanto PKCS#8 (BEGIN PRIVATE KEY) como PKCS#1 (BEGIN RSA PRIVATE KEY)
         auth_data = self.authenticate(afip_ws, cert, pkey, wsdl=login_url)
         auth_data.update(
             {
@@ -190,66 +189,83 @@ class ResCompany(models.Model):
         proxy="",
     ):
         """
-        Call AFIP Authentication webservice to get token & sign or error
-        message
+        Call AFIP Authentication webservice to get token & sign using zeep.
+        Reemplaza pyafipws.wsaa.WSAA con wsaa_client.WSAAClient
         """
-        # import AFIP webservice authentication helper:
-        from pyafipws.wsaa import WSAA
-
-        # create AFIP webservice authentication helper instance:
-        wsaa = WSAA()
-        # raise python exceptions on any failure
-        wsaa.LanzarExcepciones = True
-
-        # five hours
-        DEFAULT_TTL = 60 * 60 * 5
-
-        # make md5 hash of the parameter for caching...
-        fn = "%s.xml" % hashlib.md5((service + certificate + private_key).encode("utf-8")).hexdigest()
-        if cache:
-            fn = os.path.join(cache, fn)
+        # Determinar ambiente según WSDL
+        if wsdl:
+            environment = "production" if "wsaa.afip.gov.ar" in wsdl else "homologation"
         else:
-            fn = os.path.join(wsaa.InstallDir, "cache", fn)
+            environment = "homologation"  # Por defecto homologación
+
+        # TTL por defecto: 12 horas (más seguro que 5 horas)
+        DEFAULT_TTL = 60 * 60 * 12
+
+        # Hash para cache
+        fn = "%s.json" % hashlib.md5((service + certificate + private_key).encode("utf-8")).hexdigest()
+        if cache:
+            cache_dir = cache
+        else:
+            # Usar directorio de cache por defecto
+            cache_dir = os.path.join(os.path.expanduser("~"), ".afipws_cache")
+            if not os.path.exists(cache_dir):
+                os.makedirs(cache_dir)
+
+        fn = os.path.join(cache_dir, fn)
 
         try:
-            # read the access ticket (if already authenticated)
-            if not os.path.exists(fn) or os.path.getmtime(fn) + (DEFAULT_TTL) < time.time():
-                # access ticket (TA) outdated, create new access request
-                # ticket (TRA)
-                tra = wsaa.CreateTRA(service=service, ttl=DEFAULT_TTL)
-                # cryptographically sing the access ticket
-                cms = wsaa.SignTRA(tra, certificate, private_key)
-                # connect to the webservice:
-                wsaa.Conectar(cache, wsdl, proxy)
-                # call the remote method
-                ta = wsaa.LoginCMS(cms)
-                if not ta:
-                    raise RuntimeError()
-                # write the access ticket for further consumption
-                open(fn, "w").write(ta)
-            else:
-                # get the access ticket from the previously written file
-                ta = open(fn).read()
-            # analyze the access ticket xml and extract the relevant fields
-            wsaa.AnalizarXml(xml=ta)
-            token = wsaa.ObtenerTagXml("token")
-            sign = wsaa.ObtenerTagXml("sign")
-            expirationTime = wsaa.ObtenerTagXml("expirationTime")
-            generationTime = wsaa.ObtenerTagXml("generationTime")
-            uniqueId = wsaa.ObtenerTagXml("uniqueId")
-        except Exception:
-            token = sign = None
-            if wsaa.Excepcion:
-                # get the exception already parsed by the helper
-                err_msg = wsaa.Excepcion
-            else:
-                # avoid encoding problem when reporting exceptions to the user:
-                err_msg = traceback.format_exception_only(sys.exc_type, sys.exc_value)[0]
-            raise UserError(_("Could not connect. This is the what we received: %s") % (err_msg))
-        return {
-            "uniqueid": uniqueId,
-            "generationtime": generationTime,
-            "expirationtime": expirationTime,
-            "token": token,
-            "sign": sign,
-        }
+            # Verificar si existe cache válido y no se fuerza renovación
+            if not force and os.path.exists(fn) and os.path.getmtime(fn) + (DEFAULT_TTL) >= time.time():
+                # Leer credenciales del cache
+                _logger.info(f"Usando credenciales en cache: {fn}")
+                with open(fn) as f:
+                    import json
+
+                    cached_data = json.load(f)
+                    return cached_data
+
+            # Cache expirado, forzado o no existe, autenticar con WSAA
+            _logger.info(f"Autenticando con WSAA ({environment})...")
+
+            # Crear cliente WSAA
+            client = wsaa_client.WSAAClient(environment=environment, timeout=30)
+
+            # Autenticar
+            result = client.authenticate(
+                service=service, certificate_pem=certificate, private_key_pem=private_key, ttl=DEFAULT_TTL
+            )
+
+            # Parsear tiempos
+            generationTime = result.get("generation_time", "")
+            expirationTime = result.get("expiration_time", "")
+            uniqueId = result.get("unique_id", "")
+
+            # Convertir datetime a string si es necesario
+            if hasattr(generationTime, "isoformat"):
+                generationTime = generationTime.isoformat()
+            if hasattr(expirationTime, "isoformat"):
+                expirationTime = expirationTime.isoformat()
+
+            auth_data = {
+                "uniqueid": uniqueId,
+                "generationtime": generationTime,
+                "expirationtime": expirationTime,
+                "token": result["token"],
+                "sign": result["sign"],
+            }
+
+            # Guardar en cache
+            with open(fn, "w") as f:
+                import json
+
+                json.dump(auth_data, f)
+
+            _logger.info("Autenticación exitosa, credenciales guardadas en cache")
+            return auth_data
+
+        except Exception as e:
+            _logger.error(f"Error en autenticación WSAA: {e}")
+            import traceback
+
+            traceback.print_exc()
+            raise UserError(_("Could not authenticate with AFIP WSAA.\\n\\nError: %s") % str(e))

@@ -93,3 +93,7 @@ Temporary Items
 ### macOS Patch ###
 # iCloud generated files
 *.icloud
+
+# Archivos personales de documentación
+AGENTS.md
+GUIA_CONTRIBUCION.md

@@ -1,33 +1,38 @@
-from pysimplesoap.client import SimpleXMLElement
-
-# import xml.etree.ElementTree as ET
+from lxml import etree
 
 
 def _get_response_info(xml_response):
-    return SimpleXMLElement(xml_response)
+    """Parsea XML response de AFIP."""
+    if isinstance(xml_response, str):
+        return etree.fromstring(xml_response.encode("utf-8"))
+    return etree.fromstring(xml_response)
 
 
 def get_invoice_number_from_response(xml_response, afip_ws="wsfe"):
+    """
+    Extrae el número de comprobante del XML response de AFIP.
+
+    NOTA: Con el nuevo cliente zeep, esta función no se usa mucho
+    porque el resultado ya viene parseado como dict.
+    """
     if not xml_response:
         return False
     try:
-        xml = _get_response_info(xml_response)
-        return int(xml("CbteDesde"))
-        # TODO por ahora usamos pysimplesoap porque es mas comodo
-        # Sino generar una estrategia recusiva para todos los tipos de WS
-        # namespaces = {
-        #     'soap': 'http://schemas.xmlsoap.org/soap/envelope/',
-        #     'a': NS[afip_ws],
-        # }
-        # root = _get_response_info(xml_response)
-        # number = root.findall('./soap:Body'
-        #                '/a:FECAESolicitarResponse'
-        #                '/a:FECAESolicitarResult'
-        #                '/a:FeDetResp'
-        #                '/a:FECAEDetResponse'
-        #                '/a:CbteDesde' , namespaces)[0].text
-        # return int(number)
-    except:
+        root = _get_response_info(xml_response)
+
+        # Buscar CbteDesde en el XML (sin namespace)
+        # Funciona para WSFEv1, WSFEX, etc.
+        cbte_desde = root.find(".//{*}CbteDesde")
+        if cbte_desde is not None:
+            return int(cbte_desde.text)
+
+        # Fallback: buscar en cualquier nivel
+        for elem in root.iter():
+            if elem.tag.endswith("CbteDesde") and elem.text:
+                return int(elem.text)
+
+        return False
+    except Exception:
         return False
 
 

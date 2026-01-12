@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <menuitem id="menu_afipws" name="AFIP Web Services" parent="base.menu_custom" sequence="35"/>
+    <!-- Menú principal de AFIP bajo Facturación/Configuración -->
+    <menuitem
+        id="menu_afipws"
+        name="AFIP Web Services"
+        parent="account.menu_finance_configuration"
+        sequence="35"
+        groups="base.group_system"/>
 
 </odoo>

@@ -38,25 +38,38 @@ class AfipwsConnection(models.Model):
         """
         ws = super(AfipwsConnection, self)._get_ws(afip_ws)
         if afip_ws == "wsfe":
-            from pyafipws.wsfev1 import WSFEv1
-
-            ws = WSFEv1()
+            # Usar nuevo cliente zeep en lugar de pyafipws
+            _logger.info("Usando WSFEv1Client con zeep (nuevo)")
+            # El adaptador se inicializará en connect() con las credenciales
+            ws = None  # Se creará en connect()
         elif afip_ws == "wsfex":
-            from pyafipws.wsfexv1 import WSFEXv1
+            try:
+                from pyafipws.wsfexv1 import WSFEXv1
 
-            ws = WSFEXv1()
+                ws = WSFEXv1()
+            except ImportError:
+                raise UserError(_("pyafipws not installed. WSFEXv1 not available yet in zeep migration."))
         elif afip_ws == "wsmtxca":
-            from pyafipws.wsmtx import WSMTXCA
+            try:
+                from pyafipws.wsmtx import WSMTXCA
 
-            ws = WSMTXCA()
+                ws = WSMTXCA()
+            except ImportError:
+                raise UserError(_("pyafipws not installed. WSMTXCA not available yet in zeep migration."))
         elif afip_ws == "wscdc":
-            from pyafipws.wscdc import WSCDC
+            try:
+                from pyafipws.wscdc import WSCDC
 
-            ws = WSCDC()
+                ws = WSCDC()
+            except ImportError:
+                raise UserError(_("pyafipws not installed. WSCDC not available yet in zeep migration."))
         elif afip_ws == "wsbfe":
-            from pyafipws.wsbfev1 import WSBFEv1
+            try:
+                from pyafipws.wsbfev1 import WSBFEv1
 
-            ws = WSBFEv1()
+                ws = WSBFEv1()
+            except ImportError:
+                raise UserError(_("pyafipws not installed. WSBFEv1 not available yet in zeep migration."))
         return ws
 
     @api.model
@@ -95,3 +108,37 @@ class AfipwsConnection(models.Model):
             else:
                 afip_ws_url = "https://wswhomo.afip.gov.ar/WSCDC/service.asmx?WSDL"
         return afip_ws_url
+
+    def connect(self):
+        """Override connect para manejar WSFEv1 con zeep."""
+        self.ensure_one()
+
+        # Si es WSFEv1, usar el nuevo cliente zeep
+        if self.afip_ws == "wsfe":
+            _logger.info(f"Conectando a WSFEv1 con zeep - connection id {self.id}")
+
+            from ..lib.wsfev1_adapter import WSFEv1Adapter
+
+            # Obtener credenciales
+            cuit = self.company_id.partner_id.ensure_vat()
+            token = self.token
+            sign = self.sign
+
+            # Determinar ambiente
+            environment = "production" if self.env_type == "production" else "homologation"
+
+            # Crear adaptador con el nuevo cliente
+            ws = WSFEv1Adapter(cuit, token, sign, environment)
+
+            # Configurar atributos de compatibilidad
+            ws.Cuit = cuit
+            ws.Token = token
+            ws.Sign = sign
+            ws.Obs = ""
+            ws.Errores = []
+
+            _logger.info(f'WSFEv1 conectado con CUIT "{cuit}", ambiente: {environment}')
+            return ws
+
+        # Para otros servicios, usar el método original
+        return super(AfipwsConnection, self).connect()
