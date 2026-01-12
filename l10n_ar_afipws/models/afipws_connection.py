@@ -6,6 +6,9 @@ import logging
 
 from odoo import _, api, fields, models
 from odoo.exceptions import RedirectWarning, UserError
+from requests import Session
+from zeep import Client
+from zeep.transports import Transport
 
 _logger = logging.getLogger(__name__)
 
@@ -111,6 +114,63 @@ class AfipwsConnection(models.Model):
                 _("This method is for %s connections and you call it from an" " %s connection")
                 % (afip_ws, self.afip_ws)
             )
+
+    def _get_zeep_client(self, wsdl_url, timeout=30):
+        """Crea un cliente zeep configurado para AFIP.
+
+        Args:
+            wsdl_url (str): URL del WSDL del servicio AFIP
+            timeout (int): Timeout de conexión en segundos
+
+        Returns:
+            zeep.Client: Cliente configurado para el servicio
+
+        Raises:
+            UserError: Si no se puede conectar al servicio
+        """
+        self.ensure_one()
+
+        try:
+            # Configurar sesión HTTP con timeout y SSL verification
+            session = Session()
+            session.verify = True  # Verificar certificados SSL de AFIP
+
+            # Crear transport con la sesión configurada
+            transport = Transport(session=session, timeout=timeout)
+
+            # Crear y retornar cliente zeep
+            client = Client(wsdl_url, transport=transport)
+
+            _logger.info("Cliente zeep creado exitosamente para %s (%s)", self.afip_ws, self.type)
+
+            return client
+
+        except Exception as e:
+            _logger.error("Error creando cliente zeep para %s: %s", wsdl_url, str(e), exc_info=True)
+            raise UserError(
+                _("No se pudo conectar al servicio AFIP.\n" "Servicio: %s\n" "Ambiente: %s\n" "Error: %s")
+                % (self.afip_ws, self.type, str(e))
+            )
+
+    def _get_wsdl_url(self, service_urls):
+        """Obtiene la URL del WSDL según el ambiente (production/homologation).
+
+        Args:
+            service_urls (dict): Diccionario con URLs por ambiente
+                                 {'production': url, 'homologation': url}
+
+        Returns:
+            str: URL del WSDL correspondiente al ambiente
+
+        Raises:
+            UserError: Si el tipo de ambiente es inválido
+        """
+        self.ensure_one()
+
+        if self.type not in service_urls:
+            raise UserError(_("Tipo de ambiente inválido: %s.\n" "Debe ser 'production' o 'homologation'.") % self.type)
+
+        return service_urls[self.type]
 
     def connect(self):
         """
