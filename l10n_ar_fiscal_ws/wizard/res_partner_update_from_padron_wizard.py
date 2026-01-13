@@ -137,7 +137,7 @@ class ResPartnerUpdateFromPadronWizard(models.TransientModel):
                     new_value = new_value and new_value.title()
                 if key in ("impuestos_padron", "actividades_padron"):
                     old_value = old_value.ids
-                elif key in ("state_id", "l10n_ar_arca_responsibility_type_id"):
+                elif key in ("state_id", "l10n_ar_afip_responsibility_type_id"):
                     old_value = old_value.id
                 if new_value and key in fields_names and old_value != new_value:
                     line_vals = {
@@ -232,3 +232,29 @@ class ResPartnerUpdateFromPadronWizard(models.TransientModel):
         """
         self.ensure_one()
         return self._next_screen()
+
+    def update_from_padron_quick(self):
+        """Actualización rápida sin confirmar campo por campo"""
+        self.ensure_one()
+        partner = self.partner_id or self.env["res.partner"].browse(self._context.get("active_id"))
+        
+        if not partner:
+            raise UserError(_("No se encontró el partner a actualizar"))
+        
+        # Obtener datos y actualizar automáticamente
+        vals = partner.get_data_from_padron_arca()
+        partner.write(vals)
+        
+        # Mostrar notificación y cerrar wizard
+        message = _("Los datos del partner se actualizaron correctamente desde ARCA")
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": _("Actualización exitosa"),
+                "message": message,
+                "type": "success",
+                "sticky": False,
+                "next": {"type": "ir.actions.act_window_close"},
+            },
+        }

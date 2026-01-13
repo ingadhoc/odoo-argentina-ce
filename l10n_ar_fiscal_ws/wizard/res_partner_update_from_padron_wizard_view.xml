@@ -61,4 +61,41 @@
         <field name="target">new</field>
         <field name="view_mode">form</field>
     </record>
+    
+    <!-- Vista simplificada para actualización rápida desde partner individual -->
+    <record id="view_partner_update_quick_form" model="ir.ui.view">
+        <field name="name">res.partner.update.from.padron.wizard.quick.form</field>
+        <field name="model">res.partner.update.from.padron.wizard</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <form string="Actualizar desde ARCA">
+                <sheet>
+                    <group col="1">
+                        <div class="alert alert-info text-center" role="alert" style="margin-bottom: 0px;">
+                            <p class="mb-0">
+                                <i class="fa fa-refresh fa-2x"/>
+                            </p>
+                            <h3>¿Desea actualizar los datos del partner desde ARCA?</h3>
+                            <p>Esta acción consultará el padrón de ARCA y actualizará automáticamente los datos del partner.</p>
+                            <p><strong>Campos que se actualizarán:</strong> Nombre, Dirección, Localidad, Código Postal, Provincia, Responsabilidad ARCA, IVA, Ganancias.</p>
+                        </div>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="update_from_padron_quick" string="Sí, actualizar ahora" type="object" class="btn-primary"/>
+                    <button special="cancel" string="Cancelar" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Acción específica para actualización rápida desde partner -->
+    <record id="action_partner_update_quick" model="ir.actions.act_window">
+        <field name="name">Actualizar desde ARCA</field>
+        <field name="res_model">res.partner.update.from.padron.wizard</field>
+        <field name="target">new</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_partner_update_quick_form"/>
+        <field name="context">{'default_partner_id': active_id}</field>
+    </record>
 </odoo>
