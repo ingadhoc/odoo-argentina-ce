@@ -11,6 +11,11 @@
                         invisible="state != 'draft'"
                         class="oe_highlight"
                         string="Upload Certificate"/>
+                    <button name="action_validate_certificate"
+                        string="Validar con AFIP"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="state != 'confirmed'"/>
                     <button name="action_confirm"
                         type="object"
                         invisible="state != 'draft'"
@@ -25,12 +30,53 @@
                         string="Cancel"/>
                     <field name="state" widget="statusbar"/>
                 </header>
+                <div class="alert alert-danger" role="alert" invisible="not cert_is_expired or state != 'confirmed'">
+                    <i class="fa fa-exclamation-triangle"/> <strong>⚠ Certificado Vencido</strong>
+                    <p>Este certificado expiró el <field name="cert_valid_to" readonly="1" class="oe_inline"/>. Debe renovarlo urgentemente para continuar operando con AFIP.</p>
+                </div>
+                <div class="alert alert-warning" role="alert" invisible="cert_is_expired or cert_days_to_expire > 30 or cert_days_to_expire == 0 or state != 'confirmed'">
+                    <i class="fa fa-clock-o"/> <strong>⚠ Certificado próximo a vencer</strong>
+                    <p>Este certificado expira en <field name="cert_days_to_expire" readonly="1" class="oe_inline"/> días (vencimiento: <field name="cert_valid_to" readonly="1" class="oe_inline"/>). Planifique su renovación.</p>
+                </div>
+                <div class="alert alert-success" role="alert" invisible="cert_is_expired or cert_days_to_expire &lt;= 30 or cert_days_to_expire == 0 or state != 'confirmed'">
+                    <i class="fa fa-check-circle"/> <strong>✓ Certificado Válido</strong>
+                    <p>Este certificado está vigente hasta <field name="cert_valid_to" readonly="1" class="oe_inline"/> (faltan <field name="cert_days_to_expire" readonly="1" class="oe_inline"/> días).</p>
+                </div>
                 <sheet string="AFIP Certificates">
                     <group>
                         <field name="csr" groups="base.group_no_one" readonly="state != 'draft'"/>
                         <field name="request_filename" invisible="1"/>
                         <field name="request_file" readonly="state != 'draft'" filename="request_filename"/>
                         <field name="crt" groups="base.group_no_one" readonly="state != 'draft'"/>
+                    </group>
+                    <group string="Información del Certificado" invisible="not crt">
+                        <group>
+                            <field name="cert_valid_from" readonly="1"/>
+                            <field name="cert_valid_to" readonly="1"/>
+                            <field name="cert_days_to_expire" readonly="1" invisible="cert_days_to_expire == 0"/>
+                            <field name="cert_is_expired" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="cert_serial_number" readonly="1"/>
+                            <field name="cert_subject" readonly="1"/>
+                            <field name="cert_issuer" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Validación AFIP" invisible="not crt">
+                        <group>
+                            <field name="certificate_validated" readonly="1"/>
+                            <field name="validation_date" readonly="1"
+                                   invisible="not certificate_validated"/>
+                        </group>
+                        <group>
+                            <field name="afip_services"
+                                   placeholder="wsfe&#10;wsfex&#10;wsbfe&#10;wsmtxca"/>
+                        </group>
+                    </group>
+                    <group string="Error de Validación"
+                           invisible="not validation_error">
+                        <field name="validation_error" readonly="1" nolabel="1"
+                               widget="text" class="text-danger"/>
                     </group>
                 </sheet>
             </form>
@@ -42,8 +88,19 @@
         <field name="model">afipws.certificate</field>
         <field name="arch" type="xml">
             <list string="AFIP Certificates">
+                <field name="alias_id"/>
                 <field name="create_date"/>
-                <field name="state"/>
+                <field name="cert_valid_to"/>
+                <field name="cert_days_to_expire"
+                    optional="show"
+                    decoration-danger="cert_days_to_expire == 0 or cert_is_expired"
+                    decoration-warning="cert_days_to_expire > 0 and cert_days_to_expire &lt; 30"/>
+                <field name="cert_is_expired" invisible="1"/>
+                <field name="state"
+                    widget="badge"
+                    decoration-danger="cert_is_expired and state == 'confirmed'"
+                    decoration-warning="cert_days_to_expire > 0 and cert_days_to_expire &lt; 30 and state == 'confirmed'"
+                    decoration-success="not cert_is_expired and (cert_days_to_expire == 0 or cert_days_to_expire >= 30) and state == 'confirmed'"/>
             </list>
         </field>
     </record>

@@ -32,20 +32,36 @@
                 </header>
                 <sheet string="AFIP Certificates">
                     <group>
-                        <group>
-                            <field name="company_id" readonly="state != 'draft'" groups="base.group_multi_company"/>
+                        <group string="Datos Principales">
+                            <field name="company_id" readonly="state != 'draft'" options="{'no_create': True, 'no_open': True}"/>
                             <field name="type" readonly="state != 'draft'"/>
+                            <field name="common_name" readonly="state != 'draft'"/>
                             <field name="service_type" readonly="state != 'draft'" groups="base.group_no_one"/>
                             <field name="service_provider_cuit" readonly="state != 'draft'" invisible="service_type != 'outsourced'" required="service_type == 'outsourced'"/>
-                            <field name="company_cuit" readonly="state != 'draft'" invisible="service_type != 'in_house'" required="service_type == 'in_house'"/>
+                            <field name="cuit" readonly="1" invisible="service_type != 'in_house'"/>
                         </group>
-                        <group>
-                            <field name="common_name" readonly="state != 'draft'"/>
-                            <field name="country_id" readonly="state != 'draft'"/>
-                            <field name="state_id" readonly="state != 'draft'"/>
-                            <field name="city" readonly="state != 'draft'"/>
+                        <group string="Ubicación">
+                            <field name="country_id" readonly="1"/>
+                            <field name="state_id" readonly="1"/>
+                            <field name="city" readonly="1"/>
+                            <field name="has_expired_certificate" invisible="1"/>
+                            <field name="has_expiring_soon_certificate" invisible="1"/>
                         </group>
                     </group>
+
+                    <!-- Alerta de certificado vencido -->
+                    <div class="alert alert-danger" role="alert" invisible="not has_expired_certificate">
+                        <strong>⚠ CERTIFICADO VENCIDO</strong><br/>
+                        <field name="certificate_alert_message" readonly="1" nolabel="1"/>
+                        <p>No podrá facturar electrónicamente hasta que renueve el certificado.</p>
+                    </div>
+
+                    <!-- Alerta de certificado por vencer -->
+                    <div class="alert alert-warning" role="alert" invisible="not has_expiring_soon_certificate or has_expired_certificate">
+                        <strong>⚠ CERTIFICADO PRÓXIMO A VENCER</strong><br/>
+                        <field name="certificate_alert_message" readonly="1" nolabel="1"/>
+                    </div>
+
                     <notebook>
                         <page string="Ceritificates">
                             <field name="certificate_ids"/>

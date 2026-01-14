@@ -1,6 +1,6 @@
 {
     "name": "Modulo Base para los Web Services de AFIP",
-    "version": "18.0.1.0.0",
+    "version": "19.0.1.0.4",
     "category": "Localization/Argentina",
     "author": "ADHOC SA, Moldeo Interactive,Odoo Community Association (OCA)",
     "license": "AGPL-3",
@@ -9,7 +9,7 @@
         "l10n_ar",  # needed for CUIT and also demo data
         # TODO this module should be merged with l10n_ar_afipws_fe as the dependencies are the same
     ],
-    "external_dependencies": {"python": ["pyafipws", "OpenSSL", "pysimplesoap"]},
+    "external_dependencies": {"python": ["zeep", "cryptography", "lxml"]},
     "data": [
         "wizard/upload_certificate_view.xml",
         "wizard/res_partner_update_from_padron_wizard_view.xml",
@@ -28,7 +28,7 @@
         "demo/parameter_demo.xml",
     ],
     "images": [],
-    "installable": False,
+    "installable": True,
     "auto_install": False,
     "application": False,
 }

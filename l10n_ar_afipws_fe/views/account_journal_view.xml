@@ -19,6 +19,10 @@
                     <button name="get_pyafipws_post_invoice_numbers" string="Get next Inv" help="Obtener numeros de factura" type="object" invisible="not afip_ws"/>
                 </header>
             </sheet>
+            <!-- Add certificate info after currency_id in Asientos contables tab -->
+            <xpath expr="//field[@name='currency_id']" position="after">
+                <field name="afip_certificate_info" readonly="1" invisible="not afip_ws" string="Certificado AFIP"/>
+            </xpath>
         </field>
     </record>
 </odoo>

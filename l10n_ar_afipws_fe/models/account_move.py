@@ -304,7 +304,8 @@ class AccountMove(models.Model):
                     "afip_xml_response": ws.XmlResponse or "",
                 }
                 inv.sudo().write(vals)
-                inv._cr.commit()
+                # Flush changes to database without committing transaction
+                self.env.flush_all()
                 continue
 
             if hasattr(ws, "Vencimiento"):
@@ -324,9 +325,9 @@ class AccountMove(models.Model):
             }
 
             inv.sudo().write(vals)
-            inv._cr.commit()
-            # si obtuvimos el cae hacemos el commit porque estoya no se puede
-            # volver atras
+            # Flush changes to database without committing transaction
+            # OCA guidelines: avoid direct cr.commit(), let framework handle it
+            self.env.flush_all()
             a_invoices += inv
         return (a_invoices, r_invoices)
 

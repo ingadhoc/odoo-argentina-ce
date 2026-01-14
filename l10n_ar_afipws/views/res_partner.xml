@@ -5,13 +5,13 @@
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="account.view_partner_property_form"/>
         <field name="arch" type="xml">
-            <group name="accounting_entries" position="after">
-                <group name="miPyme" string="Mi pyme">
-                    <field name="mipyme_required"/>
-                    <field name="mipyme_from_amount" invisible="not mipyme_required"/>
-                    <button name="l10n_ar_afipws_fe_min_ammount" string="Check mi Pyme status" type="object"/>
-                </group>
-            </group>
+            <!-- En Odoo 19, la estructura de la vista de propiedades contables cambió -->
+            <!-- Agregamos después del último campo de propiedades contables -->
+            <field name="property_account_position_id" position="after">
+                <field name="mipyme_required"/>
+                <field name="mipyme_from_amount" invisible="not mipyme_required"/>
+                <button name="l10n_ar_afipws_fe_min_ammount" string="Check mi Pyme status" type="object" class="btn-link"/>
+            </field>
         </field>
     </record>
     <record id="view_partner_form" model="ir.ui.view">
