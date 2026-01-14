@@ -3,7 +3,7 @@
 
 # ADHOC odoo-argentina-ce
 
-Repositoriy for odoo addons of argentinian localization for functionalities that are in odoo enterprise. For any argentinan functionality that is not in odoo CE (community edition) or odoo EE (odoo enterprise), please refer to https://github.com/ingadhoc/odoo-argentina
+Repository for odoo addons of argentinian localization for functionalities that are in odoo enterprise. For any argentinian functionality that is not in odoo CE (community edition) or odoo EE (odoo enterprise), please refer to https://github.com/ingadhoc/odoo-argentina
 
 ----
 
