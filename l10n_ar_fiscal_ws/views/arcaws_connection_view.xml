@@ -45,6 +45,6 @@
         <field name="view_mode">list,form</field>
     </record>
 
-    <menuitem name="Connections" action="act_arcaws_auth" id="menu_action_arcaws_auth" parent="menu_arcaws"/>
+    <menuitem name="Connections" action="act_arcaws_auth" id="menu_action_arcaws_auth" parent="l10n_ar.menu_afip_config"/>
 
 </odoo>

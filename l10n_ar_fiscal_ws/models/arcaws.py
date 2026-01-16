@@ -23,7 +23,7 @@ class ArcaWs(models.Model):
     production_url = fields.Char(required=True)
     homologation_url = fields.Char(required=True)
     view_id = fields.Many2one("ir.ui.view")
-    dummy_method = fields.Char(default="dummy")
+    dummy_method = fields.Char(compute="_compute_dummy_method", store=False)
     ws_parameters = fields.Json()
     active = fields.Boolean(default=True)
 
@@ -51,6 +51,8 @@ class ArcaWs(models.Model):
         _logger.info("Dummie action called")
         company = self.env.company
         connection = company.arca_get_connection(self.code)
-        raise ArcaError(
-            connection.call_arca_service(self.ws_parameters.get("dummy_method"), {})
-        )
+        raise ArcaError(connection.call_arca_service(self.ws_parameters.get("dummy_method"), {}))
+
+    def _compute_dummy_method(self):
+        for record in self:
+            record.dummy_method = record.ws_parameters.get("dummy_method")

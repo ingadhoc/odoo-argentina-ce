@@ -5,13 +5,11 @@
 import logging
 from datetime import datetime
 
-from odoo import _, fields, models
 from odoo.exceptions import UserError
 
-_logger = logging.getLogger(__name__)
+from odoo import _, fields, models
 
-# TODO: unir AccountMoveWs con AccountMove ya que ambos heredan account.move
-# pylint: disable=R8180
+_logger = logging.getLogger(__name__)
 
 
 class AccountMove(models.Model):
@@ -26,8 +24,8 @@ class AccountMove(models.Model):
         afip_ws = self.journal_id.afip_ws
         if not afip_ws:
             return
-        if hasattr(self, "%s_pyafipws_create_invoice" % afip_ws):
-            return getattr(self, "%s_pyafipws_create_invoice" % afip_ws)(ws, invoice_info)
+        if hasattr(self, "%s_pyafipws_create_invoice" % afip_ws.code):
+            return getattr(self, "%s_pyafipws_create_invoice" % afip_ws.code)(afip_ws, invoice_info)
         else:
             return _("AFIP WS %s not implemented") % afip_ws
 
@@ -314,14 +312,6 @@ class AccountMove(models.Model):
     # Mapeo datos del la factura
     ##########################
 
-    def map_invoice_info(self, afip_ws):
-        self.ensure_one()
-        _logger.info("%s_map_invoice_info" % afip_ws)
-        if hasattr(self, "%s_map_invoice_info" % afip_ws):
-            return getattr(self, "%s_map_invoice_info" % afip_ws)()
-        else:
-            return _("AFIP WS %s not implemented") % afip_ws
-
     def base_map_invoice_info(self):
         journal = self.journal_id
         invoice_info = {}
@@ -394,21 +384,6 @@ class AccountMove(models.Model):
 
         invoice_info["afip_associated_period_from"] = self.afip_associated_period_from
         invoice_info["afip_associated_period_to"] = self.afip_associated_period_to
-        return invoice_info
-
-    def wsfe_map_invoice_info(self):
-        invoice_info = self.base_map_invoice_info()
-        invoice_info["fecha_cbte"] = invoice_info["fecha_cbte"].strftime("%Y%m%d")
-        if invoice_info["fecha_venc_pago"]:
-            invoice_info["fecha_venc_pago"] = invoice_info["fecha_venc_pago"].strftime("%Y%m%d")
-        if invoice_info["fecha_serv_desde"]:
-            invoice_info["fecha_serv_desde"] = invoice_info["fecha_serv_desde"].strftime("%Y%m%d")
-        if invoice_info["fecha_serv_hasta"]:
-            invoice_info["fecha_serv_hasta"] = invoice_info["fecha_serv_hasta"].strftime("%Y%m%d")
-        if invoice_info["afip_associated_period_from"] and invoice_info["afip_associated_period_to"]:
-            invoice_info["afip_associated_period_from"] = invoice_info["afip_associated_period_from"].strftime("%Y%m%d")
-            invoice_info["afip_associated_period_to"] = invoice_info["afip_associated_period_to"].strftime("%Y%m%d")
-
         return invoice_info
 
     def wsbfe_map_invoice_info(self):
@@ -513,7 +488,7 @@ class AccountMove(models.Model):
                 else:
                     invoice_info["cuit_pais_cliente"] = invoice_info["country"].cuit_fisica
                 if not invoice_info["cuit_pais_cliente"]:
-                    raise UserError(_("No vat defined for the partner and also no CUIT " "set on country"))
+                    raise UserError(_("No vat defined for the partner and also no CUIT set on country"))
 
                 invoice_info["domicilio_cliente"] = " - ".join(
                     [

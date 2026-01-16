@@ -1,4 +1,5 @@
 import yaml
+import sys
 from zeep.helpers import serialize_object
 
 
@@ -15,6 +16,7 @@ class ArcaError(Exception):
         """
         :param message: exception message and frontend modal content
         """
+
         if message and str(type(message)).startswith("<class 'zeep.objects"):
             message = yaml.safe_dump(
                 serialize_object(message, target_cls=dict),
