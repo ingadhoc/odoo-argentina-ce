@@ -4,10 +4,9 @@
 ##############################################################################
 import logging
 
+from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools import ormcache
-
-from odoo import _, api, fields, models
 
 from .exceptions import ArcaError
 
@@ -51,6 +50,4 @@ class ArcaWs(models.Model):
         _logger.info("Dummie action called")
         company = self.env.company
         connection = company.arca_get_connection(self.code)
-        raise ArcaError(
-            connection.call_arca_service(self.ws_parameters.get("dummy_method"), {})
-        )
+        raise ArcaError(connection.call_arca_service(self.ws_parameters.get("dummy_method"), {}))

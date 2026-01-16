@@ -35,7 +35,7 @@ class ResPartner(models.Model):
 
         # Buscar país Argentina
         country_ar = self.env["res.country"].search([("code", "=", "AR")], limit=1)
-        
+
         vals = {
             "name": census.denominacion,
             "street": census.direccion,
@@ -43,7 +43,7 @@ class ResPartner(models.Model):
             "zip": census.cod_postal,
             "last_update_census": fields.Date.today(),
         }
-        
+
         if country_ar:
             vals["country_id"] = country_ar.id
 
@@ -55,7 +55,7 @@ class ResPartner(models.Model):
         # Usamos descripcionProvincia ya que el mapeo de idProvincia de ARCA
         # no está documentado completamente
         state = None
-        
+
         if census.provincia:
             # depending on the database, caba can have one of this codes
             caba_codes = ["C", "CABA", "ABA"]
@@ -75,13 +75,13 @@ class ResPartner(models.Model):
                     ],
                     limit=1,
                 )
-        
+
         if state:
             vals["state_id"] = state.id
 
         # Determinar responsabilidad AFIP según imp_iva y monotributo
         _logger.info("Determinando responsabilidad AFIP - imp_iva:%s, monotributo:%s", imp_iva, census.monotributo)
-        
+
         if imp_iva == "NI" and census.monotributo == "S":
             # Monotributista
             vals["l10n_ar_afip_responsibility_type_id"] = self.env.ref("l10n_ar.res_RM").id
@@ -99,8 +99,11 @@ class ResPartner(models.Model):
             vals["l10n_ar_afip_responsibility_type_id"] = self.env.ref("l10n_ar.res_CF").id
             _logger.info("Asignando Consumidor Final (CF)")
         else:
-            _logger.warning("No se pudo inferir la responsabilidad AFIP desde padrón - imp_iva:%s, monotributo:%s", 
-                          imp_iva, census.monotributo)
+            _logger.warning(
+                "No se pudo inferir la responsabilidad AFIP desde padrón - imp_iva:%s, monotributo:%s",
+                imp_iva,
+                census.monotributo,
+            )
 
         _logger.info("Valores finales a actualizar: %s", vals)
         return vals
@@ -129,36 +132,38 @@ class ResPartner(models.Model):
 
             # Verificar errores reportados por ARCA antes de procesar datos
             error_messages = []
-            
+
             if hasattr(res, "errorConstancia") and res.errorConstancia:
                 error_info = res.errorConstancia
                 if hasattr(error_info, "error") and error_info.error:
                     error_messages.extend(error_info.error)
-            
+
             if hasattr(res, "errorMonotributo") and res.errorMonotributo:
                 error_info = res.errorMonotributo
                 if hasattr(error_info, "error") and error_info.error:
                     error_messages.extend(error_info.error)
-            
+
             if hasattr(res, "errorRegimenGeneral") and res.errorRegimenGeneral:
                 error_info = res.errorRegimenGeneral
                 if hasattr(error_info, "error") and error_info.error:
                     error_messages.extend(error_info.error)
-            
+
             # Si hay errores de ARCA, mostrarlos al usuario
             if error_messages:
                 error_text = "\n• ".join(error_messages)
                 raise UserError(
-                    _("ARCA reportó los siguientes problemas para el CUIT %s:\n\n• %s\n\n"
-                      "Por favor, verifique la situación del contribuyente en:\n"
-                      "https://www.arca.gob.ar/") % (cuit, error_text)
+                    _(
+                        "ARCA reportó los siguientes problemas para el CUIT %s:\n\n• %s\n\n"
+                        "Por favor, verifique la situación del contribuyente en:\n"
+                        "https://www.arca.gob.ar/"
+                    )
+                    % (cuit, error_text)
                 )
 
             # Estructura del servicio: datosGenerales, datosMonotributo, datosRegimenGeneral
             if not hasattr(res, "datosGenerales") or not res.datosGenerales:
                 raise UserError(
-                    _("ARCA no devolvió datos válidos para el CUIT %s.\n"
-                      "Estructura recibida: %s") % (cuit, dir(res))
+                    _("ARCA no devolvió datos válidos para el CUIT %s.\n" "Estructura recibida: %s") % (cuit, dir(res))
                 )
 
             datos_generales = res.datosGenerales
@@ -169,27 +174,25 @@ class ResPartner(models.Model):
             apellido = getattr(datos_generales, "apellido", "") or ""
             nombre = getattr(datos_generales, "nombre", "") or ""
             razon_social = getattr(datos_generales, "razonSocial", None)
-            
+
             if razon_social:
                 denominacion = razon_social
             else:
                 denominacion = f"{apellido}, {nombre}".strip(", ")
 
             if not denominacion:
-                raise UserError(
-                    _("ARCA no devolvió nombre válido para el CUIT %s") % cuit
-                )
+                raise UserError(_("ARCA no devolvió nombre válido para el CUIT %s") % cuit)
 
             # Extraer domicilio
             domicilio_fiscal = None
             if hasattr(datos_generales, "domicilioFiscal") and datos_generales.domicilioFiscal:
                 domicilio_fiscal = datos_generales.domicilioFiscal
-            
+
             # Determinar imp_iva y monotributo desde las diferentes secciones
             imp_iva = "N"
             monotributo = "N"
             impuestos_ids = []
-            
+
             # Verificar régimen general (IVA, Ganancias, etc.)
             if datos_regimen_general and hasattr(datos_regimen_general, "impuesto"):
                 for impuesto in datos_regimen_general.impuesto:
@@ -199,16 +202,16 @@ class ResPartner(models.Model):
                         impuestos_ids.append(id_imp)
                         if id_imp == 30:  # IVA
                             imp_iva = "AC"
-            
+
             # Verificar monotributo
             if datos_monotributo and hasattr(datos_monotributo, "categoriaMonotributo"):
                 monotributo = "S"
                 impuestos_ids.append(308)  # ID Monotributo
-            
+
             # Crear objeto compatible con parce_census_vals
             class CensusConstanciaAdapter:
                 pass
-            
+
             census_adapted = CensusConstanciaAdapter()
             census_adapted.denominacion = denominacion
             census_adapted.direccion = getattr(domicilio_fiscal, "direccion", "") if domicilio_fiscal else ""
@@ -218,10 +221,13 @@ class ResPartner(models.Model):
             census_adapted.imp_iva = imp_iva
             census_adapted.impuestos = impuestos_ids
             census_adapted.monotributo = monotributo
-            
+
             _logger.info(
                 "Constancia Inscripción ARCA procesada - %s - IVA:%s Monotributo:%s Impuestos:%s",
-                denominacion, imp_iva, monotributo, impuestos_ids
+                denominacion,
+                imp_iva,
+                monotributo,
+                impuestos_ids,
             )
 
             vals = self.parce_census_vals(census_adapted)
@@ -238,10 +244,10 @@ class ResPartner(models.Model):
     def action_update_from_padron_arca(self):
         """Actualiza automáticamente los datos del partner desde padrón ARCA"""
         self.ensure_one()
-        
+
         vals = self.get_data_from_padron_arca()
         self.write(vals)
-        
+
         return {
             "type": "ir.actions.client",
             "tag": "display_notification",
