@@ -237,14 +237,14 @@ class ResPartnerUpdateFromPadronWizard(models.TransientModel):
         """Actualización rápida sin confirmar campo por campo"""
         self.ensure_one()
         partner = self.partner_id or self.env["res.partner"].browse(self._context.get("active_id"))
-        
+
         if not partner:
             raise UserError(_("No se encontró el partner a actualizar"))
-        
+
         # Obtener datos y actualizar automáticamente
         vals = partner.get_data_from_padron_arca()
         partner.write(vals)
-        
+
         # Mostrar notificación y cerrar wizard
         message = _("Los datos del partner se actualizaron correctamente desde ARCA")
         return {

@@ -61,7 +61,7 @@
         <field name="target">new</field>
         <field name="view_mode">form</field>
     </record>
-    
+
     <!-- Vista simplificada para actualización rápida desde partner individual -->
     <record id="view_partner_update_quick_form" model="ir.ui.view">
         <field name="name">res.partner.update.from.padron.wizard.quick.form</field>
@@ -88,7 +88,7 @@
             </form>
         </field>
     </record>
-    
+
     <!-- Acción específica para actualización rápida desde partner -->
     <record id="action_partner_update_quick" model="ir.actions.act_window">
         <field name="name">Actualizar desde ARCA</field>
