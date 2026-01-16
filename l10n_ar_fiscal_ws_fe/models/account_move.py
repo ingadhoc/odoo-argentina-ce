@@ -9,10 +9,9 @@ import sys
 import traceback
 from datetime import datetime
 
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools import float_repr
-
-from odoo import _, api, fields, models
 
 from ..afip_utils import get_invoice_number_from_response
 
@@ -85,15 +84,8 @@ class AccountMove(models.Model):
         for move in self:
             default_value = move.company_id.l10n_ar_payment_foreign_currency
             if default_value == "account":
-                account = move.line_ids.account_id.filtered(
-                    lambda x: x.account_type == "asset_receivable"
-                )
-                default_value = (
-                    "S"
-                    if account.currency_id
-                    and account.currency_id != move.company_currency_id
-                    else "N"
-                )
+                account = move.line_ids.account_id.filtered(lambda x: x.account_type == "asset_receivable")
+                default_value = "S" if account.currency_id and account.currency_id != move.company_currency_id else "N"
             move.l10n_ar_payment_foreign_currency = default_value
 
     # @api.depends('journal_id', 'l10n_latam_document_type_id')
@@ -111,26 +103,18 @@ class AccountMove(models.Model):
             and self.journal_id.arcaws
         ):
             if self.l10n_latam_document_type_id:
-                number = int(
-                    self.journal_id._get_last_invoice_number(
-                        self.l10n_latam_document_type_id
-                    )
-                )
+                number = int(self.journal_id._get_last_invoice_number(self.l10n_latam_document_type_id))
                 return self._get_formatted_sequence(number)
         return super()._get_starting_sequence()
 
     def _set_next_sequence(self):
         self.ensure_one()
         if self.afip_auth_code and self.journal_id.arcaws and self.afip_xml_response:
-            invoice_number = get_invoice_number_from_response(
-                self.afip_xml_response, self.journal_id.arcaws
-            )
+            invoice_number = get_invoice_number_from_response(self.afip_xml_response, self.journal_id.arcaws)
             if invoice_number:
                 last_sequence = self._get_formatted_sequence(invoice_number)
                 format, format_values = self._get_sequence_format_param(last_sequence)
-                format_values["year"] = self[self._sequence_date_field].year % (
-                    10 ** format_values["year_length"]
-                )
+                format_values["year"] = self[self._sequence_date_field].year % (10 ** format_values["year_length"])
                 format_values["month"] = self[self._sequence_date_field].month
                 format_values["seq"] = invoice_number
 
@@ -148,11 +132,7 @@ class AccountMove(models.Model):
             and self.journal_id.arcaws
             and self.l10n_latam_document_type_id
         ):
-            number = int(
-                self.journal_id._get_last_invoice_number(
-                    self.l10n_latam_document_type_id
-                )
-            )
+            number = int(self.journal_id._get_last_invoice_number(self.l10n_latam_document_type_id))
             res = self._get_formatted_sequence(number)
         else:
             res = super()._get_last_sequence(relaxed=relaxed, with_prefix=with_prefix)
@@ -195,19 +175,12 @@ class AccountMove(models.Model):
                     "tipoCodAut": "E" if rec.afip_auth_mode == "CAE" else "A",
                     "codAut": int(rec.afip_auth_code),
                 }
-                if (
-                    len(rec.commercial_partner_id.l10n_latam_identification_type_id)
-                    and rec.commercial_partner_id.vat
-                ):
+                if len(rec.commercial_partner_id.l10n_latam_identification_type_id) and rec.commercial_partner_id.vat:
                     qr_dict["tipoDocRec"] = int(
                         rec.commercial_partner_id.l10n_latam_identification_type_id.l10n_ar_afip_code
                     )
-                    qr_dict["nroDocRec"] = int(
-                        rec.commercial_partner_id.vat.replace("-", "").replace(".", "")
-                    )
-                qr_data = base64.encodestring(
-                    json.dumps(qr_dict, indent=None).encode("ascii")
-                ).decode("ascii")
+                    qr_dict["nroDocRec"] = int(rec.commercial_partner_id.vat.replace("-", "").replace(".", ""))
+                qr_data = base64.encodestring(json.dumps(qr_dict, indent=None).encode("ascii")).decode("ascii")
                 qr_data = str(qr_data).replace("\n", "")
                 rec.afip_qr_code = "https://www.afip.gob.ar/fe/qr/?p=%s" % qr_data
             else:
@@ -301,14 +274,11 @@ class AccountMove(models.Model):
                     msg = ws.Excepcion
                 else:
                     # avoid encoding problem when raising error
-                    msg = traceback.format_exception_only(sys.exc_type, sys.exc_value)[
-                        0
-                    ]
+                    msg = traceback.format_exception_only(sys.exc_type, sys.exc_value)[0]
             if msg:
                 _logger.error(
                     _("AFIP Validation Error. %s") % msg
-                    + " XML Request: %s XML Response: %s"
-                    % (ws.XmlRequest, ws.XmlResponse)
+                    + " XML Request: %s XML Response: %s" % (ws.XmlRequest, ws.XmlResponse)
                 )
 
             msg = "\n".join([ws.Obs or "", ws.ErrMsg or ""])
@@ -331,10 +301,7 @@ class AccountMove(models.Model):
             if hasattr(ws, "FchVencCAE"):
                 vto = datetime.strptime(ws.FchVencCAE, "%Y%m%d").date()
 
-            _logger.info(
-                "CAE solicitado con exito. CAE: %s. Resultado %s"
-                % (ws.CAE, ws.Resultado)
-            )
+            _logger.info("CAE solicitado con exito. CAE: %s. Resultado %s" % (ws.CAE, ws.Resultado))
             vals = {
                 "afip_auth_mode": "CAE",
                 "afip_auth_code": ws.CAE,

@@ -4,10 +4,9 @@
 ##############################################################################
 import logging
 
+from odoo import _, api, fields, models
 from odoo.addons.l10n_ar_fiscal_ws.models.exceptions import ArcaError
 from odoo.exceptions import UserError
-
-from odoo import _, api, fields, models
 
 _logger = logging.getLogger(__name__)
 
@@ -39,13 +38,9 @@ class AccountJournal(models.Model):
     @api.depends("l10n_ar_afip_pos_system")
     def _compute_arcaws(self):
         type_mapping = self._get_type_mapping()
-        with_ws_pos_type = self.filtered(
-            lambda x: x.l10n_ar_afip_pos_system in type_mapping.keys()
-        )
+        with_ws_pos_type = self.filtered(lambda x: x.l10n_ar_afip_pos_system in type_mapping.keys())
         for rec in with_ws_pos_type:
-            rec.arcaws = self.env["arcaws"].search(
-                [("code", "=", type_mapping[rec.l10n_ar_afip_pos_system])], limit=1
-            )
+            rec.arcaws = self.env["arcaws"].search([("code", "=", type_mapping[rec.l10n_ar_afip_pos_system])], limit=1)
         (self - with_ws_pos_type).arcaws = False
 
     def test_pyafipws_dummy(self):
@@ -67,9 +62,7 @@ class AccountJournal(models.Model):
             "type": "ir.actions.client",
             "tag": "display_notification",
             "params": {
-                "title": _(
-                    "Great, everything seems fine. The connection did not fail."
-                ),
+                "title": _("Great, everything seems fine. The connection did not fail."),
                 "type": "success",
                 "sticky": True,  # True/False will display for few seconds if false
             },
