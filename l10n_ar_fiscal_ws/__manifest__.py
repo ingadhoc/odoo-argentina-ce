@@ -13,7 +13,6 @@
     "data": [
         "wizard/upload_certificate_view.xml",
         "wizard/res_partner_update_from_padron_wizard_view.xml",
-        "views/arcaws_menuitem.xml",
         "views/arcaws_certificate_view.xml",
         "views/arcaws_certificate_alias_view.xml",
         "views/arcaws_connection_view.xml",
