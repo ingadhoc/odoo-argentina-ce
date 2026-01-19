@@ -25,5 +25,263 @@
         <field name="production_url">https://servicios1.afip.gov.ar/wsbfe/service.asmx?WSDL</field>
         <field name="homologation_url">https://wswhomo.afip.gov.ar/wsbfe/service.asmx?WSDL</field>
     </record>
+    <record id="wsfe_method_dummy" model="arcaws.method">
+        <field name="name">dummy</field>
+        <field name="arcaws_id" ref="arcawsfe"/>
+        <field name="method_name">FEDummy</field>
+        <field name="definition_dict">{}</field>
+    </record>
+    <record id="wsfex_method_dummy" model="arcaws.method">
+        <field name="name">dummy</field>
+        <field name="arcaws_id" ref="wsfex"/>
+        <field name="method_name">FEXDummy</field>
+        <field name="definition_dict">{}</field>
+    </record>
+    <record id="wsbfe_method_dummy" model="arcaws.method">
+        <field name="name">dummy</field>
+        <field name="arcaws_id" ref="wsbfe"/>
+        <field name="method_name">BFDummy</field>
+        <field name="definition_dict">{}</field>
+    </record>
+    <record id="wsfe_method_get_point_of_sale" model="arcaws.method">
+        <field name="name">get_point_of_sale</field>
+        <field name="arcaws_id" ref="arcawsfe"/>
+        <field name="method_name">FEParamGetPtosVenta</field>
+        <field name="definition_dict">{
+                "Auth": {
+                    "Cuit": company_id.partner_id.ensure_vat(),
+                    "Sign": connection.sign,
+                    "Token": connection.token,
+                }
+            }</field>
+    </record>
+    <record id="wsfex_method_get_point_of_sale" model="arcaws.method">
+        <field name="name">get_point_of_sale</field>
+        <field name="arcaws_id" ref="wsfex"/>
+        <field name="method_name">FEXGetPARAM_PtoVenta</field>
+        <field name="definition_dict">{
+                "Auth": {
+                    "Cuit": company_id.partner_id.ensure_vat(),
+                    "Sign": connection.sign,
+                    "Token": connection.token,
+                }
+            }</field>
+    </record>
+    <record id="wsbfe_method_get_point_of_sale" model="arcaws.method">
+        <field name="name">get_point_of_sale</field>
+        <field name="arcaws_id" ref="wsbfe"/>
+        <field name="method_name">BFEParamGetPtosVenta</field>
+        <field name="definition_dict">{
+                "Auth": {
+                    "Cuit": company_id.partner_id.ensure_vat(),
+                    "Sign": connection.sign,
+                    "Token": connection.token,
+                }
+            }</field>
+    </record>
+    <record id="wsfe_method_cuit_document_classes" model="arcaws.method">
+        <field name="name">cuit_document_classes</field>
+        <field name="arcaws_id" ref="arcawsfe"/>
+        <field name="method_name">FEParamGetTiposDoc</field>
+        <field name="definition_dict">{
+                "Auth": {
+                    "Cuit": company_id.partner_id.ensure_vat(),
+                    "Sign": connection.sign,
+                    "Token": connection.token,
+                }
+            }</field>
+    </record>
+    <record id="wsfex_method_cuit_document_classes" model="arcaws.method">
+        <field name="name">cuit_document_classes</field>
+        <field name="arcaws_id" ref="wsfex"/>
+        <field name="method_name">FEXGetPARAM_Cbte_Tipo</field>
+        <field name="definition_dict">{
+                "Auth": {
+                    "Cuit": company_id.partner_id.ensure_vat(),
+                    "Sign": connection.sign,
+                    "Token": connection.token,
+                }
+            }</field>
+    </record>
+    <record id="wsbfe_method_cuit_document_classes" model="arcaws.method">
+        <field name="name">cuit_document_classes</field>
+        <field name="arcaws_id" ref="wsbfe"/>
+        <field name="method_name">BFEParamGetTiposCbte</field>
+        <field name="definition_dict">{
+                "Auth": {
+                    "Cuit": company_id.partner_id.ensure_vat(),
+                    "Sign": connection.sign,
+                    "Token": connection.token,
+                }
+            }</field>
+    </record>
+    <record id="wsfe_method_last_invoice" model="arcaws.method">
+        <field name="name">last_invoice</field>
+        <field name="arcaws_id" ref="arcawsfe"/>
+        <field name="method_name">FECompUltimoAutorizado</field>
+        <field name="definition_dict">{
+                "Auth": {
+                    "Cuit": company_id.partner_id.ensure_vat(),
+                    "Sign": connection.sign,
+                    "Token": connection.token,
+                },
+                'PtoVta': self.l10n_ar_afip_pos_number,
+                'CbteTipo': extra_values['l10n_latam_document_type'],
+            }</field>
+        <field name="response_dict">
+int(ws_res['CbteNro'])
+        </field>
+    </record>
+    <record id="wsfex_method_last_invoice" model="arcaws.method">
+        <field name="name">last_invoice</field>
+        <field name="arcaws_id" ref="wsfex"/>
+        <field name="method_name">FEXGetLast_CMP</field>
+        <field name="definition_dict">{
+                "Auth": {
+                    "Cuit": company_id.partner_id.ensure_vat(),
+                    "Sign": connection.sign,
+                    "Token": connection.token,
+                },
+                'Pto_venta': self.l10n_ar_afip_pos_number,
+                'Tipo_cbte': extra_values['l10n_latam_document_type'],
+            }</field>
+        <field name="response_dict">
+int(ws_res['Cbte_nro'])
+        </field>
+    </record>
+    <record id="wsbfe_method_last_invoice" model="arcaws.method">
+        <field name="name">last_invoice</field>
+        <field name="arcaws_id" ref="wsbfe"/>
+        <field name="method_name">BFEGetLast_CMP</field>
+        <field name="definition_dict">{
+                "Auth": {
+                    "Cuit": company_id.partner_id.ensure_vat(),
+                    "Sign": connection.sign,
+                    "Token": connection.token,
+                },
+                'Pto_venta': self.l10n_ar_afip_pos_number,
+                'Tipo_cbte': extra_values['l10n_latam_document_type'],
+            }</field>
+        <field name="response_dict">
+int(ws_res['Cbte_nro'])
+        </field>
+    </record>
+    <record id="wsfe_method_request_invoice_authorization" model="arcaws.method">
+        <field name="name">request_invoice_authorization</field>
+        <field name="arcaws_id" ref="arcawsfe"/>
+        <field name="method_name">FECAESolicitar</field>
+        <field name="definition_dict">
+amounts = extra_values['amounts']
+result = {
+    "Auth": {
+        "Cuit": company_id.partner_id.ensure_vat(),
+        "Sign": connection.sign,
+        "Token": connection.token,
+    }
+}
+result["FeCAEReq"] = {}
+
+result["FeCAEReq"]["FeCabReq"] = {
+    "CantReg": 1,
+    "PtoVta": self.journal_id.l10n_ar_afip_pos_number,
+    "CbteTipo": int(self.l10n_latam_document_type_id.code),
+}
+result["FeCAEReq"]["FeDetReq"] = {
+    "FECAEDetRequest": {
+        "Concepto": int(self.l10n_ar_afip_concept),
+        "DocTipo": int(extra_values['arca_document_code']),
+        "DocNro": int(self.partner_id.vat),
+        "CbteDesde": extra_values['next_invoice_number'],
+        "CbteHasta": extra_values['next_invoice_number'],
+        "CbteFch": self.invoice_date.strftime("%Y%m%d"),
+        "ImpTotal": float_repr(self.amount_total, 2),
+        "ImpTotConc": float_repr(amounts["vat_untaxed_base_amount"], 2),
+        "ImpNeto": float_repr(
+            self.amount_untaxed
+            if self.l10n_latam_document_type_id.l10n_ar_letter == "C"
+            else amounts["vat_taxable_amount"],
+            2,
+        ),
+        "ImpOpEx": float_repr(amounts["vat_exempt_base_amount"], 2),
+        "ImpTrib": float_repr(amounts["not_vat_taxes_amount"], 2),
+        "ImpIVA": float_repr(amounts["vat_amount"], 2),
+        "FchVtoPago": None,
+        "CbtesAsoc": None,
+        "Compradores": None,
+        "Iva": None,
+        "MonId": self.currency_id.l10n_ar_afip_code,
+        "MonCotiz": 1 / self.invoice_currency_rate or 1,
+        "CanMisMonExt": self.l10n_ar_payment_foreign_currency,
+        "CondicionIVAReceptorId": int(self.partner_id.l10n_ar_afip_responsibility_type_id.code),
+    }
+}
+if vats := self._get_vat():
+    for vat in vats:
+        AlicIva = []
+        if "BaseImp" in vat and "Importe" in vat:
+            AlicIva.append(
+                {
+                    "Id": vat["Id"],
+                    "BaseImp": float_repr(vat["BaseImp"], precision_digits=2),
+                    "Importe": float_repr(vat["Importe"], precision_digits=2),
+                }
+            )
+    result["FeCAEReq"]["FeDetReq"]["FECAEDetRequest"]["Iva"] = {"AlicIva": AlicIva}
+
+if self.afip_associated_period_from and self.afip_associated_period_to:
+    result["FeCAEReq"]["FeDetReq"]["FECAEDetRequest"]["PeriodoAsoc"]["FchDesde"] = (
+        self.afip_associated_period_from.strftime("%Y%m%d")
+    )
+    result["FeCAEReq"]["FeDetReq"]["FECAEDetRequest"]["PeriodoAsoc"]["FchHasta"] = (
+        self.afip_associated_period_to.strftime("%Y%m%d")
+    )
+elif related_invoice_ids := self.get_related_invoices_data():
+    CbtesAsoc = []
+    for related_invoice in related_invoice_ids:
+        doc_number_parts = self._l10n_ar_get_document_number_parts(
+            related_invoice.l10n_latam_document_number,
+            related_invoice.l10n_latam_document_type_id.code,
+        )
+
+        CbtesAsoc.append(
+            {
+                "CbteAsoc": {
+                    "Tipo": related_invoice.l10n_latam_document_type_id.code,
+                    "PtoVta": doc_number_parts["point_of_sale"],
+                    "Nro": doc_number_parts["invoice_number"],
+                    "Cuit": self.company_id.vat,
+                    "CbteFch": related_invoice.invoice_date.strftime("%Y%m%d"),
+                }
+            }
+        )
+    result["FeCAEReq"]["FeDetReq"]["FECAEDetRequest"]["CbtesAsoc"] = CbtesAsoc
+
+if self.l10n_ar_afip_concept != "1":
+    result["FeCAEReq"]["FeDetReq"]["FECAEDetRequest"].update(
+        {
+            "FchServDesde": self.l10n_ar_afip_service_start.strftime("%Y%m%d"),
+            "FchServHasta": self.l10n_ar_afip_service_end.strftime("%Y%m%d"),
+        }
+    )
+    if arca_document_code in ("201", "206", "211"):
+        result["FeCAEReq"]["FeDetReq"]["FECAEDetRequest"]["FchVtoPago"] = (
+            self.invoice_date_due or self.invoice_date
+        ).strftime("%Y%m%d")
+
+        </field>
+        <field name="response_dict">{
+                    "observations": ws_res["FeDetResp"]["FECAEDetResponse"][0]["Observaciones"] if ws_res and "Observaciones" in ws_res["FeDetResp"]["FECAEDetResponse"][0] else False,
+                    "afip_xml_request": ws_res["xml_request"] if ws_res and "xml_request" in ws_res else "",
+                    "afip_xml_response": ws_res["xml_response"] if ws_res and "xml_response" in ws_res else "",
+                    "afip_auth_code": ws_res["FeDetResp"]["FECAEDetResponse"][0]["CAE"] if ws_res and "FeDetResp" in ws_res else False,
+                    "afip_auth_mode": "CAE",
+                    "afip_result": ws_res["FeDetResp"]["FECAEDetResponse"][0]["Resultado"] if ws_res and "FeDetResp" in ws_res else False,
+                    "afip_invoice_number": int(ws_res["FeDetResp"]["FECAEDetResponse"][0]["DocNro"]) if ws_res and "FeDetResp" in ws_res else False,
+                    "afip_auth_code_due": datetime.datetime.strptime(ws_res["FeDetResp"]["FECAEDetResponse"][0]["CAEFchVto"], "%Y%m%d").date() if ws_res and "FeDetResp" in ws_res else False,
+                    "afip_result": ws_res["FeDetResp"]["FECAEDetResponse"][0]["Resultado"] if ws_res and "FeDetResp" in ws_res else False,
+        }</field>
+
+    </record>
+
 
 </odoo>

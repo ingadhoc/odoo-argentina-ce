@@ -77,37 +77,30 @@ class AccountJournal(models.Model):
         self.ensure_one()
         if not self.arcaws:
             raise ArcaError(_("No ARCA WS selected"))
-        connection = self.company_id.arca_get_connection(self.arcaws.code)
-        method = self.arcaws.ws_parameters.get("get_point_of_sale")
-        auth = self.arcaws.ws_parameters.get("auth")
-        raise ArcaError(connection.call_arca_service(method, {}, auth=auth))
+        method_id = self.arcaws.method_ids.filtered(lambda m: m.name == "get_point_of_sale")
+        if method_id:
+            raise ArcaError(method_id.call_arca_method(obj=self))
 
     def get_pyafipws_cuit_document_classes(self):
         """
-        ARCA Description: Método para obtener los puntos de venta habilitados
+        ARCA Description: Método para obtener tipos de documento habilitados
         """
         self.ensure_one()
         if not self.arcaws:
             raise ArcaError(_("No ARCA WS selected"))
-        connection = self.company_id.arca_get_connection(self.arcaws.code)
-        method = self.arcaws.ws_parameters.get("cuit_document_classes")
-        auth = self.arcaws.ws_parameters.get("auth")
-        raise ArcaError(connection.call_arca_service(method, {}, auth=auth))
+        method_id = self.arcaws.method_ids.filtered(lambda m: m.name == "cuit_document_classes")
+        if method_id:
+            raise ArcaError(method_id.call_arca_method(obj=self))
 
     def _get_last_invoice_number(self, l10n_latam_document_type):
         self.ensure_one()
         if not self.arcaws:
             raise ArcaError(_("No ARCA WS selected"))
-        connection = self.company_id.arca_get_connection(self.arcaws.code)
-        last_invoice_info = self.arcaws.ws_parameters.get("last_invoice")
-
-        method = last_invoice_info.get("method")
-        auth = self.arcaws.ws_parameters.get("auth")
-        pos_number = self.l10n_ar_afip_pos_number
-        doc_type_code = l10n_latam_document_type.code
-        params = {
-            last_invoice_info.get("ptovta"): pos_number,
-            last_invoice_info.get("tipocbte"): doc_type_code,
-        }
-        response = connection.call_arca_service(method, params, auth=auth)
-        return response[last_invoice_info.get("cbtenro")]
+        method_id = self.arcaws.method_ids.filtered(lambda m: m.name == "last_invoice")
+        if method_id:
+            response = method_id.call_arca_method(
+                obj=self, extra_values={"l10n_latam_document_type": l10n_latam_document_type.code}
+            )
+            return response
+        else:
+            raise ArcaError(_("No 'last_invoice' method defined for ARCA WS '%s'") % self.arcaws.name)

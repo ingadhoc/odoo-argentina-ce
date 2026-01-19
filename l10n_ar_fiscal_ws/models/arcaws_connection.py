@@ -6,7 +6,6 @@ import logging
 
 from lxml import etree
 from odoo.exceptions import UserError
-from odoo.tools.safe_eval import safe_eval
 from zeep import Client
 from zeep.plugins import HistoryPlugin
 
@@ -63,45 +62,6 @@ class ArcawsConnection(models.Model):
             rec.arca_login_url = self.env["arcaws"].get_arca_url("LoginCms", rec.type)
             rec.arcaws_url = self.env["arcaws"].get_arca_url(rec.arcaws.code, rec.type)
 
-    def _arba_eval_dict(self, dict_definition, **kwargs):
-        ## TODO: Securize me
-        return safe_eval(dict_definition, **kwargs)
-
-    def _arba_get_auth_dict(self, auth_strategy=False):
-        self.ensure_one()
-        if auth_strategy == "plain":
-            return {
-                "cuitRepresentada": self.company_id.partner_id.ensure_vat(),
-                "sign": self.sign,
-                "token": self.token,
-            }
-        elif auth_strategy == "auth_request":
-            return {
-                "authRequest": {
-                    "cuitRepresentada": self.company_id.partner_id.ensure_vat(),
-                    "sign": self.sign,
-                    "token": self.token,
-                }
-            }
-        elif auth_strategy == "auth":
-            return {
-                "Auth": {
-                    "cuitRepresentada": self.company_id.partner_id.ensure_vat(),
-                    "sign": self.sign,
-                    "token": self.token,
-                }
-            }
-        elif auth_strategy == "Auth":
-            return {
-                "Auth": {
-                    "Cuit": self.company_id.partner_id.ensure_vat(),
-                    "Sign": self.sign,
-                    "Token": self.token,
-                }
-            }
-
-        return {}
-
     def _arba_render_data(self, template_name, qcontext):
         return str(self.env["ir.ui.view"]._render_template(template_name, qcontext)).strip()
 
@@ -109,9 +69,6 @@ class ArcawsConnection(models.Model):
         self.ensure_one()
         history = HistoryPlugin()
         _logger.info(f"Calling ARCA service {method_name}")
-        if "auth" in kwargs:
-            data.update(self._arba_get_auth_dict(kwargs["auth"]))
-            del kwargs["auth"]
         try:
             client = Client(self.arcaws_url, plugins=[history])
             response = getattr(client.service, method_name)(**data, **kwargs)
@@ -137,11 +94,17 @@ class ArcawsConnection(models.Model):
             conection_ids.unlink()
             _logger.info("GC'd %s expirated connections", total_connection)
 
-    # def call_arca_xml(self, method_name, xml, **kwargs):
-    #     self.ensure_one()
-    #     _logger.info(f"Calling ARCA service {method_name}")
+    def _arca_post_xml(self, method_name, raw_xml, **kwargs):
+        self.ensure_one()
+        _logger.info(f"Calling ARCA service {method_name}")
 
-    #     client = Client(self.arcaws_url)
-    #     response = getattr(client.service, method_name)(xml)
+        client = Client(self.arcaws_url)
+        endpoint_url = client.service._binding_options["address"]
+        headers = {
+            "Content-Type": "text/xml; charset=utf-8",
+            "SOAPAction": f"{self.arcaws_url}/{method_name}",
+        }
 
-    #     return response
+        response = client.transport.post_xml(address=endpoint_url, envelope=raw_xml, headers=headers)
+
+        return response
