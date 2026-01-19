@@ -16,9 +16,20 @@
     <record id="arcawsfecred" model="arcaws">
         <field name="name">Factura credito electronica</field>
         <field name="code">wsfecred</field>
-        <field name="ws_parameters" eval="{'dummy_method': 'dummy'}"></field>
+        <field name="ws_parameters" eval="{'dummy_method': 'dudummy'}"></field>
         <field name="production_url">https://fwshomo.afip.gov.ar/wsfecred/FECredService?wsdl</field>
         <field name="homologation_url">https://serviciosjava.afip.gob.ar/wsfecred/FECredService?wsdl</field>
     </record>
-
+    <record id="arca_padron_a5_method" model="arcaws.method">
+        <field name="name">dummy</field>
+        <field name="arcaws_id" ref="arca_padron_a5"/>
+        <field name="method_name">dummy</field>
+        <field name="definition_dict">{}</field>
+    </record>
+    <record id="arcawsfecred_method" model="arcaws.method">
+        <field name="name">dummy</field>
+        <field name="arcaws_id" ref="arcawsfecred"/>
+        <field name="method_name">dummy</field>
+        <field name="definition_dict">{}</field>
+    </record>
 </odoo>

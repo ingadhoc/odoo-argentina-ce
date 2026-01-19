@@ -5,7 +5,6 @@
 import base64
 import json
 import logging
-from datetime import datetime
 
 from odoo.exceptions import UserError
 from odoo.tools import float_repr
@@ -207,10 +206,24 @@ class AccountMove(models.Model):
             raise (UserError(r_invoices.afip_message))
         return super(AccountMove, self - r_invoices)._post(soft=soft)
 
+    def _set_local_validation(self):
+        self.ensure_one()
+        msg = "Factura validada solo localmente por estar en ambiente de homologación sin claves de homologación"
+        self.sudo().write(
+            {
+                "afip_auth_mode": "CAE",
+                "afip_auth_code": "68448767638166",
+                "afip_auth_code_due": self.invoice_date,
+                "afip_result": "",
+                "afip_message": msg,
+            }
+        )
+        self.message_post(body=msg)
+
     def do_pyafipws_request_cae(self):
         "Request to AFIP the invoices' Authorization Electronic Code (CAE)"
         a_invoices = r_invoices = self.env["account.move"]
-
+        do_not_raise = len(self) > 1
         for inv in self:
             arcaws = inv.journal_id.arcaws
             if not arcaws:
@@ -220,41 +233,47 @@ class AccountMove(models.Model):
             # that we are on a testing database without homologation
             # certificates
             if not inv.validation_type:
-                msg = (
-                    "Factura validada solo localmente por estar en ambiente de homologación sin claves de homologación"
-                )
-                inv.sudo().write(
-                    {
-                        "afip_auth_mode": "CAE",
-                        "afip_auth_code": "68448767638166",
-                        "afip_auth_code_due": inv.invoice_date,
-                        "afip_result": "",
-                        "afip_message": msg,
-                    }
-                )
-                inv.message_post(body=msg)
+                inv._set_local_validation()
                 a_invoices += inv
                 continue
 
-            # Inicio conexion
-            ws = inv.company_id.arca_get_connection(arcaws.code)
+            # Obtener datos para mapeo
+            msg = False
+            next_invoice_number = int(inv.journal_id._get_last_invoice_number(inv.l10n_latam_document_type_id)) + 1
+            arca_document_code = inv.partner_id.l10n_latam_identification_type_id.l10n_ar_afip_code
+            amounts = inv._l10n_ar_get_amounts()
 
-            # Preparo los datos
-            invoice_info = arcaws.map_invoice_info(inv)
             # Esto no es necesario ahora ya que el numero se obtiene desde el result
-            document_number = inv._get_formatted_sequence(
-                int(invoice_info["FeCAEReq"]["FeDetReq"]["FECAEDetRequest"]["CbteDesde"])
-            )
+            document_number = inv._get_formatted_sequence(next_invoice_number)
             doc_code_prefix = inv.l10n_latam_document_type_id.doc_code_prefix
             if doc_code_prefix and document_number:
                 document_number = document_number.split(" ", 1)[-1]
             inv.l10n_latam_document_number = document_number
-            # method = last_invoice_info.get("method")
-            method = "FECAESolicitar"
-            auth = arcaws.ws_parameters.get("auth")
-
-            response = ws.call_arca_service(method, invoice_info, auth=auth)
-
+            try:
+                method_id = arcaws.method_ids.filtered(lambda m: m.name == "request_invoice_authorization")
+                if method_id:
+                    response = method_id.call_arca_method(
+                        obj=inv,
+                        mode="exec",
+                        extra_values={
+                            "next_invoice_number": next_invoice_number,
+                            "amounts": amounts,
+                            "arca_document_code": arca_document_code,
+                        },
+                    )
+            except Exception as e:
+                msg = e
+            if msg:
+                _logger.error(
+                    _("AFIP Validation Error. %s") % msg
+                    + " XML Request: %s XML Response: %s"
+                    % (
+                        response["afip_xml_request"],
+                        response["afip_xml_response"],
+                    )
+                )
+            if msg and not do_not_raise:
+                raise UserError(_("AFIP Validation Error. %s") % msg)
             # # Request the authorization! (call the AFIP webservice method)
             # vto = None
             # msg = False
@@ -278,35 +297,32 @@ class AccountMove(models.Model):
 
             # msg = "\n".join([ws.Obs or "", ws.ErrMsg or ""])
 
-            ws_res = response["FeDetResp"]["FECAEDetResponse"][0]
-
-            if not ws_res.CAE or ws_res.Resultado != "A":
+            if not response.get("afip_auth_code") or response.get("afip_result") != "A":
                 r_invoices += inv
 
                 vals = {
                     "name": "/",
                     "afip_result": "R",
-                    "afip_message": self.l10n_ar_arca_ws_parse_observations(ws_res["Observaciones"]),
-                    "afip_xml_request": response.xml_request if "xml_request" in response else "",
-                    "afip_xml_response": response.xml_response if "xml_response" in response else "",
+                    "afip_message": self.l10n_ar_arca_ws_parse_observations(response["observations"]),
+                    "afip_xml_request": response["afip_xml_request"],
+                    "afip_xml_response": response["afip_xml_response"],
                 }
                 inv.sudo().write(vals)
                 inv.env.cr.commit()
                 continue
-            if "CAEFchVto" in ws_res:
-                vto = datetime.strptime(ws_res.CAEFchVto, "%Y%m%d").date()
-            elif "FchVencCAE" in ws_res:
-                vto = datetime.strptime(ws_res.FchVencCAE, "%Y%m%d").date()
 
-            _logger.info("CAE solicitado con exito. CAE: %s. Resultado %s" % (ws_res.CAE, ws_res.Resultado))
+            _logger.info(
+                "CAE solicitado con exito. CAE: %s. Resultado %s"
+                % (response["afip_auth_code"], response["afip_result"])
+            )
             vals = {
                 "afip_auth_mode": "CAE",
-                "afip_auth_code": ws_res.CAE,
-                "afip_auth_code_due": vto,
-                "afip_result": ws_res.Resultado,
-                # "afip_message": msg,
-                "afip_xml_request": response.xml_request,
-                "afip_xml_response": response.xml_response,
+                "afip_auth_code": response["afip_auth_code"],
+                "afip_auth_code_due": response["afip_auth_code_due"],
+                "afip_result": response["afip_result"],
+                "afip_message": self.l10n_ar_arca_ws_parse_observations(response["observations"]),
+                "afip_xml_request": response["afip_xml_request"],
+                "afip_xml_response": response["afip_xml_response"],
             }
 
             inv.sudo().write(vals)
@@ -324,101 +340,6 @@ class AccountMove(models.Model):
         # TODO: crear cotizacion?
         self.invoice_currency_rate = 1 / float(afipws_get_currency_rate)
         self.message_post(body=_("AFIP currency rate: %s") % afipws_get_currency_rate)
-
-    def wsfe_map_invoice_info(self):
-        ws_dict = {}
-        next_invoice_number = int(self.journal_id._get_last_invoice_number(self.l10n_latam_document_type_id)) + 1
-        amounts = self._l10n_ar_get_amounts()
-        arca_document_code = self.partner_id.l10n_latam_identification_type_id.l10n_ar_afip_code
-        ws_dict["FeCAEReq"] = {}
-
-        ws_dict["FeCAEReq"]["FeCabReq"] = {
-            "CantReg": 1,
-            "PtoVta": self.journal_id.l10n_ar_afip_pos_number,
-            "CbteTipo": int(self.l10n_latam_document_type_id.code),
-        }
-        ws_dict["FeCAEReq"]["FeDetReq"] = {
-            "FECAEDetRequest": {
-                "Concepto": int(self.l10n_ar_afip_concept),
-                "DocTipo": int(arca_document_code),
-                "DocNro": int(self.partner_id.vat),
-                "CbteDesde": next_invoice_number,
-                "CbteHasta": next_invoice_number,
-                "CbteFch": self.invoice_date.strftime("%Y%m%d"),
-                "ImpTotal": float_repr(self.amount_total, 2),
-                "ImpTotConc": float_repr(amounts["vat_untaxed_base_amount"], 2),
-                "ImpNeto": float_repr(
-                    self.amount_untaxed
-                    if self.l10n_latam_document_type_id.l10n_ar_letter == "C"
-                    else amounts["vat_taxable_amount"],
-                    2,
-                ),
-                "ImpOpEx": float_repr(amounts["vat_exempt_base_amount"], 2),
-                "ImpTrib": float_repr(amounts["not_vat_taxes_amount"], 2),
-                "ImpIVA": float_repr(amounts["vat_amount"], 2),
-                "FchVtoPago": None,
-                "CbtesAsoc": None,
-                "Compradores": None,
-                "Iva": None,
-                "MonId": self.currency_id.l10n_ar_afip_code,
-                "MonCotiz": 1 / self.invoice_currency_rate or 1,
-                "CanMisMonExt": self.l10n_ar_payment_foreign_currency,
-                "CondicionIVAReceptorId": int(self.partner_id.l10n_ar_afip_responsibility_type_id.code),
-            }
-        }
-        if vats := self._get_vat():
-            for vat in vats:
-                AlicIva = []
-                if "BaseImp" in vat and "Importe" in vat:
-                    AlicIva.append(
-                        {
-                            "Id": vat["Id"],
-                            "BaseImp": float_repr(vat["BaseImp"], precision_digits=2),
-                            "Importe": float_repr(vat["Importe"], precision_digits=2),
-                        }
-                    )
-            ws_dict["FeCAEReq"]["FeDetReq"]["FECAEDetRequest"]["Iva"] = {"AlicIva": AlicIva}
-
-        if self.afip_associated_period_from and self.afip_associated_period_to:
-            ws_dict["FeCAEReq"]["FeDetReq"]["FECAEDetRequest"]["PeriodoAsoc"]["FchDesde"] = (
-                self.afip_associated_period_from.strftime("%Y%m%d")
-            )
-            ws_dict["FeCAEReq"]["FeDetReq"]["FECAEDetRequest"]["PeriodoAsoc"]["FchHasta"] = (
-                self.afip_associated_period_to.strftime("%Y%m%d")
-            )
-        elif related_invoice_ids := self.get_related_invoices_data():
-            CbtesAsoc = []
-            for related_invoice in related_invoice_ids:
-                doc_number_parts = self._l10n_ar_get_document_number_parts(
-                    related_invoice.l10n_latam_document_number,
-                    related_invoice.l10n_latam_document_type_id.code,
-                )
-
-                CbtesAsoc.append(
-                    {
-                        "CbteAsoc": {
-                            "Tipo": related_invoice.l10n_latam_document_type_id.code,
-                            "PtoVta": doc_number_parts["point_of_sale"],
-                            "Nro": doc_number_parts["invoice_number"],
-                            "Cuit": self.company_id.vat,
-                            "CbteFch": related_invoice.invoice_date.strftime("%Y%m%d"),
-                        }
-                    }
-                )
-            ws_dict["FeCAEReq"]["FeDetReq"]["FECAEDetRequest"]["CbtesAsoc"] = CbtesAsoc
-
-        if self.l10n_ar_afip_concept != "1":
-            ws_dict["FeCAEReq"]["FeDetReq"]["FECAEDetRequest"].update(
-                {
-                    "FchServDesde": self.l10n_ar_afip_service_start.strftime("%Y%m%d"),
-                    "FchServHasta": self.l10n_ar_afip_service_end.strftime("%Y%m%d"),
-                }
-            )
-            if arca_document_code in ("201", "206", "211"):
-                ws_dict["FeCAEReq"]["FeDetReq"]["FECAEDetRequest"]["FchVtoPago"] = (
-                    self.invoice_date_due or self.invoice_date
-                ).strftime("%Y%m%d")
-        return ws_dict
 
     def l10n_ar_arca_ws_parse_observations(self, observations):
         """
