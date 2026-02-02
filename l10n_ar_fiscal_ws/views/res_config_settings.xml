@@ -8,10 +8,11 @@
             <field name="arch" type="xml">
                 <xpath expr="//block[@id='invoicing_settings']" position="inside">
                     <setting type="header" string="ARCA WS" help="Configure ARCA web services">
+                        <div class="content-group">
                         <button class="btn-link" icon="fa-arrow-right" name="%(l10n_ar_fiscal_ws.act_arcaws_certificate_alias)d" string="List certificates" type="action"/>
                         <button class="btn-link" icon="fa-arrow-right" name="%(l10n_ar_fiscal_ws.act_arcaws_auth)d" string="List conections" type="action"/>
-                        <label for="arcaws_env_type"/>
                         <field class="font-weight-bold" name="arcaws_env_type"/>
+                        </div>
                     </setting>
                 </xpath>
             </field>
