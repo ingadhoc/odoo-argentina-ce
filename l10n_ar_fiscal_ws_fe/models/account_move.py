@@ -249,6 +249,7 @@ class AccountMove(models.Model):
             if doc_code_prefix and document_number:
                 document_number = document_number.split(" ", 1)[-1]
             inv.l10n_latam_document_number = document_number
+            response = {}
             try:
                 method_id = arcaws.method_ids.filtered(lambda m: m.name == "request_invoice_authorization")
                 if method_id:
@@ -268,8 +269,8 @@ class AccountMove(models.Model):
                     _("AFIP Validation Error. %s") % msg
                     + " XML Request: %s XML Response: %s"
                     % (
-                        response["afip_xml_request"],
-                        response["afip_xml_response"],
+                        response.get("afip_xml_request"),
+                        response.get("afip_xml_response"),
                     )
                 )
             if msg and not do_not_raise:
@@ -348,9 +349,10 @@ class AccountMove(models.Model):
         :return: string with formatted observations
         """
         obs_msgs = []
-        for obs in observations["Obs"]:
-            obs_code = obs["Code"]
-            obs_msg = obs["Msg"]
-            if obs_code and obs_msg:
-                obs_msgs.append("(%s) %s" % (obs_code, obs_msg))
+        if observations and "Obs" in observations:
+            for obs in observations["Obs"]:
+                obs_code = obs["Code"]
+                obs_msg = obs["Msg"]
+                if obs_code and obs_msg:
+                    obs_msgs.append("(%s) %s" % (obs_code, obs_msg))
         return "\n".join(obs_msgs)

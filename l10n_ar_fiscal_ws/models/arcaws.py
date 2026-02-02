@@ -98,10 +98,14 @@ class ArcaWsMethod(models.Model):
         ws_query = eval_context.get("result", method_dict)
         res = connection.call_arca_service(self.method_name, ws_query)
         if self.response_dict:
-            eval_context["ws_res"] = res
-            if "result" in eval_context:
-                del eval_context["result"]
-            method_dict = safe_eval.safe_eval(self.response_dict, eval_context)
-            return eval_context.get("result", method_dict)
+            try:
+                eval_context["ws_res"] = res
+                if "result" in eval_context:
+                    del eval_context["result"]
+                method_dict = safe_eval.safe_eval(self.response_dict, eval_context)
+                return eval_context.get("result", method_dict)
+
+            except Exception as e:
+                _logger.error("Error processing ARCA response: %s with result %s", e, res)
 
         return res

@@ -15,7 +15,8 @@ class ResConfigSettings(models.TransientModel):
         ],
         "FCE: Opción de Transmisión",
         help="Este campo sera necesario cuando informes comprobantes del tipo FCE MiPyME",
-        config_parameter="l10n_ar_afipws_fe.fce_transmission",
+        readonly=False,
+        related="company_id.l10n_ar_afip_fce_transmission",
     )
 
     l10n_ar_payment_foreign_currency = fields.Selection(
