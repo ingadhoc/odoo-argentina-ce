@@ -162,7 +162,8 @@ class AccountMove(models.Model):
         for move in self:
             if move.wsfex_id_permiso and len(move.wsfex_id_permiso) != 16:
                 raise ValidationError(
-                    _("El ID de Permiso de Embarque debe tener exactamente 16 caracteres (actualmente tiene %d).") % len(move.wsfex_id_permiso)
+                    _("El ID de Permiso de Embarque debe tener exactamente 16 caracteres (actualmente tiene %d).")
+                    % len(move.wsfex_id_permiso)
                 )
 
     @api.depends("journal_id", "afip_auth_code")
@@ -227,11 +228,13 @@ class AccountMove(models.Model):
 
     def _post(self, soft=True):
         request_cae_invoices = self.filtered(
-            lambda x: x.company_id.country_id.code == "AR"
-            and x.is_invoice()
-            and x.move_type in ["out_invoice", "out_refund"]
-            and x.journal_id.afip_ws
-            and not x.afip_auth_code
+            lambda x: (
+                x.company_id.country_id.code == "AR"
+                and x.is_invoice()
+                and x.move_type in ["out_invoice", "out_refund"]
+                and x.journal_id.afip_ws
+                and not x.afip_auth_code
+            )
         )
         a_invoices, r_invoices = request_cae_invoices.do_pyafipws_request_cae()
         if len(self) == 1 and r_invoices:
@@ -252,8 +255,7 @@ class AccountMove(models.Model):
             # certificates
             if not inv.validation_type:
                 msg = (
-                    "Factura validada solo localmente por estar en ambiente "
-                    "de homologación sin claves de homologación"
+                    "Factura validada solo localmente por estar en ambiente de homologación sin claves de homologación"
                 )
                 inv.sudo().write(
                     {
@@ -360,16 +362,10 @@ class AccountMove(models.Model):
         ws = self.company_id.get_connection(afip_ws).connect()
         afipws_get_currency_rate = self.pyafipws_get_currency_rate(ws)
         if not afipws_get_currency_rate:
-            raise UserError(
-                _("No se pudo obtener la cotización desde AFIP para la moneda %s.")
-                % self.currency_id.name
-            )
+            raise UserError(_("No se pudo obtener la cotización desde AFIP para la moneda %s.") % self.currency_id.name)
         rate = float(afipws_get_currency_rate)
         if not rate:
-            raise UserError(
-                _("La cotización obtenida desde AFIP para la moneda %s es cero.")
-                % self.currency_id.name
-            )
+            raise UserError(_("La cotización obtenida desde AFIP para la moneda %s es cero.") % self.currency_id.name)
         # TODO: crear cotizacion?
         self.invoice_currency_rate = 1 / rate
         self.message_post(body=_("AFIP currency rate: %s") % afipws_get_currency_rate)

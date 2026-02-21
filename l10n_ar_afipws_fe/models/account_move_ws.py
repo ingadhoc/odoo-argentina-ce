@@ -163,8 +163,10 @@ class AccountMove(models.Model):
                 % sum(
                     self.invoice_line_ids.filtered(
                         lambda x: x.tax_ids.filtered(
-                            lambda y: y.tax_group_id.l10n_ar_tribute_afip_code
-                            == tax.tax_line_id.tax_group_id.l10n_ar_tribute_afip_code
+                            lambda y: (
+                                y.tax_group_id.l10n_ar_tribute_afip_code
+                                == tax.tax_line_id.tax_group_id.l10n_ar_tribute_afip_code
+                            )
                         )
                     ).mapped("price_subtotal")
                 ),
@@ -261,10 +263,7 @@ class AccountMove(models.Model):
             )
 
         if self.wsfex_id_permiso:
-            dst_merc = (
-                self.wsfex_dst_merc.l10n_ar_afip_code
-                or self.commercial_partner_id.country_id.l10n_ar_afip_code
-            )
+            dst_merc = self.wsfex_dst_merc.l10n_ar_afip_code or self.commercial_partner_id.country_id.l10n_ar_afip_code
             ws.AgregarPermiso(self.wsfex_id_permiso, dst_merc)
 
         for line in invoice_info["lines"]:
@@ -552,7 +551,7 @@ class AccountMove(models.Model):
 
     def invoice_map_info_lines(self):
         lines = []
-        for line in self.invoice_line_ids.filtered(lambda x: x.display_type == 'product'):
+        for line in self.invoice_line_ids.filtered(lambda x: x.display_type == "product"):
             line_temp = {}
             line_temp["codigo"] = line.product_id.default_code
             # unidad de referencia del producto si se comercializa

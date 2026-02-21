@@ -151,8 +151,7 @@ class ResCompany(models.Model):
         """
         self.ensure_one()
         _logger.info(
-            "Creating connection for company %s, environment type %s and ws "
-            "%s" % (self.name, environment_type, afip_ws)
+            "Creating connection for company %s, environment type %s and ws %s" % (self.name, environment_type, afip_ws)
         )
         login_url = self.env["afipws.connection"].get_afip_login_url(environment_type)
         pkey, cert = self.get_key_and_certificate(environment_type)
