@@ -3,6 +3,13 @@
 
     <template id="report_invoice_document" inherit_id="l10n_ar.report_invoice_document">
 
+        <xpath expr="//span[@t-field='o.partner_id.l10n_ar_afip_responsibility_type_id']" position="after">
+            <t t-if="o.wsfex_id_permiso">
+                <br/>
+                <strong>Shipping Permit: </strong><span t-field="o.wsfex_id_permiso"/>
+            </t>
+        </xpath>
+
         <div name="comment" position="before">
             <div t-if="o.journal_id.afip_ws == 'wsbfe'" >
                 THE PURCHASER ASSUMES THE COMMITMENT, IN THE NATURE OF AN AFFECTED DECLARATION, OF NOT EXPORTING THE PROPERTY DURING THE TERM OF THREE 3 YEARS FROM THE ACQUISITION<br/>

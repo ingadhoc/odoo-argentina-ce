@@ -234,7 +234,7 @@ class AccountMove(models.Model):
                 self.company_id.vat,
                 invoice_info["CbteAsoc"].invoice_date.strftime("%Y%m%d"),
             )
-        for line in invoice_info["line"]:
+        for line in invoice_info["lines"]:
             ws.AgregarItem(
                 line["codigo"],
                 line["sec"],
@@ -260,14 +260,21 @@ class AccountMove(models.Model):
                 self.company_id.vat,
             )
 
-        for line in invoice_info["line"]:
+        if self.wsfex_id_permiso:
+            dst_merc = (
+                self.wsfex_dst_merc.l10n_ar_afip_code
+                or self.commercial_partner_id.country_id.l10n_ar_afip_code
+            )
+            ws.AgregarPermiso(self.wsfex_id_permiso, dst_merc)
+
+        for line in invoice_info["lines"]:
             ws.AgregarItem(
                 line["codigo"],
                 line["ds"],
                 line["qty"],
                 line["umed"],
-                line["precio"],
-                "%.2f" % line["importe"],
+                str("%.2f" % line["precio"]),
+                str("%.2f" % line["importe"]),
                 line["bonif"],
             )
 
@@ -335,7 +342,7 @@ class AccountMove(models.Model):
         invoice_info["pos_number"] = journal.l10n_ar_afip_pos_number
         invoice_info["doc_afip_code"] = self.l10n_latam_document_type_id.code
         invoice_info["ws_next_invoice_number"] = (
-            int(self.journal_id.get_pyafipws_last_invoice(self.l10n_latam_document_type_id)) + 1
+            int(self.journal_id.get_pyafipws_last_invoice(self.l10n_latam_document_type_id) or 0) + 1
         )
 
         invoice_info["partner_id_code"] = invoice_info[
@@ -455,6 +462,9 @@ class AccountMove(models.Model):
             raise UserError(
                 _('For WS "%s" country afip code is mandatoryCountry: %s') % (self.journal_id.afip_ws, country.name)
             )
+
+        invoice_info["fecha_cbte"] = invoice_info["fecha_cbte"].strftime("%Y%m%d")
+
         if invoice_info["afip_associated_period_from"] and invoice_info["afip_associated_period_to"]:
             invoice_info["afip_associated_period_from"] = invoice_info["afip_associated_period_from"].strftime("%Y%m%d")
             invoice_info["afip_associated_period_to"] = invoice_info["afip_associated_period_to"].strftime("%Y%m%d")
@@ -466,65 +476,63 @@ class AccountMove(models.Model):
             invoice_info["incoterms_ds"] = incoterms_ds and incoterms_ds[:20]
         else:
             invoice_info["incoterms"] = invoice_info["incoterms_ds"] = None
-            # por lo que verificamos, se pide permiso existente solo
-            # si es tipo expo 1 y es factura (codigo 19), para todo el
-            # resto pasamos cadena vacia
-            if int(invoice_info["doc_afip_code"]) == 19 and invoice_info["tipo_expo"] == 1:
-                # TODO investigar si hay que pasar si ("S")
-                invoice_info["permiso_existente"] = "N"
+
+        # se pide permiso existente solo si es tipo expo 1 y es factura (codigo 19),
+        # para todo el resto pasamos cadena vacia
+        if int(invoice_info["doc_afip_code"]) == 19 and invoice_info["tipo_expo"] == 1:
+            invoice_info["permiso_existente"] = "S" if self.wsfex_id_permiso else "N"
+        else:
+            invoice_info["permiso_existente"] = ""
+
+        invoice_info["obs_generales"] = self.narration
+
+        if self.invoice_payment_term_id:
+            invoice_info["forma_pago"] = self.invoice_payment_term_id.name
+            invoice_info["obs_comerciales"] = self.invoice_payment_term_id.name
+        else:
+            invoice_info["forma_pago"] = invoice_info["obs_comerciales"] = None
+
+        # 1671 Report fecha_pago with format YYYMMDD
+        # 1672 Is required only doc_type 19. concept (2,4)
+        # 1673 If doc_type != 19 should not be reported.
+        # 1674 doc_type 19 concept (2,4). date should be >= invoice date
+        invoice_info["fecha_pago"] = (
+            datetime.strftime(self.invoice_date_due, "%Y%m%d")
+            if int(invoice_info["doc_afip_code"]) == 19
+            and invoice_info["tipo_expo"] in [2, 4]
+            and self.invoice_date_due
+            else ""
+        )
+
+        # invoice language: spanish / español
+        invoice_info["idioma_cbte"] = 1
+
+        # customer data (foreign trade):
+        invoice_info["nombre_cliente"] = self.commercial_partner_id.name
+        invoice_info["domicilio_cliente"] = " - ".join(
+            [
+                self.commercial_partner_id.name or "",
+                self.commercial_partner_id.street or "",
+                self.commercial_partner_id.street2 or "",
+                self.commercial_partner_id.zip or "",
+                self.commercial_partner_id.city or "",
+            ]
+        )
+        invoice_info["pais_dst_cmp"] = self.commercial_partner_id.country_id.l10n_ar_afip_code
+
+        # se debe informar cuit pais o id_impositivo
+        if invoice_info["nro_doc"]:
+            invoice_info["id_impositivo"] = invoice_info["nro_doc"]
+            invoice_info["cuit_pais_cliente"] = None
+        else:
+            invoice_info["id_impositivo"] = None
+            if self.commercial_partner_id.is_company:
+                invoice_info["cuit_pais_cliente"] = self.commercial_partner_id.country_id.cuit_juridica
             else:
-                invoice_info["permiso_existente"] = ""
-            invoice_info["obs_generales"] = self.narration
+                invoice_info["cuit_pais_cliente"] = self.commercial_partner_id.country_id.cuit_fisica
+            if not invoice_info["cuit_pais_cliente"]:
+                raise UserError(_("No vat defined for the partner and also no CUIT set on country"))
 
-            if self.invoice_payment_term_id:
-                invoice_info["forma_pago"] = self.invoice_payment_term_id.name
-                invoice_info["obs_comerciales"] = self.invoice_payment_term_id.name
-            else:
-                invoice_info["forma_pago"] = invoice_info["obs_comerciales"] = None
-
-            # 1671 Report fecha_pago with format YYYMMDD
-            # 1672 Is required only doc_type 19. concept (2,4)
-            # 1673 If doc_type != 19 should not be reported.
-            # 1674 doc_type 19 concept (2,4). date should be >= invoice
-            # date
-            invoice_info["fecha_pago"] = (
-                datetime.strftime(self.invoice_date_due, "%Y%m%d")
-                if int(invoice_info["doc_afip_code"]) == 19
-                and invoice_info["tipo_expo"] in [2, 4]
-                and self.invoice_date_due
-                else ""
-            )
-
-            # invoice language: spanish / español
-            invoice_info["idioma_cbte"] = 1
-
-            # TODO tal vez podemos unificar este criterio con el del
-            # citi que pide el cuit al partner
-            # customer data (foreign trade):
-            invoice_info["nombre_cliente"] = self.commercial_partner.name
-            # se debe informar cuit pais o id_impositivo
-            if invoice_info["nro_doc"]:
-                invoice_info["id_impositivo"] = invoice_info["nro_doc"]
-                invoice_info["cuit_pais_cliente"] = None
-            elif invoice_info["country"].code != "AR" and invoice_info["nro_doc"]:
-                invoice_info["id_impositivo"] = None
-                if self.commercial_partner.is_company:
-                    invoice_info["cuit_pais_cliente"] = invoice_info["country"].cuit_juridica
-                else:
-                    invoice_info["cuit_pais_cliente"] = invoice_info["country"].cuit_fisica
-                if not invoice_info["cuit_pais_cliente"]:
-                    raise UserError(_("No vat defined for the partner and also no CUIT " "set on country"))
-
-                invoice_info["domicilio_cliente"] = " - ".join(
-                    [
-                        self.commercial_partner.name or "",
-                        self.commercial_partner.street or "",
-                        self.commercial_partner.street2 or "",
-                        self.commercial_partner.zip or "",
-                        self.commercial_partner.city or "",
-                    ]
-                )
-                invoice_info["pais_dst_cmp"] = self.commercial_partner.country_id.l10n_ar_afip_code
         invoice_info["lines"] = self.invoice_map_info_lines()
 
         return invoice_info
@@ -544,7 +552,7 @@ class AccountMove(models.Model):
 
     def invoice_map_info_lines(self):
         lines = []
-        for line in self.invoice_line_ids.filtered(lambda x: not x.display_type):
+        for line in self.invoice_line_ids.filtered(lambda x: x.display_type == 'product'):
             line_temp = {}
             line_temp["codigo"] = line.product_id.default_code
             # unidad de referencia del producto si se comercializa
@@ -565,8 +573,10 @@ class AccountMove(models.Model):
             line_temp["bonif"] = (
                 line.discount and str("%.2f" % (line_temp["precio"] * line_temp["qty"] - line_temp["importe"])) or None
             )
-            line_temp["iva_id"] = line.vat_tax_id.tax_group_id.l10n_ar_vat_afip_code
-            vat_taxes_amounts = line.vat_tax_id.compute_all(
+            vat_tax = line.tax_ids.filtered(lambda x: x.tax_group_id.l10n_ar_vat_afip_code)[:1]
+            line_temp["iva_id"] = vat_tax.tax_group_id.l10n_ar_vat_afip_code
+            line_temp["sec"] = None
+            vat_taxes_amounts = vat_tax.compute_all(
                 line.price_unit,
                 self.currency_id,
                 line.quantity,
@@ -576,7 +586,7 @@ class AccountMove(models.Model):
             line_temp["imp_iva"] = sum([x["amount"] for x in vat_taxes_amounts["taxes"]])
             lines.append(line_temp)
 
-            return lines
+        return lines
 
     # def pyafipws_get_currency_rate(self, ws):
     #     self.ensure_one()
@@ -589,4 +599,8 @@ class AccountMove(models.Model):
     #         return _("AFIP WS %s not implemented") % afip_ws
 
     def pyafipws_get_currency_rate(self, ws):
-        return ws.ParamGetCotizacion(self.currency_id.l10n_ar_afip_code)
+        moneda_id = self.currency_id.l10n_ar_afip_code
+        afip_ws = self.journal_id.afip_ws
+        if afip_ws == "wsfex":
+            return ws.GetParamCtz(moneda_id)
+        return ws.ParamGetCotizacion(moneda_id)
