@@ -261,10 +261,7 @@ class AccountMove(models.Model):
             )
 
         if self.wsfex_id_permiso:
-            dst_merc = (
-                self.wsfex_dst_merc.l10n_ar_afip_code
-                or self.commercial_partner_id.country_id.l10n_ar_afip_code
-            )
+            dst_merc = self.wsfex_dst_merc.l10n_ar_afip_code or self.commercial_partner_id.country_id.l10n_ar_afip_code
             ws.AgregarPermiso(self.wsfex_id_permiso, dst_merc)
 
         for line in invoice_info["lines"]:
@@ -530,7 +527,7 @@ class AccountMove(models.Model):
         else:
             invoice_info["cuit_pais_cliente"] = self.commercial_partner_id.country_id.l10n_ar_natural_vat
         if not invoice_info["cuit_pais_cliente"]:
-                raise UserError(_("No vat defined for the partner and also no CUIT set on country"))
+            raise UserError(_("No vat defined for the partner and also no CUIT set on country"))
 
         invoice_info["lines"] = self.invoice_map_info_lines()
 
@@ -551,7 +548,7 @@ class AccountMove(models.Model):
 
     def invoice_map_info_lines(self):
         lines = []
-        for line in self.invoice_line_ids.filtered(lambda x: x.display_type == 'product'):
+        for line in self.invoice_line_ids.filtered(lambda x: x.display_type == "product"):
             line_temp = {}
             line_temp["codigo"] = line.product_id.default_code
             # unidad de referencia del producto si se comercializa
