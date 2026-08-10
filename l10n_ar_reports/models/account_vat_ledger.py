@@ -113,7 +113,7 @@ class AccountVatLedger(models.Model):
     sequence = fields.Integer(
         default=0,
         required=True,
-        help="Se deberá indicar si la presentación es Original (00) o " "Rectificativa y su orden",
+        help="Se deberá indicar si la presentación es Original (00) o Rectificativa y su orden",
     )
 
     @api.depends("journal_ids", "date_from", "date_to")

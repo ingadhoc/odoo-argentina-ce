@@ -2,6 +2,27 @@
 <odoo>
 
     <template id="report_invoice_document" inherit_id="l10n_ar.report_invoice_document">
+        <xpath expr="//span[@t-out='o.partner_id.l10n_ar_formatted_vat if o.partner_id.l10n_ar_vat else o.partner_id.vat']" position="after">
+            <t t-if="o.partner_id.country_id.code != 'AR'">
+                <br/>
+                <strong>Currency: </strong><span t-out="'%s - %s' % (o.currency_id.name, o.currency_id.currency_unit_label)"/>
+                <br/>
+                <strong>Cuit Pais destino: </strong>
+                <t t-if="o.commercial_partner_id.is_company">
+                    <span t-out="o.commercial_partner_id.country_id.l10n_ar_legal_entity_vat"/> (persona juridica)
+                </t>
+                <t t-else="">
+                    <span t-out="o.commercial_partner_id.country_id.l10n_ar_natural_vat"/> (persona fisica)
+                </t>
+            </t>
+        </xpath>
+
+        <xpath expr="//span[@t-field='o.partner_id.l10n_ar_afip_responsibility_type_id']" position="after">
+            <t t-if="o.wsfex_id_permiso">
+                <br/>
+                <strong>Shipping Permit: </strong><span t-field="o.wsfex_id_permiso"/>
+            </t>
+        </xpath>
 
         <div name="comment" position="before">
             <div t-if="o.journal_id.afip_ws == 'wsbfe'" >
