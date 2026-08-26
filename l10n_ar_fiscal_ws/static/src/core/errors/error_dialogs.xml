@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="l10n_ar_fiscal_ws.ArcaServiceErrorDialog">
+        <Dialog title.translate="ARCA" size="'xl'" contentClass="'o_error_dialog'">
+            <div role="alert">
+                <pre t-if="props.data.message" t-esc="props.data.message"></pre>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary o-default-button" t-on-click="props.close">Close</button>
+            </t>
+        </Dialog>
+
+    </t>
+
+</templates>

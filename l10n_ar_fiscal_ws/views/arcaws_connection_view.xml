@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_arcaws_auth_form" model="ir.ui.view">
+        <field name="name">arcaws.auth.form</field>
+        <field name="model">arcaws.connection</field>
+        <field name="arch" type="xml">
+            <form string="ARCA Connector">
+                <sheet string="ARCA Servers">
+                    <group>
+                        <field name="arcaws"/>
+                        <field name="type"/>
+                        <field name="uniqueid"/>
+                        <field name="generationtime"/>
+                        <field name="expirationtime"/>
+                        <field name="sign"/>
+                        <field name="token"/>
+                        <field name="arca_login_url"/>
+                        <field name="arcaws_url"/>
+                        <field name="company_id"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_arcaws_auth_tree" model="ir.ui.view">
+        <field name="name">arcaws.auth.list</field>
+        <field name="model">arcaws.connection</field>
+        <field name="arch" type="xml">
+            <list string="ARCA Connector" create="false" edit="false">
+                <field name="arcaws"/>
+                <field name="type"/>
+                <field name="uniqueid"/>
+                <field name="generationtime"/>
+                <field name="expirationtime"/>
+                <field name="company_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="act_arcaws_auth">
+        <field name="name">ARCA Connections</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">arcaws.connection</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem name="Connections" action="act_arcaws_auth" id="menu_action_arcaws_auth" parent="l10n_ar.menu_afip_config"/>
+
+</odoo>

@@ -1,0 +1,15 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_arcaws_connection_manager,arcaws.connection.manager,model_arcaws_connection,base.group_user,1,1,1,1
+access_arcaws_connection_user,arcaws.connection.user,model_arcaws_connection,,1,0,0,0
+access_arcaws_certificate_alias_manager,arcaws.certificate.alias.manager,model_arcaws_certificate_alias,base.group_system,1,1,1,1
+access_arcaws_certificate_alias_user,arcaws.certificate.alias.user,model_arcaws_certificate_alias,base.group_user,1,0,0,0
+access_arcaws_certificate_manager,arcaws.certificate.manager,model_arcaws_certificate,base.group_system,1,1,1,1
+access_arcaws_certificate_user,arcaws.certificate.user,model_arcaws_certificate,base.group_user,1,0,0,0
+access_a5_wizard,res.partner.update.from.padron.wizard,model_res_partner_update_from_padron_wizard,base.group_user,1,1,1,1
+access_arcaws_upload_certificate_wizard,arcaws.upload_certificate.wizard,model_arcaws_upload_certificate_wizard,base.group_system,1,1,1,1
+access_a5_field,res.partner.update.from.padron.field,model_res_partner_update_from_padron_field,base.group_user,1,1,1,1
+access_res_partner_update_from_padron_field,res.partner.update.from.padron.field,model_res_partner_update_from_padron_field,base.group_user,1,0,0,0
+access_arcaws_manager,arcaws.manager,model_arcaws,base.group_system,1,1,1,1
+access_arcaws_user,arcaws.user,model_arcaws,base.group_user,1,0,0,0
+access_arcaws_method_manager,arcaws.method.manager,model_arcaws_method,base.group_system,1,1,1,1
+access_arcaws_method_user,arcaws.method.user,model_arcaws_method,base.group_user,1,0,0,0

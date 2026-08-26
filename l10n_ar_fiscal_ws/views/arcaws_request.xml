@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <template id="arca_login_ticket_request" name="login Ticket Request">&lt;?xml version = "1.0" encoding = "utf-8"?&gt;
+        <loginTicketRequest version="1.0">
+            <header>
+                <uniqueId><t t-esc="unique_id"/></uniqueId>
+                <generationTime><t t-esc="generation_time.strftime('%Y-%m-%dT%H:%M:%S')"/></generationTime>
+                <expirationTime><t t-esc="expiration_time.strftime('%Y-%m-%dT%H:%M:%S')"/></expirationTime>
+            </header>
+            <service><t t-esc="service"/></service>
+        </loginTicketRequest>
+    </template>
+</odoo>
