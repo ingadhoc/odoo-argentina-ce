@@ -5,7 +5,6 @@
 import base64
 import json
 import logging
-import sys
 import traceback
 from datetime import datetime
 
@@ -14,8 +13,6 @@ from odoo.exceptions import UserError
 from odoo.tools import float_repr
 
 from ..afip_utils import get_invoice_number_from_response
-
-base64.encodestring = base64.encodebytes
 
 _logger = logging.getLogger(__name__)
 
@@ -191,7 +188,7 @@ class AccountMove(models.Model):
                         rec.commercial_partner_id.l10n_latam_identification_type_id.l10n_ar_afip_code
                     )
                     qr_dict["nroDocRec"] = int(rec.commercial_partner_id.vat.replace("-", "").replace(".", ""))
-                qr_data = base64.encodestring(json.dumps(qr_dict, indent=None).encode("ascii")).decode("ascii")
+                qr_data = base64.encodebytes(json.dumps(qr_dict, indent=None).encode("ascii")).decode("ascii")
                 qr_data = str(qr_data).replace("\n", "")
                 rec.afip_qr_code = "https://www.afip.gob.ar/fe/qr/?p=%s" % qr_data
             else:
@@ -239,6 +236,7 @@ class AccountMove(models.Model):
                     "Factura validada solo localmente por estar en ambiente "
                     "de homologación sin claves de homologación"
                 )
+                # sudo: local dummy CAE when homologation certs are missing.
                 inv.sudo().write(
                     {
                         "afip_auth_mode": "CAE",
@@ -278,14 +276,10 @@ class AccountMove(models.Model):
                 # Pido autorizacion
                 inv.pyafipws_request_autorization(ws, afip_ws)
             except Exception as e:
-                msg = e
-            except Exception:
-                if ws.Excepcion:
-                    # get the exception already parsed by the helper
+                if getattr(ws, "Excepcion", None):
                     msg = ws.Excepcion
                 else:
-                    # avoid encoding problem when raising error
-                    msg = traceback.format_exception_only(sys.exc_type, sys.exc_value)[0]
+                    msg = traceback.format_exception_only(type(e), e)[0]
             if msg:
                 _logger.error(
                     _("AFIP Validation Error. %s") % msg
@@ -303,7 +297,10 @@ class AccountMove(models.Model):
                     "afip_xml_request": ws.XmlRequest or "",
                     "afip_xml_response": ws.XmlResponse or "",
                 }
+                # sudo: persist AFIP rejection XML even if the user cannot write
+                # technical fields; the invoice stays draft.
                 inv.sudo().write(vals)
+                # Commit so a later rollback cannot drop the AFIP response.
                 inv._cr.commit()
                 continue
 
@@ -323,10 +320,9 @@ class AccountMove(models.Model):
                 "afip_xml_response": ws.XmlResponse,
             }
 
+            # sudo: store CAE returned by AFIP; this cannot be rolled back.
             inv.sudo().write(vals)
             inv._cr.commit()
-            # si obtuvimos el cae hacemos el commit porque estoya no se puede
-            # volver atras
             a_invoices += inv
         return (a_invoices, r_invoices)
 
