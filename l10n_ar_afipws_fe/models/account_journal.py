@@ -15,6 +15,7 @@ class AccountJournal(models.Model):
 
     afip_ws = fields.Selection(selection="_get_afip_ws", compute="_compute_afip_ws", string="AFIP WS")
 
+    @api.model
     def _get_afip_ws(self):
         return [
             ("wsfe", _("Domestic market -without detail- RG2485 (WSFEv1)")),

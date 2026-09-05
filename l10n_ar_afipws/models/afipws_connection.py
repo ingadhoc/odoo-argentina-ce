@@ -22,6 +22,7 @@ class AfipwsConnection(models.Model):
         required=True,
         index=True,
         auto_join=True,
+        ondelete="restrict",
     )
     uniqueid = fields.Char(
         "Unique ID",
@@ -151,10 +152,10 @@ class AfipwsConnection(models.Model):
                 msg = _("It seems like AFIP service is not available.\nPlease try again later or try manually")
                 raise RedirectWarning(msg, action.id, _("Go and find data manually"))
             raise UserError(
-                "There was a connection problem to AFIP. Contact your Odoo Provider. Error\n\n%s" % repr(error)
+                _("There was a connection problem to AFIP. Contact your Odoo Provider. Error\n\n%s") % repr(error)
             )
 
-        cuit = self.company_id.partner_id.ensure_vat()
+        cuit = self._get_afip_ws_cuit()
         ws.Cuit = cuit
         ws.Token = self.token
         ws.Sign = self.sign
@@ -164,6 +165,36 @@ class AfipwsConnection(models.Model):
 
         _logger.info('Connection getted with url "%s", cuit "%s"' % (wsdl, ws.Cuit))
         return ws
+
+    def _get_afip_ws_cuit(self):
+        """CUIT sent in WSFE Auth must match the certificate used for WSAA.
+
+        Demo companies keep a dummy partner VAT (e.g. 20222222223) even after a
+        real production certificate is loaded on the alias.
+        """
+        self.ensure_one()
+        alias = self.env["afipws.certificate_alias"].search(
+            [
+                ("company_id", "=", self.company_id.id),
+                ("type", "=", self.type),
+                ("state", "=", "confirmed"),
+            ],
+            limit=1,
+        )
+        raw_cuit = ""
+        if alias:
+            raw_cuit = alias.cuit or alias.company_cuit or ""
+        cuit = "".join(ch for ch in raw_cuit if ch.isdigit())
+        if not cuit:
+            cuit = self.company_id.partner_id.ensure_vat()
+        partner_cuit = self.company_id.partner_id.l10n_ar_vat or ""
+        if partner_cuit and cuit and partner_cuit != cuit:
+            _logger.warning(
+                "Using certificate CUIT %s for AFIP WS (company partner VAT is %s)",
+                cuit,
+                partner_cuit,
+            )
+        return cuit
 
     @api.model
     def _get_ws(self, afip_ws):

@@ -1,11 +1,10 @@
 pyOpenSSL
-M2Crypto
+cryptography
 httplib2>=0.7
-pysimplesoap~=1.8.22
-# fpdf>=1.7.2
-# dbf>=0.88.019
-# Pillow>=2.0.0
-# git+https://github.com/OCA/openupgradelib/@master
-# git+https://github.com/reingart/pyafipws@py3k
-# git+https://github.com/ingadhoc/pyafipws@py3k
-git+https://github.com/filoquin/pyafipws.git@py3k
+# Python 3.12 (Ubuntu 24.04 / Odoo 19): use Adhoc pyafipws odoo18 branch
+# (cryptography + pysimplesoap py311). Do not pin M2Crypto by default.
+#
+# Fallback if WSAA/WSFE cannot authenticate:
+#   git+https://github.com/filoquin/pyafipws.git@py3k
+# that pin may need M2Crypto (apt: swig libssl-dev) — keep the traceback.
+git+https://github.com/ingadhoc/pyafipws.git@odoo18
