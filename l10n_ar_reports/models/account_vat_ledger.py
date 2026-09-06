@@ -20,7 +20,6 @@ class AccountVatLedger(models.Model):
         string="Company",
         required=True,
         readonly=True,
-        states={"draft": [("readonly", False)]},
         default=lambda self: self.env["res.company"]._company_default_get("account.vat.ledger"),
     )
     type = fields.Selection([("sale", "Sale"), ("purchase", "Purchase")], required=True)
@@ -28,13 +27,11 @@ class AccountVatLedger(models.Model):
         string="Start Date",
         required=True,
         readonly=True,
-        states={"draft": [("readonly", False)]},
     )
     date_to = fields.Date(
         string="End Date",
         required=True,
         readonly=True,
-        states={"draft": [("readonly", False)]},
     )
     journal_ids = fields.Many2many(
         "account.journal",
@@ -44,20 +41,16 @@ class AccountVatLedger(models.Model):
         string="Journals",
         required=True,
         readonly=True,
-        states={"draft": [("readonly", False)]},
     )
     first_page = fields.Integer(
         required=True,
         readonly=True,
-        states={"draft": [("readonly", False)]},
     )
     last_page = fields.Integer(
         readonly=True,
-        states={"draft": [("readonly", False)]},
     )
     presented_ledger = fields.Binary(
         readonly=True,
-        states={"draft": [("readonly", False)]},
     )
     presented_ledger_name = fields.Char()
     state = fields.Selection(
@@ -202,7 +195,7 @@ class AccountVatLedger(models.Model):
                 self.date_to,
                 # self.period_id.name
             )
-            self.aliquots_file = base64.encodestring(self.REGINFO_CV_ALICUOTAS.encode("ISO-8859-1"))
+            self.aliquots_file = base64.encodebytes(self.REGINFO_CV_ALICUOTAS.encode("ISO-8859-1"))
         else:
             self.aliquots_file = False
             self.aliquots_filename = False
@@ -212,7 +205,7 @@ class AccountVatLedger(models.Model):
                 self.date_to,
                 # self.period_id.name
             )
-            self.import_aliquots_file = base64.encodestring(self.REGINFO_CV_COMPRAS_IMPORTACIONES.encode("ISO-8859-1"))
+            self.import_aliquots_file = base64.encodebytes(self.REGINFO_CV_COMPRAS_IMPORTACIONES.encode("ISO-8859-1"))
         else:
             self.import_aliquots_file = False
             self.import_aliquots_filename = False
@@ -222,7 +215,7 @@ class AccountVatLedger(models.Model):
                 self.date_to,
                 # self.period_id.name
             )
-            self.vouchers_file = base64.encodestring(self.REGINFO_CV_CBTE.encode("ISO-8859-1"))
+            self.vouchers_file = base64.encodebytes(self.REGINFO_CV_CBTE.encode("ISO-8859-1"))
         else:
             self.vouchers_file = False
             self.vouchers_filename = False
