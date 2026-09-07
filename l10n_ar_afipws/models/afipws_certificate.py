@@ -69,7 +69,7 @@ class AfipwsCertificate(models.Model):
         for rec in self:
             rec.request_filename = "request.csr"
             if rec.csr:
-                rec.request_file = base64.encodebytes(self.csr.encode("utf-8"))
+                rec.request_file = base64.encodebytes(rec.csr.encode("utf-8"))
             else:
                 rec.request_file = False
 
@@ -118,15 +118,15 @@ class AfipwsCertificate(models.Model):
             try:
                 certificate = crypto.load_certificate(crypto.FILETYPE_PEM, self.crt.encode("ascii"))
             except Exception as e:
-                if "Expecting: CERTIFICATE" in e[0]:
+                err = str(e)
+                if "Expecting: CERTIFICATE" in err:
                     raise UserError(
                         _(
                             "Wrong Certificate file format.\nBe sure you have "
                             "BEGIN CERTIFICATE string in your first line."
                         )
                     )
-                else:
-                    raise UserError(_("Unknown error.\nX509 return this message:\n %s") % (e[0]))
+                raise UserError(_("Unknown error.\nX509 return this message:\n %s") % err)
         else:
             certificate = None
         return certificate

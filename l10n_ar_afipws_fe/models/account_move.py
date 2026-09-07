@@ -5,7 +5,7 @@
 import base64
 import json
 import logging
-import sys
+import re
 import traceback
 from datetime import datetime
 
@@ -14,8 +14,6 @@ from odoo.exceptions import UserError
 from odoo.tools import float_repr
 
 from ..afip_utils import get_invoice_number_from_response
-
-base64.encodestring = base64.encodebytes
 
 _logger = logging.getLogger(__name__)
 
@@ -165,49 +163,180 @@ class AccountMove(models.Model):
             else:
                 rec.validation_type = False
 
-    @api.depends("afip_auth_code")
+    @api.depends(
+        "afip_auth_code",
+        "afip_auth_mode",
+        "l10n_latam_document_number",
+        "l10n_latam_document_type_id",
+    )
     def _compute_qr_code(self):
         for rec in self:
-            if rec.afip_auth_mode in ["CAE", "CAEA"] and rec.afip_auth_code:
-                number_parts = self._l10n_ar_get_document_number_parts(
-                    rec.l10n_latam_document_number, rec.l10n_latam_document_type_id.code
-                )
+            rec.afip_qr_code = False
+            if rec.afip_auth_mode not in ("CAE", "CAEA") or not rec.afip_auth_code:
+                continue
+            doc_number = rec.l10n_latam_document_number
+            doc_type_code = rec.l10n_latam_document_type_id.code
+            if not doc_number or not doc_type_code or "-" not in str(doc_number):
+                continue
+            number_parts = rec._l10n_ar_get_document_number_parts(doc_number, doc_type_code)
+            rate = rec.invoice_currency_rate or 1.0
+            qr_dict = {
+                "ver": 1,
+                "fecha": str(rec.invoice_date),
+                "cuit": int(rec.company_id.partner_id.l10n_ar_vat or 0),
+                "ptoVta": number_parts["point_of_sale"],
+                "tipoCmp": int(doc_type_code),
+                "nroCmp": number_parts["invoice_number"],
+                "importe": float(float_repr(rec.amount_total, 2)),
+                "moneda": rec.currency_id.l10n_ar_afip_code,
+                "ctz": float(float_repr(1 / rate if rate else 1.0, 2)),
+                "tipoCodAut": "E" if rec.afip_auth_mode == "CAE" else "A",
+                "codAut": int(rec.afip_auth_code),
+            }
+            tipo_doc, nro_doc = rec._pyafipws_get_receptor_doc()
+            qr_dict["tipoDocRec"] = int(tipo_doc)
+            qr_dict["nroDocRec"] = int(nro_doc or 0)
+            qr_data = base64.encodebytes(json.dumps(qr_dict, indent=None).encode("ascii")).decode("ascii")
+            qr_data = str(qr_data).replace("\n", "")
+            rec.afip_qr_code = "https://www.afip.gob.ar/fe/qr/?p=%s" % qr_data
 
-                qr_dict = {
-                    "ver": 1,
-                    "fecha": str(rec.invoice_date),
-                    "cuit": int(rec.company_id.partner_id.l10n_ar_vat),
-                    "ptoVta": number_parts["point_of_sale"],
-                    "tipoCmp": int(rec.l10n_latam_document_type_id.code),
-                    "nroCmp": number_parts["invoice_number"],
-                    "importe": float(float_repr(rec.amount_total, 2)),
-                    "moneda": rec.currency_id.l10n_ar_afip_code,
-                    "ctz": float(float_repr(rec.invoice_currency_rate, 2)),
-                    "tipoCodAut": "E" if rec.afip_auth_mode == "CAE" else "A",
-                    "codAut": int(rec.afip_auth_code),
+    def _pyafipws_get_receptor_doc(self):
+        """Return AFIP DocTipo / DocNro for the commercial partner.
+
+        Anonymous final consumer (SIGD, AFIP 99, no VAT) must be reported as
+        DocTipo 99 and DocNro 0. That is the usual POS case.
+        """
+        self.ensure_one()
+        partner = self.commercial_partner_id
+        ident_code = partner.l10n_latam_identification_type_id.l10n_ar_afip_code or ""
+        vat_digits = "".join(ch for ch in (partner.vat or "") if ch.isdigit())
+        final_consumer = self.env.ref("l10n_ar.res_CF", raise_if_not_found=False)
+        is_final_consumer = bool(final_consumer) and partner.l10n_ar_afip_responsibility_type_id == final_consumer
+        if ident_code == "99" or (is_final_consumer and not vat_digits):
+            return "99", "0"
+        if ident_code:
+            return ident_code, vat_digits or "0"
+        return "99", "0"
+
+    def _pyafipws_parse_document_number(self):
+        """Return point of sale / invoice number, or False if not available.
+
+        ``l10n_latam_document_number`` is False while the move name is still
+        ``/``. Core ``_l10n_ar_get_document_number_parts()`` then crashes with
+        ``'bool' object has no attribute 'split'``. POS credit notes hit this
+        on the original invoice (CbteAsoc).
+        """
+        self.ensure_one()
+        doc_code = self.l10n_latam_document_type_id.code
+        prefix = self.l10n_latam_document_type_id.doc_code_prefix or ""
+        candidates = [self.l10n_latam_document_number]
+        if self.name and self.name != "/":
+            candidates.append(self.name)
+        for raw in candidates:
+            if not raw:
+                continue
+            text = str(raw).strip()
+            if prefix and text.startswith(prefix):
+                text = text[len(prefix) :].strip()
+            elif " " in text:
+                text = text.split(" ", 1)[-1]
+            if doc_code and "-" in text:
+                try:
+                    return self._l10n_ar_get_document_number_parts(text, doc_code)
+                except (AttributeError, TypeError, ValueError):
+                    pass
+            match = re.search(r"(\d{1,5})-(\d{1,8})", str(raw))
+            if match:
+                return {
+                    "point_of_sale": int(match.group(1)),
+                    "invoice_number": int(match.group(2)),
                 }
-                if len(rec.commercial_partner_id.l10n_latam_identification_type_id) and rec.commercial_partner_id.vat:
-                    qr_dict["tipoDocRec"] = int(
-                        rec.commercial_partner_id.l10n_latam_identification_type_id.l10n_ar_afip_code
-                    )
-                    qr_dict["nroDocRec"] = int(rec.commercial_partner_id.vat.replace("-", "").replace(".", ""))
-                qr_data = base64.encodestring(json.dumps(qr_dict, indent=None).encode("ascii")).decode("ascii")
-                qr_data = str(qr_data).replace("\n", "")
-                rec.afip_qr_code = "https://www.afip.gob.ar/fe/qr/?p=%s" % qr_data
-            else:
-                rec.afip_qr_code = False
+        return False
+
+    def _pyafipws_related_invoice_from_pos(self):
+        """Find the original electronic invoice of a POS refund order."""
+        self.ensure_one()
+        if "pos_order_ids" not in self._fields:
+            return self.browse()
+        refund_orders = self.pos_order_ids
+        origin_orders = self.env["pos.order"]
+        if "refunded_order_id" in refund_orders._fields:
+            origin_orders |= refund_orders.refunded_order_id
+        if "refunded_order_ids" in refund_orders._fields:
+            origin_orders |= refund_orders.refunded_order_ids
+        if not origin_orders:
+            origin_orders = refund_orders.lines.refunded_orderline_id.order_id
+        invoices = origin_orders.mapped("account_move")
+        if not invoices and origin_orders:
+            invoices = self.env["account.move"].search(
+                [
+                    ("pos_order_ids", "in", origin_orders.ids),
+                    ("move_type", "=", "out_invoice"),
+                    ("afip_auth_code", "!=", False),
+                ],
+                limit=1,
+            )
+        return invoices.filtered(
+            lambda move: move.is_invoice()
+            and move.move_type == "out_invoice"
+            and move.afip_auth_code
+            and move.company_id.country_id.code == "AR"
+        )[:1]
+
+    def _pyafipws_add_cmp_asoc(self, ws, related, date_format=None):
+        """Attach CbteAsoc without calling split() on a missing document number."""
+        self.ensure_one()
+        if not related:
+            return
+        related = related[:1]
+        parts = related._pyafipws_parse_document_number()
+        if not parts:
+            raise UserError(
+                _(
+                    "The credit note must reference the original electronic "
+                    "invoice (point of sale and number). Related invoice %s "
+                    "has no AFIP document number."
+                )
+                % related.display_name
+            )
+        cuit = related.company_id.partner_id.l10n_ar_vat or related.company_id.vat or ""
+        cuit = "".join(ch for ch in str(cuit) if ch.isdigit())
+        fecha = related.invoice_date.strftime(date_format) if date_format and related.invoice_date else None
+        ws.AgregarCmpAsoc(
+            related.l10n_latam_document_type_id.code,
+            parts["point_of_sale"],
+            parts["invoice_number"],
+            cuit or None,
+            fecha,
+        )
 
     def get_related_invoices_data(self):
         """
         List related invoice information to fill CbtesAsoc.
+
+        POS refunds should already set ``reversed_entry_id`` from the original
+        order invoice. If that link is missing, recover it from the POS order.
         """
         self.ensure_one()
-        if self.l10n_latam_document_type_id.internal_type == "credit_note":
-            return self.reversed_entry_id
-        elif self.l10n_latam_document_type_id.internal_type == "debit_note":
+        internal_type = self.l10n_latam_document_type_id.internal_type
+        if internal_type == "debit_note":
             return self.debit_origin_id
-        else:
+        if internal_type != "credit_note":
             return self.browse()
+
+        candidates = self.reversed_entry_id
+        if "pos_refunded_invoice_ids" in self._fields:
+            candidates |= self.pos_refunded_invoice_ids
+        candidates |= self._pyafipws_related_invoice_from_pos()
+        candidates = candidates.filtered(
+            lambda move: move.is_invoice()
+            and move.move_type == "out_invoice"
+            and move.company_id.country_id.code == "AR"
+        )
+        with_cae = candidates.filtered(lambda move: move.afip_auth_code)
+        pool = with_cae or candidates
+        with_number = pool.filtered(lambda move: move._pyafipws_parse_document_number())
+        return (with_number or pool)[:1]
 
     def _post(self, soft=True):
         request_cae_invoices = self.filtered(
@@ -239,6 +368,7 @@ class AccountMove(models.Model):
                     "Factura validada solo localmente por estar en ambiente "
                     "de homologación sin claves de homologación"
                 )
+                # sudo: local dummy CAE when homologation certs are missing.
                 inv.sudo().write(
                     {
                         "afip_auth_mode": "CAE",
@@ -278,14 +408,10 @@ class AccountMove(models.Model):
                 # Pido autorizacion
                 inv.pyafipws_request_autorization(ws, afip_ws)
             except Exception as e:
-                msg = e
-            except Exception:
-                if ws.Excepcion:
-                    # get the exception already parsed by the helper
+                if getattr(ws, "Excepcion", None):
                     msg = ws.Excepcion
                 else:
-                    # avoid encoding problem when raising error
-                    msg = traceback.format_exception_only(sys.exc_type, sys.exc_value)[0]
+                    msg = traceback.format_exception_only(type(e), e)[0]
             if msg:
                 _logger.error(
                     _("AFIP Validation Error. %s") % msg
@@ -303,7 +429,10 @@ class AccountMove(models.Model):
                     "afip_xml_request": ws.XmlRequest or "",
                     "afip_xml_response": ws.XmlResponse or "",
                 }
+                # sudo: persist AFIP rejection XML even if the user cannot write
+                # technical fields; the invoice stays draft.
                 inv.sudo().write(vals)
+                # Commit so a later rollback cannot drop the AFIP response.
                 inv._cr.commit()
                 continue
 
@@ -323,12 +452,45 @@ class AccountMove(models.Model):
                 "afip_xml_response": ws.XmlResponse,
             }
 
+            # sudo: store CAE returned by AFIP; this cannot be rolled back.
             inv.sudo().write(vals)
             inv._cr.commit()
-            # si obtuvimos el cae hacemos el commit porque estoya no se puede
-            # volver atras
             a_invoices += inv
         return (a_invoices, r_invoices)
+
+    def _l10n_ar_is_transparency_document(self):
+        """Return True for Factura/ND/NC B (AFIP codes 6/7/8), RG 5614/2024.
+
+        Some Odoo 19 ``l10n_ar`` builds omit this helper while the invoice
+        report and POS tickets already call it (typically on Factura B from
+        POS to Consumidor Final).
+        """
+        self.ensure_one()
+        parent_fn = getattr(super(), "_l10n_ar_is_transparency_document", None)
+        if parent_fn:
+            return parent_fn()
+        return self.l10n_latam_document_type_id.code in ("6", "7", "8")
+
+    @api.model
+    def _l10n_ar_is_tax_group_other_national_ind_tax(self, tax_group):
+        parent_fn = getattr(super(), "_l10n_ar_is_tax_group_other_national_ind_tax", None)
+        if parent_fn:
+            return parent_fn(tax_group)
+        return tax_group.l10n_ar_tribute_afip_code in ("01", "04")
+
+    @api.model
+    def _l10n_ar_is_tax_group_vat(self, tax_group):
+        parent_fn = getattr(super(), "_l10n_ar_is_tax_group_vat", None)
+        if parent_fn:
+            return parent_fn(tax_group)
+        return bool(tax_group.l10n_ar_vat_afip_code)
+
+    @api.model
+    def _l10n_ar_is_tax_group_iibb_perception(self, tax_group):
+        parent_fn = getattr(super(), "_l10n_ar_is_tax_group_iibb_perception", None)
+        if parent_fn:
+            return parent_fn(tax_group)
+        return tax_group.l10n_ar_tribute_afip_code == "07"
 
     def get_pyafipws_currency_rate(self):
         self.ensure_one()

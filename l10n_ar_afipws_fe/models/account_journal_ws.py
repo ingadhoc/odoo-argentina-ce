@@ -20,6 +20,34 @@ _logger = logging.getLogger(__name__)
 class AccountJournalWs(models.Model):
     _inherit = "account.journal"
 
+    def _afip_ws_error_message(self, ws, result=None):
+        """Return AFIP error text from a SOAP result dict and pyafipws attributes."""
+        msgs = []
+        for error in (result or {}).get("Errors") or []:
+            err = error.get("Err") or error
+            code = err.get("Code")
+            msg = err.get("Msg")
+            if code or msg:
+                msgs.append("%s: %s" % (code, msg))
+        for attr in ("ErrMsg", "Excepcion", "Obs"):
+            value = getattr(ws, attr, None)
+            if value and str(value) not in msgs:
+                msgs.append(str(value))
+        return "\n".join(filter(None, msgs))
+
+    def _afip_ws_missing_result_error(self, ws, result=None):
+        """Explain a missing ResultGet, including environment mismatch hints."""
+        details = self._afip_ws_error_message(ws, result)
+        hint = _(
+            "AFIP did not return the expected data. Dummy Test only checks that "
+            "WSFE servers are up. Use a homologation certificate with environment "
+            "Homologation, or a production certificate with environment Production. "
+            "The CUIT must have WSFE and the point of sale enabled in that same environment."
+        )
+        if details:
+            return "%s\n\n%s" % (details, hint)
+        return hint
+
     def get_pyafipws_post_invoice_numbers(self):
         for journal_id in self:
             msg = []
@@ -81,10 +109,14 @@ class AccountJournalWs(models.Model):
             ret = getattr(self, "%s_pyafipws_point_of_sales" % afip_ws)(ws)
         else:
             raise UserError(_("Get point of sale for ws %s is not implemented yet") % (afip_ws))
-        msg = _(" %s %s") % (
-            ". ".join(ret),
-            " - ".join([ws.Excepcion, ws.ErrMsg, ws.Obs]),
-        )
+        if not ret:
+            notification_type = "warning"
+            msg = self._afip_ws_missing_result_error(ws)
+        else:
+            msg = _(" %s %s") % (
+                ". ".join(ret),
+                " - ".join([ws.Excepcion, ws.ErrMsg, ws.Obs]),
+            )
         title = _("Enabled Point Of Sales on AFIP\n")
 
         notification = {
@@ -172,7 +204,21 @@ class AccountJournalWs(models.Model):
         return ws.GetParamTipoCbte(sep=",")
 
     def wsfe_pyafipws_cuit_document_classes(self, ws):
-        return ws.ParamGetTiposCbte(sep=",")
+        try:
+            ret = ws.ParamGetTiposCbte(sep=",")
+        except (KeyError, TypeError):
+            soap = {}
+            try:
+                soap = ws.client.FEParamGetTiposCbte(
+                    Auth={"Token": ws.Token, "Sign": ws.Sign, "Cuit": ws.Cuit},
+                )
+            except Exception:
+                _logger.warning("Could not re-read FEParamGetTiposCbte response", exc_info=True)
+            res = soap.get("FEParamGetTiposCbteResult") or {}
+            raise UserError(self._afip_ws_missing_result_error(ws, res)) from None
+        if not ret:
+            raise UserError(self._afip_ws_missing_result_error(ws))
+        return ret
 
     def wsbfe_pyafipws_cuit_document_classes(self, ws):
         return ws.GetParamTipoCbte()

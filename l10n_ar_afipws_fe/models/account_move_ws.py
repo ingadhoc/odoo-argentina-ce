@@ -147,8 +147,8 @@ class AccountMove(models.Model):
         else:
             return _("AFIP WS %s not implemented") % afip_ws
 
-    def pyafipws_add_tax(self, ws):
-        vat_items = self._get_vat()
+    def pyafipws_add_tax(self, ws, base_lines=None):
+        vat_items = self._get_vat(base_lines=base_lines)
         for item in vat_items:
             ws.AgregarIva(item["Id"], "%.2f" % item["BaseImp"], "%.2f" % item["Importe"])
 
@@ -186,27 +186,16 @@ class AccountMove(models.Model):
             )
             if transmission_type:
                 ws.AgregarOpcional(opcional_id=27, valor=transmission_type)
-        elif int(invoice_info["doc_afip_code"]) in [202, 203, 207, 208, 212, 213]:
+        elif int(invoice_info["doc_afip_code"] or 0) in [202, 203, 207, 208, 212, 213]:
             valor = self.afip_fce_es_anulacion and "S" or "N"
             ws.AgregarOpcional(opcional_id=22, valor=valor)
 
-        if invoice_info["CbteAsoc"]:
-            doc_number_parts = self._l10n_ar_get_document_number_parts(
-                invoice_info["CbteAsoc"].l10n_latam_document_number,
-                invoice_info["CbteAsoc"].l10n_latam_document_type_id.code,
-            )
-            ws.AgregarCmpAsoc(
-                invoice_info["CbteAsoc"].l10n_latam_document_type_id.code,
-                doc_number_parts["point_of_sale"],
-                doc_number_parts["invoice_number"],
-                self.company_id.vat,
-                invoice_info["CbteAsoc"].invoice_date.strftime("%Y%m%d"),
-            )
+        self._pyafipws_add_cmp_asoc(ws, invoice_info["CbteAsoc"], date_format="%Y%m%d")
         if invoice_info["afip_associated_period_from"] and invoice_info["afip_associated_period_to"]:
             ws.AgregarPeriodoComprobantesAsociados(
                 invoice_info["afip_associated_period_from"], invoice_info["afip_associated_period_to"]
             )
-        self.pyafipws_add_tax(ws)
+        self.pyafipws_add_tax(ws, invoice_info.get("base_lines"))
 
     def wsbfe_invoice_add_info(self, ws, invoice_info):
         if invoice_info["mipyme_fce"]:
@@ -218,22 +207,11 @@ class AccountMove(models.Model):
             )
             if transmission_type:
                 ws.AgregarOpcional(opcional_id=27, valor=transmission_type)
-        elif int(invoice_info["doc_afip_code"]) in [202, 203, 207, 208, 212, 213]:
+        elif int(invoice_info["doc_afip_code"] or 0) in [202, 203, 207, 208, 212, 213]:
             valor = self.afip_fce_es_anulacion and "S" or "N"
             ws.AgregarOpcional(opcional_id=22, valor=valor)
 
-        if invoice_info["CbteAsoc"]:
-            doc_number_parts = self._l10n_ar_get_document_number_parts(
-                invoice_info["CbteAsoc"].l10n_latam_document_number,
-                invoice_info["CbteAsoc"].l10n_latam_document_type_id.code,
-            )
-            ws.AgregarCmpAsoc(
-                invoice_info["CbteAsoc"].l10n_latam_document_type_id.code,
-                doc_number_parts["point_of_sale"],
-                doc_number_parts["invoice_number"],
-                self.company_id.vat,
-                invoice_info["CbteAsoc"].invoice_date.strftime("%Y%m%d"),
-            )
+        self._pyafipws_add_cmp_asoc(ws, invoice_info["CbteAsoc"], date_format="%Y%m%d")
         for line in invoice_info["line"]:
             ws.AgregarItem(
                 line["codigo"],
@@ -248,17 +226,7 @@ class AccountMove(models.Model):
             )
 
     def wsfex_invoice_add_info(self, ws, invoice_info):
-        if invoice_info["CbteAsoc"]:
-            doc_number_parts = self._l10n_ar_get_document_number_parts(
-                invoice_info["CbteAsoc"].l10n_latam_document_number,
-                invoice_info["CbteAsoc"].l10n_latam_document_type_id.code,
-            )
-            ws.AgregarCmpAsoc(
-                invoice_info["CbteAsoc"].l10n_latam_document_type_id.code,
-                doc_number_parts["point_of_sale"],
-                doc_number_parts["invoice_number"],
-                self.company_id.vat,
-            )
+        self._pyafipws_add_cmp_asoc(ws, invoice_info["CbteAsoc"])
 
         for line in invoice_info["line"]:
             ws.AgregarItem(
@@ -272,19 +240,8 @@ class AccountMove(models.Model):
             )
 
     def wsmtxca_invoice_add_info(self, ws, invoice_info):
-        if invoice_info["CbteAsoc"]:
-            doc_number_parts = self._l10n_ar_get_document_number_parts(
-                invoice_info["CbteAsoc"].l10n_latam_document_number,
-                invoice_info["CbteAsoc"].l10n_latam_document_type_id.code,
-            )
-            ws.AgregarCmpAsoc(
-                invoice_info["CbteAsoc"].l10n_latam_document_type_id.code,
-                doc_number_parts["point_of_sale"],
-                doc_number_parts["invoice_number"],
-                self.company_id.vat,
-                invoice_info["CbteAsoc"].invoice_date.strftime("%Y-%m-%d"),
-            )
-        self.pyafipws_add_tax(ws)
+        self._pyafipws_add_cmp_asoc(ws, invoice_info["CbteAsoc"], date_format="%Y-%m-%d")
+        self.pyafipws_add_tax(ws, invoice_info.get("base_lines"))
 
     ##########################
     # Autorizo en afip la factura
@@ -326,7 +283,7 @@ class AccountMove(models.Model):
         journal = self.journal_id
         invoice_info = {}
 
-        invoice_info["cancela_misma_moneda_ext"] = self.l10n_ar_payment_foreign_currency
+        invoice_info["cancela_misma_moneda_ext"] = self.l10n_ar_payment_foreign_currency or "N"
         invoice_info["condicion_iva_receptor_id"] = self.partner_id.l10n_ar_afip_responsibility_type_id.code
 
         invoice_info["commercial_partner"] = self.commercial_partner_id
@@ -338,15 +295,14 @@ class AccountMove(models.Model):
             int(self.journal_id.get_pyafipws_last_invoice(self.l10n_latam_document_type_id)) + 1
         )
 
-        invoice_info["partner_id_code"] = invoice_info[
-            "commercial_partner"
-        ].l10n_latam_identification_type_id.l10n_ar_afip_code
-        invoice_info["tipo_doc"] = invoice_info["partner_id_code"] or "99"
-        invoice_info["nro_doc"] = invoice_info["partner_id_code"] and invoice_info["commercial_partner"].vat or "0"
+        tipo_doc, nro_doc = self._pyafipws_get_receptor_doc()
+        invoice_info["partner_id_code"] = tipo_doc
+        invoice_info["tipo_doc"] = tipo_doc
+        invoice_info["nro_doc"] = nro_doc
         invoice_info["cbt_desde"] = invoice_info["cbt_hasta"] = invoice_info["cbte_nro"] = invoice_info[
             "ws_next_invoice_number"
         ]
-        invoice_info["concepto"] = invoice_info["tipo_expo"] = int(self.l10n_ar_afip_concept)
+        invoice_info["concepto"] = invoice_info["tipo_expo"] = int(self.l10n_ar_afip_concept or 1)
 
         invoice_info["fecha_cbte"] = self.invoice_date or fields.Date.today()
         invoice_info["mipyme_fce"] = int(invoice_info["doc_afip_code"]) in [
@@ -370,7 +326,12 @@ class AccountMove(models.Model):
             invoice_info["fecha_serv_desde"] = self.l10n_ar_afip_service_start
             invoice_info["fecha_serv_hasta"] = self.l10n_ar_afip_service_end
 
-        amounts = self._l10n_ar_get_amounts()
+        # Odoo 18.0+/19 _l10n_ar_get_amounts() defaults to [] and returns
+        # zeros unless the tax-engine base lines are passed (l10n_ar_edi does
+        # the same). Empty amounts make AFIP reject with 10048/10018.
+        base_lines, _tax_lines = self._get_rounded_base_and_tax_lines()
+        invoice_info["base_lines"] = base_lines
+        amounts = self._l10n_ar_get_amounts(base_lines=base_lines)
         invoice_info["amounts"] = amounts
         # invoice amount totals:
         invoice_info["imp_total"] = str("%.2f" % self.amount_total)
@@ -389,7 +350,8 @@ class AccountMove(models.Model):
         invoice_info["imp_trib"] = str("%.2f" % amounts["not_vat_taxes_amount"])
         invoice_info["imp_op_ex"] = str("%.2f" % amounts["vat_exempt_base_amount"])
         invoice_info["moneda_id"] = self.currency_id.l10n_ar_afip_code
-        invoice_info["moneda_ctz"] = 1 / self.invoice_currency_rate or 1
+        rate = self.invoice_currency_rate or 1.0
+        invoice_info["moneda_ctz"] = 1 / rate if rate else 1
         invoice_info["CbteAsoc"] = self.get_related_invoices_data()
 
         invoice_info["afip_associated_period_from"] = self.afip_associated_period_from

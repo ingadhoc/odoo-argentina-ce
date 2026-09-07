@@ -19,7 +19,7 @@ class ValidateAccountMove(models.TransientModel):
             moves = self.env["account.move"].search(domain).filtered("line_ids")
             if not moves:
                 raise UserError(_("There are no journal items in the draft state to post."))
-            moves.asynchronous_post = True
+            moves.write({"asynchronous_post": True})
             return {"type": "ir.actions.act_window_close"}
 
         else:

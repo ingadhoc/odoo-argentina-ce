@@ -1,8 +1,8 @@
 {
     "name": "Modulo Base para los Web Services de AFIP",
-    "version": "18.0.1.0.0",
+    "version": "19.0.2.0.0",
     "category": "Localization/Argentina",
-    "author": "ADHOC SA, Moldeo Interactive,Odoo Community Association (OCA)",
+    "author": "ADHOC SA, Moldeo Interactive, Odoo Community Association (OCA), Be OnlyOne",
     "license": "AGPL-3",
     "summary": "",
     "depends": [
@@ -28,7 +28,7 @@
         "demo/parameter_demo.xml",
     ],
     "images": [],
-    "installable": False,
+    "installable": True,
     "auto_install": False,
     "application": False,
 }

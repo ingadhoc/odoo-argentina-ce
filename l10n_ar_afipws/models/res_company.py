@@ -5,7 +5,6 @@
 import hashlib
 import logging
 import os
-import sys
 import time
 import traceback
 
@@ -237,14 +236,13 @@ class ResCompany(models.Model):
             expirationTime = wsaa.ObtenerTagXml("expirationTime")
             generationTime = wsaa.ObtenerTagXml("generationTime")
             uniqueId = wsaa.ObtenerTagXml("uniqueId")
-        except Exception:
+        except Exception as err:
             token = sign = None
             if wsaa.Excepcion:
                 # get the exception already parsed by the helper
                 err_msg = wsaa.Excepcion
             else:
-                # avoid encoding problem when reporting exceptions to the user:
-                err_msg = traceback.format_exception_only(sys.exc_type, sys.exc_value)[0]
+                err_msg = traceback.format_exception_only(type(err), err)[0]
             raise UserError(_("Could not connect. This is the what we received: %s") % (err_msg))
         return {
             "uniqueid": uniqueId,

@@ -95,7 +95,7 @@ class ResPartner(models.Model):
         # GET COMPANY
         # if there is certificate for user company, use that one, if not
         # use the company for the first certificate found
-        company = self.env.user.company_id
+        company = self.env.company
         env_type = company._get_environment_type()
         try:
             certificate = company.get_key_and_certificate(company._get_environment_type())
@@ -131,7 +131,7 @@ class ResPartner(models.Model):
     def l10n_ar_afipws_fe_min_ammount(self):
         for record in self:
             if record.l10n_ar_vat:
-                ws = self.env.user.company_id.get_connection("wsfecred").connect()
+                ws = self.env.company.get_connection("wsfecred").connect()
                 res = ws.ConsultarMontoObligadoRecepcion(record.l10n_ar_vat)
                 record.mipyme_required = True if ws.Resultado == "S" else False
                 record.mipyme_from_amount = float(res)

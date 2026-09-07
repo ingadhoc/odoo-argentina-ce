@@ -30,6 +30,11 @@ class AfipwsCertificateAlias(models.Model):
            SERIALNUMBER=CUIT 30714295698, CN=afip web services - adhoc s.a.
     """
 
+    @api.model
+    def _default_company_id(self):
+        """Return the company of the current environment."""
+        return self.env.company
+
     common_name = fields.Char(
         size=64,
         default="AFIP WS",
@@ -46,20 +51,23 @@ class AfipwsCertificateAlias(models.Model):
         "Company",
         required=True,
         readonly=True,
-        default=lambda self: self.env.company,
+        default=_default_company_id,
         auto_join=True,
         index=True,
+        ondelete="restrict",
     )
     country_id = fields.Many2one(
         "res.country",
         "Country",
         readonly=True,
         required=True,
+        ondelete="restrict",
     )
     state_id = fields.Many2one(
         "res.country.state",
         "State",
         readonly=True,
+        ondelete="set null",
     )
     city = fields.Char(
         readonly=True,
@@ -150,12 +158,13 @@ class AfipwsCertificateAlias(models.Model):
         return True
 
     def generate_key(self, key_length=2048):
-        """ """
-        # TODO reemplazar todo esto por las funciones nativas de pyafipws
+        """Generate an RSA private key in PEM format."""
+        # TODO replace this with native pyafipws helpers when available
         for rec in self:
             k = crypto.PKey()
             k.generate_key(crypto.TYPE_RSA, key_length)
-            rec.key = crypto.dump_privatekey(crypto.FILETYPE_PEM, k)
+            pem = crypto.dump_privatekey(crypto.FILETYPE_PEM, k)
+            rec.key = pem.decode("ascii") if isinstance(pem, bytes) else pem
 
     def action_to_draft(self):
         self.write({"state": "draft"})
@@ -167,29 +176,28 @@ class AfipwsCertificateAlias(models.Model):
         return True
 
     def action_create_certificate_request(self):
-        """
-        TODO agregar descripcion y ver si usamos pyafipsw para generar esto
-        """
+        """Create a CSR for each alias using OpenSSL."""
         for record in self:
             req = crypto.X509Req()
-            req.get_subject().C = self.country_id.code.encode("ascii", "ignore")
-            if self.state_id:
-                req.get_subject().ST = self.state_id.name.encode("ascii", "ignore")
-            req.get_subject().L = self.city.encode("ascii", "ignore")
-            req.get_subject().O = self.company_id.name.encode("ascii", "ignore")
-            req.get_subject().OU = self.department.encode("ascii", "ignore")
-            req.get_subject().CN = self.common_name.encode("ascii", "ignore")
-            req.get_subject().serialNumber = "CUIT %s" % self.cuit.encode("ascii", "ignore")
-            k = crypto.load_privatekey(crypto.FILETYPE_PEM, self.key)
-            self.key = crypto.dump_privatekey(crypto.FILETYPE_PEM, k)
+            req.get_subject().C = (record.country_id.code or "").encode("ascii", "ignore").decode("ascii")
+            if record.state_id:
+                req.get_subject().ST = (record.state_id.name or "").encode("ascii", "ignore").decode("ascii")
+            req.get_subject().L = (record.city or "").encode("ascii", "ignore").decode("ascii")
+            req.get_subject().O = (record.company_id.name or "").encode("ascii", "ignore").decode("ascii")
+            req.get_subject().OU = (record.department or "").encode("ascii", "ignore").decode("ascii")
+            req.get_subject().CN = (record.common_name or "").encode("ascii", "ignore").decode("ascii")
+            req.get_subject().serialNumber = "CUIT %s" % (record.cuit or "")
+            k = crypto.load_privatekey(crypto.FILETYPE_PEM, record.key)
+            pem_key = crypto.dump_privatekey(crypto.FILETYPE_PEM, k)
+            record.key = pem_key.decode("ascii") if isinstance(pem_key, bytes) else pem_key
             req.set_pubkey(k)
             req.sign(k, "sha256")
             csr = crypto.dump_certificate_request(crypto.FILETYPE_PEM, req)
             vals = {
-                "csr": csr,
+                "csr": csr.decode("ascii") if isinstance(csr, bytes) else csr,
                 "alias_id": record.id,
             }
-            self.certificate_ids.create(vals)
+            record.certificate_ids.create(vals)
         return True
 
     @api.constrains("common_name")

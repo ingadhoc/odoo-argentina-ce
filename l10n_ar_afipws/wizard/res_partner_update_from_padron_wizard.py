@@ -14,6 +14,7 @@ class ResPartnerUpdateFromPadronField(models.TransientModel):
     wizard_id = fields.Many2one(
         "res.partner.update.from.padron.wizard",
         "Wizard",
+        ondelete="cascade",
     )
     field = fields.Char("name")
     old_value = fields.Char("old Value")
@@ -98,6 +99,7 @@ class ResPartnerUpdateFromPadronWizard(models.TransientModel):
         "res.partner",
         string="Partner",
         readonly=True,
+        ondelete="cascade",
     )
     update_constancia = fields.Boolean(
         default=True,
