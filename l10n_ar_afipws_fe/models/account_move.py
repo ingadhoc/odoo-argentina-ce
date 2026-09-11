@@ -10,7 +10,7 @@ import traceback
 from datetime import datetime
 
 from odoo import _, api, fields, models
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 from odoo.tools import float_repr
 
 from ..afip_utils import get_invoice_number_from_response
@@ -73,6 +73,9 @@ class AccountMove(models.Model):
         [("S", "Yes"), ("N", "No")], compute="_compute_l10n_ar_payment_foreign_currency", store=True, readonly=False
     )
     l10n_ar_currency_code = fields.Char("Currency Code", related="currency_id.name")
+    journal_afip_ws = fields.Char(compute="_compute_journal_afip_ws")
+    wsfex_id_permiso = fields.Char("ID Permiso Embarque", copy=False)
+    wsfex_dst_merc = fields.Many2one("res.country", "País destino mercadería")
 
     @api.onchange("currency_id", "line_ids")
     @api.depends("currency_id")
@@ -114,7 +117,7 @@ class AccountMove(models.Model):
             and self.journal_id.afip_ws
         ):
             if self.l10n_latam_document_type_id:
-                number = int(self.journal_id.get_pyafipws_last_invoice(self.l10n_latam_document_type_id))
+                number = int(self.journal_id.get_pyafipws_last_invoice(self.l10n_latam_document_type_id) or 0)
                 return self._get_formatted_sequence(number)
         return super()._get_starting_sequence()
 
@@ -143,11 +146,25 @@ class AccountMove(models.Model):
             and self.journal_id.afip_ws
             and self.l10n_latam_document_type_id
         ):
-            number = int(self.journal_id.get_pyafipws_last_invoice(self.l10n_latam_document_type_id))
+            number = int(self.journal_id.get_pyafipws_last_invoice(self.l10n_latam_document_type_id) or 0)
             res = self._get_formatted_sequence(number)
         else:
             res = super()._get_last_sequence(relaxed=relaxed, with_prefix=with_prefix)
         return res
+
+    @api.depends("journal_id")
+    def _compute_journal_afip_ws(self):
+        for move in self:
+            move.journal_afip_ws = move.journal_id.afip_ws
+
+    @api.constrains("wsfex_id_permiso")
+    def _check_wsfex_id_permiso(self):
+        for move in self:
+            if move.wsfex_id_permiso and len(move.wsfex_id_permiso) != 16:
+                raise ValidationError(
+                    _("El ID de Permiso de Embarque debe tener exactamente 16 caracteres (actualmente tiene %d).")
+                    % len(move.wsfex_id_permiso)
+                )
 
     @api.depends("journal_id", "afip_auth_code")
     def _compute_validation_type(self):
@@ -211,11 +228,13 @@ class AccountMove(models.Model):
 
     def _post(self, soft=True):
         request_cae_invoices = self.filtered(
-            lambda x: x.company_id.country_id.code == "AR"
-            and x.is_invoice()
-            and x.move_type in ["out_invoice", "out_refund"]
-            and x.journal_id.afip_ws
-            and not x.afip_auth_code
+            lambda x: (
+                x.company_id.country_id.code == "AR"
+                and x.is_invoice()
+                and x.move_type in ["out_invoice", "out_refund"]
+                and x.journal_id.afip_ws
+                and not x.afip_auth_code
+            )
         )
         a_invoices, r_invoices = request_cae_invoices.do_pyafipws_request_cae()
         if len(self) == 1 and r_invoices:
@@ -236,8 +255,7 @@ class AccountMove(models.Model):
             # certificates
             if not inv.validation_type:
                 msg = (
-                    "Factura validada solo localmente por estar en ambiente "
-                    "de homologación sin claves de homologación"
+                    "Factura validada solo localmente por estar en ambiente de homologación sin claves de homologación"
                 )
                 inv.sudo().write(
                     {
@@ -307,10 +325,18 @@ class AccountMove(models.Model):
                 inv._cr.commit()
                 continue
 
-            if hasattr(ws, "Vencimiento"):
-                vto = datetime.strptime(ws.Vencimiento, "%Y%m%d").date()
-            if hasattr(ws, "FchVencCAE"):
-                vto = datetime.strptime(ws.FchVencCAE, "%Y%m%d").date()
+            def _parse_afip_date(date_str):
+                for fmt in ("%Y%m%d", "%d/%m/%Y"):
+                    try:
+                        return datetime.strptime(date_str, fmt).date()
+                    except ValueError:
+                        pass
+                return None
+
+            if hasattr(ws, "Vencimiento") and ws.Vencimiento:
+                vto = _parse_afip_date(ws.Vencimiento)
+            if hasattr(ws, "FchVencCAE") and ws.FchVencCAE:
+                vto = _parse_afip_date(ws.FchVencCAE)
 
             _logger.info("CAE solicitado con exito. CAE: %s. Resultado %s" % (ws.CAE, ws.Resultado))
             vals = {
@@ -335,6 +361,11 @@ class AccountMove(models.Model):
         afip_ws = self.journal_id.afip_ws
         ws = self.company_id.get_connection(afip_ws).connect()
         afipws_get_currency_rate = self.pyafipws_get_currency_rate(ws)
+        if not afipws_get_currency_rate:
+            raise UserError(_("No se pudo obtener la cotización desde AFIP para la moneda %s.") % self.currency_id.name)
+        rate = float(afipws_get_currency_rate)
+        if not rate:
+            raise UserError(_("La cotización obtenida desde AFIP para la moneda %s es cero.") % self.currency_id.name)
         # TODO: crear cotizacion?
-        self.invoice_currency_rate = 1 / float(afipws_get_currency_rate)
+        self.invoice_currency_rate = 1 / rate
         self.message_post(body=_("AFIP currency rate: %s") % afipws_get_currency_rate)
