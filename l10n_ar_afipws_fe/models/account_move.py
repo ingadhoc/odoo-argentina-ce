@@ -217,9 +217,17 @@ class AccountMove(models.Model):
             and x.journal_id.afip_ws
             and not x.afip_auth_code
         )
-        a_invoices, r_invoices = request_cae_invoices.do_pyafipws_request_cae()
+
+        a_invoices = r_invoices = self.env["account.move"]
+
+        if request_cae_invoices:
+            result = request_cae_invoices.do_pyafipws_request_cae()
+            if result:
+                a_invoices, r_invoices = result
+
         if len(self) == 1 and r_invoices:
-            raise (UserError(r_invoices.afip_message))
+            raise UserError(r_invoices.afip_message)
+
         return super(AccountMove, self - r_invoices)._post(soft=soft)
 
     def do_pyafipws_request_cae(self):
