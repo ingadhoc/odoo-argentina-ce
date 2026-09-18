@@ -47,7 +47,7 @@
     </record>
 
     <menuitem id="menu_iva_simple"
-              name="IVA Simple (4 CSV ARCA)"
+              name="IVA Simple"
               parent="l10n_ar.account_reports_ar_statements_menu"
               action="action_iva_simple_wizard"
               sequence="8"/>
