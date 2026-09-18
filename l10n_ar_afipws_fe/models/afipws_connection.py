@@ -6,6 +6,8 @@ from odoo import fields, models, api, _
 from odoo.exceptions import UserError
 import logging
 
+from odoo.addons.l10n_ar_afipws.models.afipws_zeep import normalize_env
+
 _logger = logging.getLogger(__name__)
 
 
@@ -32,31 +34,10 @@ class AfipwsConnection(models.Model):
 
     @api.model
     def _get_ws(self, afip_ws):
-        """
-        Method to be inherited
-        """
-        ws = super(AfipwsConnection, self)._get_ws(afip_ws)
-        if afip_ws == "wsfe":
-            from pyafipws.wsfev1 import WSFEv1
-
-            ws = WSFEv1()
-        elif afip_ws == "wsfex":
-            from pyafipws.wsfexv1 import WSFEXv1
-
-            ws = WSFEXv1()
-        elif afip_ws == "wsmtxca":
-            from pyafipws.wsmtx import WSMTXCA
-
-            ws = WSMTXCA()
-        elif afip_ws == "wscdc":
-            from pyafipws.wscdc import WSCDC
-
-            ws = WSCDC()
-        elif afip_ws == "wsbfe":
-            from pyafipws.wsbfev1 import WSBFEv1
-
-            ws = WSBFEv1()
-        return ws
+        """Deprecado: pyafipws eliminado. Usar _get_client/connect (zeep)."""
+        raise UserError(
+            _("pyafipws was removed, use zeep connect() for ws %s") % (afip_ws,)
+        )
 
     @api.model
     def get_afip_ws_url(self, afip_ws, environment_type):
@@ -65,34 +46,32 @@ class AfipwsConnection(models.Model):
         )
         if afip_ws_url:
             return afip_ws_url
-        elif afip_ws == "wsfe":
-            if environment_type == "production":
-                afip_ws_url = "https://servicios1.afip.gov.ar/wsfev1/service.asmx?WSDL"
-            else:
-                afip_ws_url = "https://wswhomo.afip.gov.ar/wsfev1/service.asmx?WSDL"
+        env = normalize_env(environment_type)
+        prod = env == "production"
+        if afip_ws == "wsfe":
+            afip_ws_url = (
+                "https://servicios1.afip.gov.ar/wsfev1/service.asmx?WSDL"
+                if prod
+                else "https://wswhomo.afip.gov.ar/wsfev1/service.asmx?WSDL"
+            )
         elif afip_ws == "wsfex":
-            if environment_type == "production":
-                afip_ws_url = "https://servicios1.afip.gov.ar/wsfexv1/service.asmx?WSDL"
-            else:
-                afip_ws_url = "https://wswhomo.afip.gov.ar/wsfexv1/service.asmx?WSDL"
+            afip_ws_url = (
+                "https://servicios1.afip.gov.ar/wsfexv1/service.asmx?WSDL"
+                if prod
+                else "https://wswhomo.afip.gov.ar/wsfexv1/service.asmx?WSDL"
+            )
         elif afip_ws == "wsbfe":
-            if environment_type == "production":
-                afip_ws_url = "https://servicios1.afip.gov.ar/wsbfev1/service.asmx?WSDL"
-            else:
-                afip_ws_url = "https://wswhomo.afip.gov.ar/wsbfev1/service.asmx?WSDL"
+            afip_ws_url = (
+                "https://servicios1.afip.gov.ar/wsbfev1/service.asmx?WSDL"
+                if prod
+                else "https://wswhomo.afip.gov.ar/wsbfev1/service.asmx?WSDL"
+            )
         elif afip_ws == "wsmtxca":
             raise UserError(_("AFIP WS %s Not implemented yet") % afip_ws)
-            # if environment_type == 'production':
-            #     afip_ws_url = (
-            #         'https://serviciosjava.afip.gob.ar/wsmtxca/services/'
-            #         'MTXCAService')
-            # else:
-            #     afip_ws_url = (
-            #         'https://fwshomo.afip.gov.ar/wsmtxca/services/'
-            #         'MTXCAService')
         elif afip_ws == "wscdc":
-            if environment_type == "production":
-                afip_ws_url = "https://servicios1.afip.gov.ar/WSCDC/service.asmx?WSDL"
-            else:
-                afip_ws_url = "https://wswhomo.afip.gov.ar/WSCDC/service.asmx?WSDL"
+            afip_ws_url = (
+                "https://servicios1.afip.gov.ar/WSCDC/service.asmx?WSDL"
+                if prod
+                else "https://wswhomo.afip.gov.ar/WSCDC/service.asmx?WSDL"
+            )
         return afip_ws_url

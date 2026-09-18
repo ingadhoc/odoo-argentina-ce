@@ -155,8 +155,7 @@ class AfipwsCertificateAlias(models.Model):
         return True
 
     def generate_key(self, key_length=2048):
-        """ """
-        # TODO reemplazar todo esto por las funciones nativas de pyafipws
+        """Genera clave RSA vía pyOpenSSL (se mantiene, sin pyafipws)."""
         for rec in self:
             k = crypto.PKey()
             k.generate_key(crypto.TYPE_RSA, key_length)

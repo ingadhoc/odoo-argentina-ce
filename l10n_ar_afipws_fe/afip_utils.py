@@ -1,32 +1,32 @@
-from pysimplesoap.client import SimpleXMLElement
-# import xml.etree.ElementTree as ET
+from lxml import etree
 
 
 def _get_response_info(xml_response):
-    return SimpleXMLElement(xml_response)
+    if isinstance(xml_response, bytes):
+        xml_response = xml_response.decode("utf-8", "ignore")
+    return etree.fromstring(xml_response.encode("utf-8"))
+
+
+def _find_first_text(root, tag):
+    """Busca primer nodo cuyo tag local sea `tag` (ignora namespaces)."""
+    found = root.xpath('//*[local-name()=$name]', name=tag)
+    if found and found[0].text:
+        return found[0].text.strip()
+    return False
 
 
 def get_invoice_number_from_response(xml_response, afip_ws='wsfe'):
     if not xml_response:
         return False
     try:
-        xml = _get_response_info(xml_response)
-        return int(xml('CbteDesde'))
-        # TODO por ahora usamos pysimplesoap porque es mas comodo
-        # Sino generar una estrategia recusiva para todos los tipos de WS
-        # namespaces = {
-        #     'soap': 'http://schemas.xmlsoap.org/soap/envelope/',
-        #     'a': NS[afip_ws],
-        # }
-        # root = _get_response_info(xml_response)
-        # number = root.findall('./soap:Body'
-        #                '/a:FECAESolicitarResponse'
-        #                '/a:FECAESolicitarResult'
-        #                '/a:FeDetResp'
-        #                '/a:FECAEDetResponse'
-        #                '/a:CbteDesde' , namespaces)[0].text
-        # return int(number)
-    except:
+        root = _get_response_info(xml_response)
+        # wsfe/wsbfe/wsmtxca usan CbteDesde; wsfex usa CbteNro/Id según método
+        for tag in ("CbteDesde", "CbteNro", "Cbte_nro"):
+            number = _find_first_text(root, tag)
+            if number:
+                return int(number)
+        return False
+    except Exception:
         return False
 
 

@@ -10,7 +10,7 @@
         "l10n_ar",  # needed for CUIT and also demo data
         # TODO this module should be merged with l10n_ar_afipws_fe as the dependencies are the same
     ],
-    "external_dependencies": {"python": ["pyafipws", "OpenSSL", "pysimplesoap"]},
+    "external_dependencies": {"python": ["zeep", "pyOpenSSL", "lxml", "cryptography"]},
     "data": [
         "wizard/upload_certificate_view.xml",
         "wizard/res_partner_update_from_padron_wizard_view.xml",

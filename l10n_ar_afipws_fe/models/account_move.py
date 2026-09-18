@@ -4,8 +4,6 @@
 ##############################################################################
 import json
 import logging
-import sys
-import traceback
 from datetime import datetime
 from odoo import fields, models, api, _
 from odoo.exceptions import UserError
@@ -233,7 +231,7 @@ class AccountMove(models.Model):
         return super(AccountMove, self - r_invoices)._post(soft=soft)
 
     def do_pyafipws_request_cae(self):
-        "Request to AFIP the invoices' Authorization Electronic Code (CAE)"
+        "Request to AFIP the invoices' Authorization Electronic Code (CAE) via zeep"
         a_invoices = r_invoices = self.env['account.move']
 
         for inv in self:
@@ -263,95 +261,157 @@ class AccountMove(models.Model):
                 a_invoices += inv
                 continue
 
-            # Inicio conexion
-            ws = inv.company_id.get_connection(afip_ws).connect()
-
-            # Preparo los datos
-            invoice_info = inv.map_invoice_info(afip_ws)
-
-            # Esto no es necesario ahora ya que el numero se obtiene desde el result
-            # document_number = inv._get_formatted_sequence(int(invoice_info["ws_next_invoice_number"]))
-            # doc_code_prefix = inv.l10n_latam_document_type_id.doc_code_prefix
-            # if doc_code_prefix and document_number:
-            #     document_number = document_number.split(" ", 1)[-1]
-            # inv.l10n_latam_document_number = document_number
-
-            # Creo la factura en el ambito de pyafipws
-            inv.pyafipws_create_invoice(ws, invoice_info)
-
-            # Agrego informacion a la factura dentro de pyafipws
-            inv.pyafipws_add_info(ws, afip_ws, invoice_info)
-
-            # Request the authorization! (call the AFIP webservice method)
-            vto = None
-            msg = False
+            # Inicio conexion zeep
+            connection = inv.company_id.get_connection(afip_ws)
             try:
-                # Pido autorizacion
-                inv.pyafipws_request_autorization(ws, afip_ws)
+                client, auth, transport = connection.connect()
             except Exception as e:
-                msg = e
-            except Exception:
-                if ws.Excepcion:
-                    # get the exception already parsed by the helper
-                    msg = ws.Excepcion
-                else:
-                    # avoid encoding problem when raising error
-                    msg = traceback.format_exception_only(sys.exc_type, sys.exc_value)[
-                        0
-                    ]
-            if msg:
-                _logger.error(
-                    _("AFIP Validation Error. %s" % msg)
-                    + " XML Request: %s XML Response: %s"
-                    % (ws.XmlRequest, ws.XmlResponse)
-                )
-
-            msg = "\n".join([ws.Obs or "", ws.ErrMsg or ""])
-            if not ws.CAE or ws.Resultado != "A":
+                msg = _("AFIP connection error: %s") % (e,)
+                inv.sudo().write({
+                    "name": "/",
+                    "afip_result": "R",
+                    "afip_message": msg,
+                    "afip_xml_request": "",
+                    "afip_xml_response": "",
+                })
+                inv._cr.commit()
                 r_invoices += inv
+                continue
 
+            # Preparo los datos (mismo mapeo, sin pyafipws)
+            invoice_info = inv.map_invoice_info(afip_ws)
+            if isinstance(invoice_info, str):
+                # map devolvió mensaje "not implemented"
+                inv.sudo().write({
+                    "name": "/",
+                    "afip_result": "R",
+                    "afip_message": invoice_info,
+                    "afip_xml_request": "",
+                    "afip_xml_response": "",
+                })
+                inv._cr.commit()
+                r_invoices += inv
+                continue
+
+            cae, vto, resultado, msg = inv._zeep_request_cae(client, auth, transport, afip_ws, invoice_info)
+            xml_request = getattr(transport, "xml_request", "") or ""
+            xml_response = getattr(transport, "xml_response", "") or ""
+            if not cae or resultado != "A":
+                r_invoices += inv
                 vals = {
                         "name": '/',
-                        "afip_result": 'R',
+                        "afip_result": 'R' if resultado != "O" else "O",
                         "afip_message": msg,
-                        "afip_xml_request": ws.XmlRequest or '',
-                        "afip_xml_response": ws.XmlResponse or '',
+                        "afip_xml_request": xml_request,
+                        "afip_xml_response": xml_response,
                 }
                 inv.sudo().write(vals)
                 inv._cr.commit()
                 continue
 
-            if hasattr(ws, "Vencimiento"):
-                vto = datetime.strptime(ws.Vencimiento, "%Y%m%d").date()
-            if hasattr(ws, "FchVencCAE"):
-                vto = datetime.strptime(ws.FchVencCAE, "%Y%m%d").date()
-
-            _logger.info(
-                "CAE solicitado con exito. CAE: %s. Resultado %s"
-                % (ws.CAE, ws.Resultado)
-            )
+            _logger.info("CAE solicitado con exito. CAE: %s. Resultado %s" % (cae, resultado))
             vals = {
                     "afip_auth_mode": "CAE",
-                    "afip_auth_code": ws.CAE,
+                    "afip_auth_code": cae,
                     "afip_auth_code_due": vto,
-                    "afip_result": ws.Resultado,
+                    "afip_result": resultado,
                     "afip_message": msg,
-                    "afip_xml_request": ws.XmlRequest,
-                    "afip_xml_response": ws.XmlResponse,
+                    "afip_xml_request": xml_request,
+                    "afip_xml_response": xml_response,
             }
-
             inv.sudo().write(vals)
             inv._cr.commit()
-            # si obtuvimos el cae hacemos el commit porque estoya no se puede
-            # volver atras
             a_invoices += inv
         return (a_invoices, r_invoices)
-    
+
+    def _zeep_request_cae(self, client, auth, transport, afip_ws, invoice_info):
+        """Llama al WS correspondiente vía zeep. Devuelve (cae, vto, resultado, msg)."""
+        self.ensure_one()
+        # Preflight obligatorio trasladado de pyafipws a zeep
+        self._zeep_preflight(invoice_info, afip_ws)
+        if afip_ws == "wsfe":
+            return self._zeep_wsfe_authorize(client, auth, invoice_info)
+        elif afip_ws == "wsfex":
+            return self._zeep_wsfex_authorize(client, auth, invoice_info)
+        elif afip_ws == "wsbfe":
+            return self._zeep_wsbfe_authorize(client, auth, invoice_info)
+        elif afip_ws == "wsmtxca":
+            raise UserError(_("AFIP WS wsmtxca not implemented with zeep yet"))
+        else:
+            raise UserError(_("AFIP WS %s not implemented") % afip_ws)
+
+    def _zeep_wsfe_authorize(self, client, auth, invoice_info):
+        request_data = self.zeep_wsfe_request(client, invoice_info)
+        try:
+            client.create_message(client.service, "FECAESolicitar", auth, request_data)
+        except Exception as error:
+            raise UserError(repr(error))
+        response = client.service.FECAESolicitar(auth, request_data)
+        errors = obs = events = ""
+        return_codes = []
+        cae = vto = resultado = False
+        if getattr(response, "FeDetResp", None):
+            result = response.FeDetResp.FECAEDetResponse[0]
+            if getattr(result, "Observaciones", None):
+                obs = "".join(["\n* Code %s: %s" % (ob.Code, ob.Msg) for ob in result.Observaciones.Obs])
+                return_codes += [str(ob.Code) for ob in result.Observaciones.Obs]
+            if result.Resultado == "A":
+                cae = result.CAE and str(result.CAE) or ""
+                vto = datetime.strptime(result.CAEFchVto, "%Y%m%d").date()
+                resultado = result.Resultado
+        if getattr(response, "Errors", None):
+            errors = "".join(["\n* Code %s: %s" % (e.Code, e.Msg) for e in response.Errors.Err])
+            return_codes += [str(e.Code) for e in response.Errors.Err]
+        if getattr(response, "Events", None):
+            events = "".join(["\n* Code %s: %s" % (e.Code, e.Msg) for e in response.Events.Evt])
+        msg = "\n".join([x for x in [obs, errors, events] if x])
+        if not cae:
+            return False, False, (resultado or "R"), msg or _("Rejected without CAE")
+        if obs and resultado == "A":
+            resultado = "O"
+        return cae, vto, resultado, msg
+
+    def _zeep_wsfex_authorize(self, client, auth, invoice_info):
+        last_id = client.service.FEXGetLast_ID(auth).FEXResultGet.Id
+        request_data = self.zeep_wsfex_request(client, last_id + 1, invoice_info)
+        try:
+            client.create_message(client.service, "FEXAuthorize", auth, request_data)
+        except Exception as error:
+            raise UserError(repr(error))
+        response = client.service.FEXAuthorize(auth, request_data)
+        errors = ""
+        if response.FEXErr.ErrCode != 0 or response.FEXErr.ErrMsg != "OK":
+            errors = "\n* Code %s: %s" % (response.FEXErr.ErrCode, response.FEXErr.ErrMsg)
+        result = response.FEXResultAuth
+        if not result or result.Resultado != "A":
+            msg = errors or (result.Motivos_Obs if result else "") or _("Rejected")
+            return False, False, "R", msg
+        vto = datetime.strptime(result.Fch_venc_Cae, "%Y%m%d").date()
+        obs = ("\n* %s" % result.Motivos_Obs) if getattr(result, "Motivos_Obs", None) else ""
+        return result.Cae, vto, ("O" if obs else result.Resultado), (errors + obs).strip()
+
+    def _zeep_wsbfe_authorize(self, client, auth, invoice_info):
+        last_id = client.service.BFEGetLast_ID(auth).BFEResultGet.Id
+        request_data = self.zeep_wsbfe_request(client, last_id + 1, invoice_info)
+        try:
+            client.create_message(client.service, "BFEAuthorize", auth, request_data)
+        except Exception as error:
+            raise UserError(repr(error))
+        response = client.service.BFEAuthorize(auth, request_data)
+        errors = ""
+        if response.BFEErr.ErrCode != 0 or response.BFEErr.ErrMsg != "OK":
+            errors = "\n* Code %s: %s" % (response.BFEErr.ErrCode, response.BFEErr.ErrMsg)
+        result = response.BFEResultAuth
+        if not result or result.Resultado != "A":
+            msg = errors or getattr(result, "Obs", "") or _("Rejected")
+            return False, False, "R", msg
+        vto = datetime.strptime(result.Fch_venc_Cae, "%Y%m%d").date()
+        obs = getattr(result, "Obs", "") or ""
+        return result.Cae, vto, ("O" if obs else result.Resultado), (errors + ("\n* %s" % obs if obs else "")).strip()
+
     def get_pyafipws_currency_rate(self):
         self.ensure_one()
-        afip_ws = self.journal_id.afip_ws
-        ws = self.company_id.get_connection(afip_ws).connect()
-        afipws_get_currency_rate = self.pyafipws_get_currency_rate(ws)
+        afipws_get_currency_rate = self.pyafipws_get_currency_rate()
         # TODO: crear cotizacion?
         self._set_afip_rate()
         notification = {

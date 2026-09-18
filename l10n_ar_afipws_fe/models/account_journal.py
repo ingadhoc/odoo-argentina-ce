@@ -52,24 +52,33 @@ class AccountJournal(models.Model):
         afip_ws = self.afip_ws
         if not afip_ws:
             raise UserError(_("No AFIP WS selected"))
-        ws = self.company_id.get_connection(afip_ws).connect()
-        ws.Dummy()
-        title = _("AFIP service %s\n") % afip_ws
-        if ws.AppServerStatus == ws.DbServerStatus == ws.AuthServerStatus == "OK":
+        connection = self.company_id.get_connection(afip_ws)
+        client, auth, transport = connection.connect()
+        if afip_ws == "wsfe":
+            response = client.service.FEDummy()
+            status = (response.AppServer, response.DbServer, response.AuthServer)
+        elif afip_ws == "wsfex":
+            response = client.service.FEXDummy()
+            status = (response.AppServer, response.DbServer, response.AuthServer)
+        elif afip_ws == "wsbfe":
+            response = client.service.BFEDummy()
+            status = (response.AppServer, response.DbServer, response.AuthServer)
+        elif afip_ws == "wscdc":
+            response = client.service.WSCDCDummy()
+            status = (getattr(response, "AppServer", "?"), getattr(response, "DbServer", "?"), getattr(response, "AuthServer", "?"))
+        else:
+            raise UserError(_("AFIP WS %s not implemented") % afip_ws)
+        if status == ("OK", "OK", "OK"):
             notification_type = "success"
         else:
             notification_type = "warning"
 
-        msg = "AppServerStatus: %s DbServerStatus: %s AuthServerStatus: %s" % (
-            ws.AppServerStatus,
-            ws.DbServerStatus,
-            ws.AuthServerStatus,
-        )
+        msg = "AppServerStatus: %s DbServerStatus: %s AuthServerStatus: %s" % status
         notification = {
             "type": "ir.actions.client",
             "tag": "display_notification",
             "params": {
-                "title": title + msg,
+                "title": _("AFIP service %s\n") % afip_ws + msg,
                 "type": notification_type,
                 "sticky": True,  # True/False will display for few seconds if false
             },
