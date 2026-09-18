@@ -22,36 +22,29 @@ msgstr ""
 #. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
 msgid ""
-"<strong>Account's Currency Dependant</strong>: The information sent to ARCA "
-"will depend on the currency configured in the receivable account used in the"
-" transaction."
+"Seleccione la opción por defecto para informar a ARCA si el pago se hará en "
+"moneda extranjera, según RG 5616/2024:"
 msgstr ""
-"<strong>Depende de la Moneda de la Cuenta</strong>: se informará dependiente"
-" de la moneda en la cuenta por cobrar usada en la transacción."
+"Seleccione la opción por defecto para informar a ARCA si el pago se hará en "
+"moneda extranjera, según RG 5616/2024:"
 
 #. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
-msgid "<strong>Default Policy for Foreign Currency Payments:</strong>"
-msgstr "<strong>Política por defecto para pagos en moneda extranjera:</strong>"
-"<strong>Política por defecto para el Pago en Moneda Extranjera:</strong>"
+msgid "<strong>No</strong>: por defecto no reportará pagos en moneda extranjera."
+msgstr ""
+"<strong>No</strong>: por defecto no reportará pagos en moneda extranjera."
 
 #. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
-msgid ""
-"<strong>No</strong>: By default, will not report payments as foreign "
-"currency."
+msgid "<strong>Sí</strong>: siempre informará a ARCA pagos en moneda extranjera."
 msgstr ""
-"<strong>No</strong>: No reportará que los pagos son en moneda extranjera por"
-" defecto."
+"<strong>Sí</strong>: siempre informará a ARCA pagos en moneda extranjera."
 
 #. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
-msgid ""
-"<strong>Yes</strong>: Will always inform ARCA that payments are made in "
-"foreign currency."
+msgid "<strong>Depende de la moneda de la cuenta</strong>: según la moneda de la cuenta por cobrar usada."
 msgstr ""
-"<strong>Si</strong>: Siempre informará a ARCA que los pagos serán en moneda "
-"extranjera."
+"<strong>Depende de la moneda de la cuenta</strong>: según la moneda de la cuenta por cobrar usada."
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields.selection,name:l10n_ar_afipws_fe.selection__res_config_settings__l10n_ar_afip_fce_transmission__adc
@@ -877,7 +870,7 @@ msgstr "Tipo de validación"
 #: model:ir.model.fields.selection,name:l10n_ar_afipws_fe.selection__account_move__l10n_ar_payment_foreign_currency__s
 #: model:ir.model.fields.selection,name:l10n_ar_afipws_fe.selection__res_company__l10n_ar_payment_foreign_currency__s
 msgid "Yes"
-msgstr "Si"
+msgstr "Sí"
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields,field_description:l10n_ar_afipws_fe.field_validate_account_move__async_post
