@@ -1,23 +1,23 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # 	* l10n_ar_afipws
-# 
+#
 # Translators:
+# Berisoft (zeep migration), 2026
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2022
-# 
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 15.0\n"
+"Project-Id-Version: Odoo Server 17.0-20260908\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-25 15:39+0000\n"
-"PO-Revision-Date: 2022-04-19 13:51+0000\n"
-"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2022\n"
-"Language-Team: Spanish (https://www.transifex.com/adhoc/teams/133229/es/)\n"
+"POT-Creation-Date: 2026-09-18 15:15+0000\n"
+"PO-Revision-Date: 2026-09-18 15:15+0000\n"
+"Last-Translator: \n"
+"Language: es\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Language: es\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,help:l10n_ar_afipws.field_afipws_certificate__state
@@ -42,29 +42,24 @@ msgstr ""
 "* El estado \"Cancelado\" es utilizado cuando la clave no es más utilizada. No puede volver a usar esta clave de nuevo."
 
 #. module: l10n_ar_afipws
-#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws.res_config_settings_view_form
-msgid "<span class=\"o_form_label\">AFIP WS</span>"
-msgstr ""
-
-#. module: l10n_ar_afipws
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws.view_partner_form
-msgid "<span class=\"o_stat_value\">AFIP A5</span>"
-msgstr ""
+msgid "<span class=\"o_stat_value\">ARCA Constancia</span>"
+msgstr "<span class=\"o_stat_value\">Constancia ARCA</span>"
 
 #. module: l10n_ar_afipws
 #: model:ir.actions.act_url,name:l10n_ar_afipws.action_afip_padron
 msgid "AFIP - Consulta Constancia Padron"
-msgstr ""
+msgstr "AFIP - Consulta constancia padrón"
 
 #. module: l10n_ar_afipws
 #: model:ir.model,name:l10n_ar_afipws.model_res_partner_update_from_padron_field
 msgid "AFIP A5 Census Field"
-msgstr ""
+msgstr "Campo de padrón AFIP A5"
 
 #. module: l10n_ar_afipws
 #: model:ir.model,name:l10n_ar_afipws.model_res_partner_update_from_padron_wizard
 msgid "AFIP A5 Census Wizard"
-msgstr ""
+msgstr "Asistente de padrón AFIP A5"
 
 #. module: l10n_ar_afipws
 #: model:ir.actions.act_window,name:l10n_ar_afipws.act_afipws_certificate_alias
@@ -108,6 +103,7 @@ msgstr "Servidores de AFIP"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_afipws_connection__afip_ws
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws.res_config_settings_view_form
 msgid "AFIP WS"
 msgstr "WS AFIP"
 
@@ -132,15 +128,9 @@ msgid "AFIP Web Services"
 msgstr "Servicios Web de AFIP"
 
 #. module: l10n_ar_afipws
-#: code:addons/l10n_ar_afipws/models/afipws_connection.py:0
-#, python-format
-msgid "AFIP Webservice %s not implemented yet"
-msgstr "Servicio Web de AFIP %s todavía no implementado"
-
-#. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_res_config_settings__afip_ws_env_type
 msgid "AFIP enviroment type"
-msgstr ""
+msgstr "Tipo de entorno AFIP"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_res_company__alias_ids
@@ -148,19 +138,29 @@ msgid "Aliases"
 msgstr "Alias"
 
 #. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/afipws_connection.py:0
+#: code:addons/l10n_ar_afipws/models/afipws_connection.py:0
+#, python-format
+msgid ""
+"Are you invoicing from another computer or system? You will need to wait 12 "
+"hours to generate a new token."
+msgstr ""
+
+#. module: l10n_ar_afipws
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws.view_base_partner_update_from_padron_form
 msgid "Are you sure to execute the automatic update of your partners ?"
-msgstr ""
+msgstr "¿Seguro que desea ejecutar la actualización automática de sus partners?"
 
 #. module: l10n_ar_afipws
 #: model:ir.actions.act_window,name:l10n_ar_afipws.action_partner_update
 msgid "Automatic Update from Padron"
-msgstr ""
+msgstr "Actualización automática desde padrón"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_afipws_certificate_alias__cuit
 msgid "CUIT"
-msgstr ""
+msgstr "CUIT"
 
 #. module: l10n_ar_afipws
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws.view_afipws_certificate_alias_form
@@ -193,6 +193,8 @@ msgid "Certificate Alias"
 msgstr "Certificar Alias"
 
 #. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/afipws_certificate.py:0
 #: code:addons/l10n_ar_afipws/models/afipws_certificate.py:0
 #, python-format
 msgid "Certificate Alias must be confirmed first!"
@@ -217,7 +219,7 @@ msgstr "Certificados"
 #. module: l10n_ar_afipws
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws.mipymepartner_form
 msgid "Check mi Pyme status"
-msgstr ""
+msgstr "Consultar estado MiPyME"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_afipws_certificate_alias__city
@@ -237,7 +239,7 @@ msgstr "Nombre común"
 #. module: l10n_ar_afipws
 #: model:ir.model,name:l10n_ar_afipws.model_res_company
 msgid "Companies"
-msgstr "Compañías"
+msgstr "Empresas"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_afipws_certificate_alias__company_id
@@ -253,12 +255,12 @@ msgstr "CUIT de la compañía"
 #. module: l10n_ar_afipws
 #: model:ir.model,name:l10n_ar_afipws.model_res_config_settings
 msgid "Config Settings"
-msgstr "Opciones de configuración"
+msgstr "Ajustes de configuración"
 
 #. module: l10n_ar_afipws
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws.res_config_settings_view_form
 msgid "Configure AFIP web services"
-msgstr ""
+msgstr "Configurar web services de AFIP"
 
 #. module: l10n_ar_afipws
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws.view_afipws_certificate_alias_form
@@ -285,6 +287,11 @@ msgid "Connections"
 msgstr "Conexiones"
 
 #. module: l10n_ar_afipws
+#: model:ir.model.fields.selection,name:l10n_ar_afipws.selection__afipws_connection__afip_ws__ws_sr_constancia_inscripcion
+msgid "Constancia de Inscripción"
+msgstr "Constancia de inscripción"
+
+#. module: l10n_ar_afipws
 #: model:ir.model,name:l10n_ar_afipws.model_res_partner
 msgid "Contact"
 msgstr "Contacto"
@@ -292,13 +299,15 @@ msgstr "Contacto"
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,help:l10n_ar_afipws.field_res_partner_update_from_padron_wizard__title_case
 msgid "Converts retreived text fields to Title Case."
-msgstr ""
+msgstr "Convierte los campos de texto leídos a Tipo Título."
 
 #. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/res_company.py:0
 #: code:addons/l10n_ar_afipws/models/res_company.py:0
 #, python-format
-msgid "Could not connect. This is the what we received: %s"
-msgstr "No se puede conectar. Esto es lo que recibimos: %s"
+msgid "Could not connect. This is what we received: %s"
+msgstr "No se pudo conectar. Esto recibimos: %s"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_afipws_certificate_alias__country_id
@@ -334,7 +343,7 @@ msgstr "Creado en"
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_res_partner__mipyme_from_amount
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_res_users__mipyme_from_amount
 msgid "Credit invoice from amount"
-msgstr ""
+msgstr "Factura de crédito desde el monto"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_afipws_certificate_alias__department
@@ -370,12 +379,12 @@ msgstr "Tiempo de expiración"
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_res_partner_update_from_padron_wizard__field_ids
 msgid "Fields"
-msgstr ""
+msgstr "Campos"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_res_partner_update_from_padron_wizard__field_to_update_ids
 msgid "Fields To Update"
-msgstr ""
+msgstr "Campos a actualizar"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_afipws_certificate__request_filename
@@ -393,16 +402,18 @@ msgid "Generation Time"
 msgstr "Tiempo de generación"
 
 #. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/afipws_connection.py:0
 #: code:addons/l10n_ar_afipws/models/afipws_connection.py:0
 #, python-format
 msgid "Go and find data manually"
-msgstr ""
+msgstr "Ir y buscar los datos manualmente"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields.selection,name:l10n_ar_afipws.selection__afipws_certificate_alias__type__homologation
 #: model:ir.model.fields.selection,name:l10n_ar_afipws.selection__afipws_connection__type__homologation
 msgid "Homologation"
-msgstr ""
+msgstr "Homologación"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_afipws_certificate__id
@@ -417,17 +428,21 @@ msgstr "ID"
 #. module: l10n_ar_afipws
 #: model:ir.model.fields.selection,name:l10n_ar_afipws.selection__afipws_certificate_alias__service_type__in_house
 msgid "In House"
-msgstr ""
+msgstr "Propio"
 
 #. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/afipws_certificate.py:0
 #: code:addons/l10n_ar_afipws/models/afipws_certificate.py:0
 #, python-format
 msgid "Invalid action! Please, set the certification string to continue."
-msgstr ""
+msgstr "¡Acción inválida! Cargue el certificado para continuar."
 "¡Acción inválida! Por favor, establezca la cadena de certificación para "
 "continuar."
 
 #. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/afipws_certificate.py:0
 #: code:addons/l10n_ar_afipws/models/afipws_certificate.py:0
 #, python-format
 msgid ""
@@ -439,11 +454,23 @@ msgstr ""
 "líneas."
 
 #. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/afipws_connection.py:0
 #: code:addons/l10n_ar_afipws/models/afipws_connection.py:0
 #, python-format
 msgid ""
 "It seems like AFIP service is not available.\n"
 "Please try again later or try manually"
+msgstr ""
+
+#. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/afipws_connection.py:0
+#: code:addons/l10n_ar_afipws/models/afipws_connection.py:0
+#, python-format
+msgid ""
+"It seems like the certificate has expired. Please renew your AFIP "
+"certificate"
 msgstr ""
 
 #. module: l10n_ar_afipws
@@ -455,16 +482,6 @@ msgstr "Sólo un nombre, lo puede dejar de este modo."
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws.view_afipws_certificate_alias_form
 msgid "Key"
 msgstr "Clave"
-
-#. module: l10n_ar_afipws
-#: model:ir.model.fields,field_description:l10n_ar_afipws.field_afipws_certificate____last_update
-#: model:ir.model.fields,field_description:l10n_ar_afipws.field_afipws_certificate_alias____last_update
-#: model:ir.model.fields,field_description:l10n_ar_afipws.field_afipws_connection____last_update
-#: model:ir.model.fields,field_description:l10n_ar_afipws.field_afipws_upload_certificate_wizard____last_update
-#: model:ir.model.fields,field_description:l10n_ar_afipws.field_res_partner_update_from_padron_field____last_update
-#: model:ir.model.fields,field_description:l10n_ar_afipws.field_res_partner_update_from_padron_wizard____last_update
-msgid "Last Modified on"
-msgstr "Última Modificación en"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_afipws_certificate__write_uid
@@ -490,30 +507,32 @@ msgstr "Última actualización en"
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_res_partner__last_update_census
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_res_users__last_update_census
 msgid "Last update census"
-msgstr ""
+msgstr "Última actualización del padrón"
 
 #. module: l10n_ar_afipws
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws.res_config_settings_view_form
 msgid "List certificates"
-msgstr ""
+msgstr "Listar certificados"
 
 #. module: l10n_ar_afipws
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws.res_config_settings_view_form
 msgid "List conections"
-msgstr ""
+msgstr "Listar conexiones"
 
 #. module: l10n_ar_afipws
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws.mipymepartner_form
 msgid "Mi pyme"
-msgstr ""
+msgstr "MiPyME"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_res_partner__mipyme_required
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_res_users__mipyme_required
 msgid "Must credit invoice"
-msgstr ""
+msgstr "Debe emitir factura de crédito"
 
 #. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/res_partner.py:0
 #: code:addons/l10n_ar_afipws/models/res_partner.py:0
 #, python-format
 msgid ""
@@ -523,22 +542,28 @@ msgid ""
 msgstr ""
 
 #. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/wizard/res_partner_update_from_padron_wizard.py:0
 #: code:addons/l10n_ar_afipws/wizard/res_partner_update_from_padron_wizard.py:0
 #, python-format
 msgid "No se encontró ningún partner con CUIT para actualizar"
-msgstr ""
+msgstr "No se encontró ningún partner con CUIT para actualizar"
 
 #. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/res_company.py:0
 #: code:addons/l10n_ar_afipws/models/res_company.py:0
 #, python-format
 msgid "Not confirmed certificate for %s on company %s"
 msgstr "Certificado no confirmado para %s en la compañía %s"
 
 #. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/res_partner.py:0
 #: code:addons/l10n_ar_afipws/models/res_partner.py:0
 #, python-format
 msgid "Not confirmed certificate found on database"
-msgstr ""
+msgstr "No hay certificado confirmado en la base de datos"
 
 #. module: l10n_ar_afipws
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws.view_base_partner_update_from_padron_form
@@ -551,17 +576,17 @@ msgstr ""
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,help:l10n_ar_afipws.field_res_partner_update_from_padron_wizard__field_to_update_ids
 msgid "Only this fields are going to be retrived and updated"
-msgstr ""
+msgstr "Solo estos campos se van a leer y actualizar"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields.selection,name:l10n_ar_afipws.selection__res_partner_update_from_padron_wizard__state__option
 msgid "Option"
-msgstr ""
+msgstr "Opción"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields.selection,name:l10n_ar_afipws.selection__afipws_certificate_alias__service_type__outsourced
 msgid "Outsourced"
-msgstr ""
+msgstr "Tercerizado"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_res_partner_update_from_padron_wizard__partner_id
@@ -571,7 +596,15 @@ msgstr "Empresa"
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_res_partner_update_from_padron_wizard__partner_ids
 msgid "Partners"
-msgstr ""
+msgstr "Contactos"
+
+#. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/afipws_connection.py:0
+#: code:addons/l10n_ar_afipws/models/afipws_connection.py:0
+#, python-format
+msgid "Please report this error to your Odoo provider"
+msgstr "Reporte este error a su proveedor de Odoo"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_afipws_certificate_alias__key
@@ -582,7 +615,7 @@ msgstr "Clave privada"
 #: model:ir.model.fields.selection,name:l10n_ar_afipws.selection__afipws_certificate_alias__type__production
 #: model:ir.model.fields.selection,name:l10n_ar_afipws.selection__afipws_connection__type__production
 msgid "Production"
-msgstr ""
+msgstr "Producción"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_afipws_certificate__csr
@@ -592,7 +625,7 @@ msgstr "Solicitar Certificado"
 #. module: l10n_ar_afipws
 #: model:ir.model.fields.selection,name:l10n_ar_afipws.selection__res_partner_update_from_padron_wizard__state__selection
 msgid "Selection"
-msgstr ""
+msgstr "Selección"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_afipws_certificate_alias__service_provider_cuit
@@ -607,27 +640,22 @@ msgstr "Tipo de Servicio"
 #. module: l10n_ar_afipws
 #: model:ir.model.fields.selection,name:l10n_ar_afipws.selection__afipws_connection__afip_ws__ws_sr_padron_a10
 msgid "Servicio de Consulta de Padrón Alcance 10"
-msgstr ""
+msgstr "Servicio de consulta de padrón alcance 10"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields.selection,name:l10n_ar_afipws.selection__afipws_connection__afip_ws__ws_sr_padron_a100
 msgid "Servicio de Consulta de Padrón Alcance 100"
-msgstr ""
+msgstr "Servicio de consulta de padrón alcance 100"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields.selection,name:l10n_ar_afipws.selection__afipws_connection__afip_ws__ws_sr_padron_a4
 msgid "Servicio de Consulta de Padrón Alcance 4"
-msgstr ""
-
-#. module: l10n_ar_afipws
-#: model:ir.model.fields.selection,name:l10n_ar_afipws.selection__afipws_connection__afip_ws__ws_sr_padron_a5
-msgid "Servicio de Consulta de Padrón Alcance 5"
-msgstr ""
+msgstr "Servicio de consulta de padrón alcance 4"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields.selection,name:l10n_ar_afipws.selection__afipws_connection__afip_ws__wsfecred
 msgid "Servicio de Consulta para facturas de credito"
-msgstr ""
+msgstr "Servicio de consulta para facturas de crédito"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_afipws_connection__sign
@@ -637,7 +665,7 @@ msgstr "Firma"
 #. module: l10n_ar_afipws
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws.view_base_partner_update_from_padron_form
 msgid "Skip these partner"
-msgstr ""
+msgstr "Omitir estos partners"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_afipws_certificate__state
@@ -652,17 +680,67 @@ msgid "Status"
 msgstr "Estado"
 
 #. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/afipws_certificate_alias.py:0
 #: code:addons/l10n_ar_afipws/models/afipws_certificate_alias.py:0
 #, python-format
 msgid "The Common Name must be lower than 50 characters long"
 msgstr "El Nombre Común debe contener menos de 50 caracteres"
 
 #. module: l10n_ar_afipws
-#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws.view_base_partner_update_from_padron_form
-msgid "There are no more partners to update for this request..."
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/afipws_connection.py:0
+#: code:addons/l10n_ar_afipws/models/afipws_connection.py:0
+#, python-format
+msgid "The certificate and private key do not match"
+msgstr "El certificado y la clave privada no coinciden"
+
+#. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/afipws_connection.py:0
+#: code:addons/l10n_ar_afipws/models/afipws_connection.py:0
+#, python-format
+msgid ""
+"The certificate is not authorized (delegated) to work with this web service"
 msgstr ""
 
 #. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/afipws_connection.py:0
+#: code:addons/l10n_ar_afipws/models/afipws_connection.py:0
+#, python-format
+msgid ""
+"The testing certificate is being used by another person, wait 10 minutes and"
+" try again or use another demo certificate."
+msgstr ""
+
+#. module: l10n_ar_afipws
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws.view_base_partner_update_from_padron_form
+msgid "There are no more partners to update for this request..."
+msgstr "No hay más partners para actualizar en este pedido..."
+
+#. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/afipws_connection.py:0
+#: code:addons/l10n_ar_afipws/models/afipws_connection.py:0
+#, python-format
+msgid ""
+"There was a connection problem to AFIP. Error\n"
+"\n"
+"%s"
+msgstr ""
+
+#. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/afipws_connection.py:0
+#: code:addons/l10n_ar_afipws/models/afipws_connection.py:0
+#, python-format
+msgid "There was a problem with the connection to the %s webservice: %s"
+msgstr "Hubo un problema con la conexión al webservice %s: %s"
+
+#. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/afipws_connection.py:0
 #: code:addons/l10n_ar_afipws/models/afipws_connection.py:0
 #, python-format
 msgid ""
@@ -671,6 +749,8 @@ msgstr ""
 "Este método es para las conexiones %s y puede llamarlo de una conexión %s"
 
 #. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/res_company.py:0
 #: code:addons/l10n_ar_afipws/models/res_company.py:0
 #, python-format
 msgid ""
@@ -681,7 +761,7 @@ msgstr ""
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_res_partner_update_from_padron_wizard__title_case
 msgid "Title Case"
-msgstr ""
+msgstr "Tipo Título"
 
 #. module: l10n_ar_afipws
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws.view_afipws_certificate_alias_form
@@ -692,7 +772,7 @@ msgstr "A Borrador"
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_afipws_connection__token
 msgid "Token"
-msgstr ""
+msgstr "Token"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_afipws_certificate_alias__type
@@ -706,6 +786,8 @@ msgid "Unique ID"
 msgstr "ID Único"
 
 #. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/afipws_certificate.py:0
 #: code:addons/l10n_ar_afipws/models/afipws_certificate.py:0
 #, python-format
 msgid ""
@@ -720,33 +802,33 @@ msgstr ""
 #. module: l10n_ar_afipws
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws.view_base_partner_update_from_padron_form
 msgid "Update Automatically"
-msgstr ""
+msgstr "Actualizar automáticamente"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_res_partner_update_from_padron_wizard__update_constancia
 msgid "Update Constancia"
-msgstr ""
+msgstr "Actualizar constancia"
 
 #. module: l10n_ar_afipws
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws.view_base_partner_update_from_padron_form
 msgid "Update From Padron AFIP"
-msgstr ""
+msgstr "Actualizar desde padrón AFIP"
 
 #. module: l10n_ar_afipws
 #: model:ir.actions.act_window,name:l10n_ar_afipws.action_base_partner_update_from_padron
 #: model:ir.ui.menu,name:l10n_ar_afipws.menu_base_partner_update_from_padron
 msgid "Update Partners From Padron AFIP"
-msgstr ""
+msgstr "Actualizar partners desde padrón AFIP"
 
 #. module: l10n_ar_afipws
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws.view_base_partner_update_from_padron_form
 msgid "Update Selection"
-msgstr ""
+msgstr "Actualizar selección"
 
 #. module: l10n_ar_afipws
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws.view_base_partner_update_from_padron_form
 msgid "Update with Manual Check"
-msgstr ""
+msgstr "Actualizar con revisión manual"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_afipws_upload_certificate_wizard__certificate_file
@@ -756,10 +838,22 @@ msgid "Upload Certificate"
 msgstr "Subir Certificado"
 
 #. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/afipws_connection.py:0
+#: code:addons/custom/l10n_ar_afipws/models/afipws_connection.py:0
+#: code:addons/l10n_ar_afipws/models/afipws_connection.py:0
 #: code:addons/l10n_ar_afipws/models/afipws_connection.py:0
 #, python-format
 msgid "Webservice %s not supported"
 msgstr "Servicio web %s no soportado"
+
+#. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/afipws_connection.py:0
+#: code:addons/l10n_ar_afipws/models/afipws_connection.py:0
+#, python-format
+msgid "Webservice is down"
+msgstr "El webservice está caído"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_res_partner_update_from_padron_field__wizard_id
@@ -767,6 +861,8 @@ msgid "Wizard"
 msgstr "Asistente"
 
 #. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/afipws_certificate.py:0
 #: code:addons/l10n_ar_afipws/models/afipws_certificate.py:0
 #, python-format
 msgid ""
@@ -779,32 +875,32 @@ msgstr ""
 #. module: l10n_ar_afipws
 #: model:ir.model,name:l10n_ar_afipws.model_afipws_certificate
 msgid "afipws.certificate"
-msgstr ""
+msgstr "certificado afipws"
 
 #. module: l10n_ar_afipws
 #: model:ir.model,name:l10n_ar_afipws.model_afipws_upload_certificate_wizard
 msgid "afipws.upload_certificate.wizard"
-msgstr ""
+msgstr "asistente de carga de certificado afipws"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields.selection,name:l10n_ar_afipws.selection__res_config_settings__afip_ws_env_type__homologation
 msgid "homologation"
-msgstr ""
+msgstr "homologación"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_res_partner_update_from_padron_field__field
 msgid "name"
-msgstr ""
+msgstr "nombre"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_res_partner_update_from_padron_field__new_value
 msgid "new Value"
-msgstr ""
+msgstr "Valor nuevo"
 
 #. module: l10n_ar_afipws
 #: model:ir.model.fields,field_description:l10n_ar_afipws.field_res_partner_update_from_padron_field__old_value
 msgid "old Value"
-msgstr ""
+msgstr "Valor anterior"
 
 #. module: l10n_ar_afipws
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws.view_base_partner_update_from_padron_form
@@ -815,4 +911,12 @@ msgstr "o"
 #. module: l10n_ar_afipws
 #: model:ir.model.fields.selection,name:l10n_ar_afipws.selection__res_config_settings__afip_ws_env_type__production
 msgid "production"
-msgstr ""
+msgstr "producción"
+
+#. module: l10n_ar_afipws
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws/models/afipws_connection.py:0
+#: code:addons/l10n_ar_afipws/models/afipws_connection.py:0
+#, python-format
+msgid "pyafipws was removed, use zeep connect() for ws %s"
+msgstr "pyafipws eliminado, usar connect() de zeep para el ws %s"
