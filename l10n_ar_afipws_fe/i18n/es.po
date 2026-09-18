@@ -964,15 +964,29 @@ msgstr "QR"
 
 #. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
-msgid "<strong>Yes</strong>: always inform ARCA of foreign currency payments."
-msgstr "<strong>Sí</strong>: siempre informar a ARCA pagos en moneda extranjera."
+msgid "This information will be sent to AFIP by default when validating FCE documents. RG 4919/2021 requirement."
+msgstr "Esta información será enviada a AFIP de forma predeterminada al validar documentos FCE. Requisito RG 4919/2021."
 
 #. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
-msgid "<strong>No</strong>: do not report foreign currency payments by default."
-msgstr "<strong>No</strong>: no reportar pagos en moneda extranjera por defecto."
+msgid ""
+"Please select the default option that will be used to inform ARCA whether "
+"the payment will be made in foreign currency, as required by RG 5616/2024:"
+msgstr ""
+"Seleccione la opción por defecto para informar a ARCA si el pago se hará en "
+"moneda extranjera, según RG 5616/2024:"
 
 #. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
-msgid "<strong>Account's Currency Dependant</strong>: follow the receivable account currency."
-msgstr "<strong>Depende de la moneda de la cuenta</strong>: seguir la moneda de la cuenta por cobrar."
+msgid "<strong>Yes</strong>: Will always inform ARCA that payments are made in foreign currency."
+msgstr "<strong>Sí</strong>: Siempre informará a ARCA pagos en moneda extranjera."
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
+msgid "<strong>No</strong>: By default, will not report payments as foreign currency."
+msgstr "<strong>No</strong>: Por defecto no reportará pagos en moneda extranjera."
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
+msgid "<strong>Account's Currency Dependant</strong>: The information sent to ARCA will depend on the currency configured in the receivable account used in the transaction."
+msgstr "<strong>Depende de la moneda de la cuenta</strong>: La información enviada a ARCA dependerá de la moneda configurada en la cuenta por cobrar usada en la transacción."

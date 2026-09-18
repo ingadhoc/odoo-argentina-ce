@@ -10,18 +10,27 @@
                 <field name="afip_ws_env_type" position="attributes">
                     <attribute name="class">font-weight-bold ms-4</attribute>
                 </field>
+                <xpath expr="//block[@id='invoicing_settings']/setting[@type='header']" position="attributes">
+                    <attribute name="type">setting</attribute>
+                </xpath>
                 <xpath expr="//block[@id='invoicing_settings']" position="inside">
                     <block title="Electronic Invoice AFIP (ARCA)" name="afip_fe_settings_container">
-                        <setting string="FCE MiPyME Transmission" title="Transmission option sent to AFIP for FCE MiPyME documents. RG 4919/2021." id="afip_fe_fce_transmission_setting">
+                        <setting string="FCE MiPyME Transmission" id="afip_fe_fce_transmission_setting">
                             <field name="l10n_ar_afip_fce_transmission" widget="radio"/>
+                            <div class="text-muted" style="margin-top:8px;">
+                                This information will be sent to AFIP by default when validating FCE documents. RG 4919/2021 requirement.
+                            </div>
                         </setting>
-                        <setting string="Foreign Currency Payments" title="Default policy to inform ARCA whether the payment will be made in foreign currency (RG 5616/2024): Yes, No, or depending on the receivable account currency." id="afip_fe_foreign_currency_setting">
+                        <setting string="Foreign Currency Payments" id="afip_fe_foreign_currency_setting">
                             <field name="l10n_ar_payment_foreign_currency" widget="radio"/>
-                            <div class="text-muted small" style="margin-top:8px;">
+                            <div class="text-muted" style="margin-top:8px;">
+                                <p>
+                                    Please select the default option that will be used to inform ARCA whether the payment will be made in foreign currency, as required by RG 5616/2024:
+                                </p>
                                 <ul class="mb-0">
-                                    <li><strong>Yes</strong>: always inform ARCA of foreign currency payments.</li>
-                                    <li><strong>No</strong>: do not report foreign currency payments by default.</li>
-                                    <li><strong>Account's Currency Dependant</strong>: follow the receivable account currency.</li>
+                                    <li><strong>Yes</strong>: Will always inform ARCA that payments are made in foreign currency.</li>
+                                    <li><strong>No</strong>: By default, will not report payments as foreign currency.</li>
+                                    <li><strong>Account's Currency Dependant</strong>: The information sent to ARCA will depend on the currency configured in the receivable account used in the transaction.</li>
                                 </ul>
                             </div>
                         </setting>
