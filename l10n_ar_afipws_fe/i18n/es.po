@@ -961,3 +961,18 @@ msgstr "pyafipws eliminado, usar connect() de zeep para el ws %s"
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.report_invoice_document
 msgid "qr"
 msgstr "QR"
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
+msgid "<strong>Yes</strong>: always inform ARCA of foreign currency payments."
+msgstr "<strong>Sí</strong>: siempre informar a ARCA pagos en moneda extranjera."
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
+msgid "<strong>No</strong>: do not report foreign currency payments by default."
+msgstr "<strong>No</strong>: no reportar pagos en moneda extranjera por defecto."
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
+msgid "<strong>Account's Currency Dependant</strong>: follow the receivable account currency."
+msgstr "<strong>Depende de la moneda de la cuenta</strong>: seguir la moneda de la cuenta por cobrar."

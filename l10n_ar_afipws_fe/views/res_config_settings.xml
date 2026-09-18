@@ -7,6 +7,9 @@
             <field eval="40" name="priority"/>
             <field name="inherit_id" ref="l10n_ar_afipws.res_config_settings_view_form"/>
             <field name="arch" type="xml">
+                <field name="afip_ws_env_type" position="attributes">
+                    <attribute name="class">font-weight-bold ms-4</attribute>
+                </field>
                 <xpath expr="//block[@id='invoicing_settings']" position="inside">
                     <block title="Electronic Invoice AFIP (ARCA)" name="afip_fe_settings_container">
                         <setting string="FCE MiPyME Transmission" title="Transmission option sent to AFIP for FCE MiPyME documents. RG 4919/2021." id="afip_fe_fce_transmission_setting">
@@ -14,6 +17,13 @@
                         </setting>
                         <setting string="Foreign Currency Payments" title="Default policy to inform ARCA whether the payment will be made in foreign currency (RG 5616/2024): Yes, No, or depending on the receivable account currency." id="afip_fe_foreign_currency_setting">
                             <field name="l10n_ar_payment_foreign_currency" widget="radio"/>
+                            <div class="text-muted small" style="margin-top:8px;">
+                                <ul class="mb-0">
+                                    <li><strong>Yes</strong>: always inform ARCA of foreign currency payments.</li>
+                                    <li><strong>No</strong>: do not report foreign currency payments by default.</li>
+                                    <li><strong>Account's Currency Dependant</strong>: follow the receivable account currency.</li>
+                                </ul>
+                            </div>
                         </setting>
                     </block>
                 </xpath>
