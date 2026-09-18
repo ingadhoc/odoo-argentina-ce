@@ -81,7 +81,8 @@ class TestIvaSimpleCsvFormat(TransactionCase):
     def test_transform_value(self):
         self.assertEqual(fmt.transform_value(123.45), "123,45")
         self.assertEqual(fmt.transform_value(-123.45), "123,45")
-        self.assertEqual(fmt.transform_value(0), "0")
+        self.assertEqual(fmt.transform_value(0), "0,00")
+        self.assertEqual(fmt.transform_value(0.0), "0,00")
         self.assertEqual(fmt.transform_value(None), "")
         self.assertEqual(fmt.transform_value("ABC"), "ABC")
 
