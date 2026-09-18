@@ -7,22 +7,16 @@
             <field eval="40" name="priority"/>
             <field name="inherit_id" ref="l10n_ar_afipws.res_config_settings_view_form"/>
             <field name="arch" type="xml">
-                <field name="afip_ws_env_type" position="after">
-                    <group>
-                        <field name="l10n_ar_afip_fce_transmission" widget="radio"/>
-                        <field name="l10n_ar_payment_foreign_currency" widget="radio"/>
-                    </group>
-                    <div class="text-muted" style="margin-top:10px;">
-                        <p>
-                            Seleccione la opción por defecto para informar a ARCA si el pago se hará en moneda extranjera, según RG 5616/2024:
-                        </p>
-                        <ul>
-                            <li><strong>Sí</strong>: siempre informará a ARCA pagos en moneda extranjera.</li>
-                            <li><strong>No</strong>: por defecto no reportará pagos en moneda extranjera.</li>
-                            <li><strong>Depende de la moneda de la cuenta</strong>: según la moneda de la cuenta por cobrar usada.</li>
-                        </ul>
-                    </div>
-                </field>
+                <xpath expr="//block[@id='invoicing_settings']" position="inside">
+                    <block title="Electronic Invoice AFIP (ARCA)" name="afip_fe_settings_container">
+                        <setting string="FCE MiPyME Transmission" title="Transmission option sent to AFIP for FCE MiPyME documents. RG 4919/2021." id="afip_fe_fce_transmission_setting">
+                            <field name="l10n_ar_afip_fce_transmission" widget="radio"/>
+                        </setting>
+                        <setting string="Foreign Currency Payments" title="Default policy to inform ARCA whether the payment will be made in foreign currency (RG 5616/2024): Yes, No, or depending on the receivable account currency." id="afip_fe_foreign_currency_setting">
+                            <field name="l10n_ar_payment_foreign_currency" widget="radio"/>
+                        </setting>
+                    </block>
+                </xpath>
             </field>
         </record>
     </data>

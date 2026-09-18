@@ -21,30 +21,33 @@ msgstr ""
 
 #. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
+msgid "Electronic Invoice AFIP (ARCA)"
+msgstr "Factura electrónica AFIP (ARCA)"
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
+msgid "FCE MiPyME Transmission"
+msgstr "Transmisión FCE MiPyME"
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
+msgid "Transmission option sent to AFIP for FCE MiPyME documents. RG 4919/2021."
+msgstr "Opción de transmisión enviada a AFIP para documentos FCE MiPyME. RG 4919/2021."
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
+msgid "Foreign Currency Payments"
+msgstr "Pagos en moneda extranjera"
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
 msgid ""
-"Seleccione la opción por defecto para informar a ARCA si el pago se hará en "
-"moneda extranjera, según RG 5616/2024:"
+"Default policy to inform ARCA whether the payment will be made in foreign "
+"currency (RG 5616/2024): Yes, No, or depending on the receivable account "
+"currency."
 msgstr ""
-"Seleccione la opción por defecto para informar a ARCA si el pago se hará en "
-"moneda extranjera, según RG 5616/2024:"
-
-#. module: l10n_ar_afipws_fe
-#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
-msgid "<strong>No</strong>: por defecto no reportará pagos en moneda extranjera."
-msgstr ""
-"<strong>No</strong>: por defecto no reportará pagos en moneda extranjera."
-
-#. module: l10n_ar_afipws_fe
-#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
-msgid "<strong>Sí</strong>: siempre informará a ARCA pagos en moneda extranjera."
-msgstr ""
-"<strong>Sí</strong>: siempre informará a ARCA pagos en moneda extranjera."
-
-#. module: l10n_ar_afipws_fe
-#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
-msgid "<strong>Depende de la moneda de la cuenta</strong>: según la moneda de la cuenta por cobrar usada."
-msgstr ""
-"<strong>Depende de la moneda de la cuenta</strong>: según la moneda de la cuenta por cobrar usada."
+"Política por defecto para informar a ARCA si el pago se hará en moneda "
+"extranjera (RG 5616/2024): Sí, No, o según la moneda de la cuenta por cobrar."
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields.selection,name:l10n_ar_afipws_fe.selection__res_config_settings__l10n_ar_afip_fce_transmission__adc
@@ -745,16 +748,6 @@ msgstr "Obtener códigos del Nomenclador Común del Mercosur"
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.view_account_journal_form
 msgid "Obtener numeros de factura"
 msgstr "Obtener números de factura"
-
-#. module: l10n_ar_afipws_fe
-#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
-msgid ""
-"Please select the default option that will be used to inform ARCA whether "
-"the payment will be made in foreign currency, as required by RG 5616/2024:"
-msgstr ""
-"Por favor seleccionar la opción por defecto que será usada para informar a "
-"ARCA si el pago se hará en moneda extranjera, como es requerido por la RG "
-"5616/2024:"
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields.selection,name:l10n_ar_afipws_fe.selection__account_move__afip_result__r
