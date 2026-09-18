@@ -1,0 +1,1027 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* l10n_ar_reports
+#
+# Translators:
+# Berisoft (zeep migration), 2026
+# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2022
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0-20260908\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-18 15:15+0000\n"
+"PO-Revision-Date: 2026-09-18 15:15+0000\n"
+"Last-Translator: \n"
+"Language: es\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+
+#. module: l10n_ar_reports
+#. odoo-python
+#: code:addons/custom/l10n_ar_reports/models/account_vat_ledger.py:0
+#: code:addons/l10n_ar_reports/models/account_vat_ledger.py:0
+#, python-format
+msgid "%s VAT Ledger %s - %s"
+msgstr "%s Libro de IVA %s - %s"
+
+#. module: l10n_ar_reports
+#: model:ir.actions.report,print_report_name:l10n_ar_reports.account_vat_ledger_xlsx
+msgid ""
+"'Libro IVA %s %s' % (object.type == 'purchase' and 'Compras' or 'Ventas', "
+"object.date_to)"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__afip_responsibility_type_id
+msgid "AFIP Responsibility Type"
+msgstr "Tipo de responsabilidad AFIP"
+
+#. module: l10n_ar_reports
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.view_account_ar_vat_line_search
+msgid "AFIP responsibility"
+msgstr "Responsabilidad AFIP"
+
+#. module: l10n_ar_reports
+#: model:ir.model,name:l10n_ar_reports.model_l10n_ar_arca_activity
+msgid "ARCA — Actividad económica (Nomenclador F-883)"
+msgstr "ARCA — Actividad económica (Nomenclador F-883)"
+
+#. module: l10n_ar_reports
+#: model:ir.model,name:l10n_ar_reports.model_account_account
+msgid "Account"
+msgstr "Cuenta"
+
+#. module: l10n_ar_reports
+#: model:ir.model,name:l10n_ar_reports.model_account_vat_ledger
+msgid "Account VAT Ledger"
+msgstr "Libro de IVA"
+
+#. module: l10n_ar_reports
+#: model:ir.actions.report,name:l10n_ar_reports.account_vat_ledger_xlsx
+msgid "Account Vat Ledger"
+msgstr "Libro de IVA"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__message_needaction
+msgid "Action Needed"
+msgstr "Acción requerida"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_l10n_ar_arca_activity__active
+msgid "Active"
+msgstr "Activo"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_account__l10n_ar_arca_activity_id
+msgid "Actividad ARCA"
+msgstr "Actividad ARCA"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_l10n_ar_iva_simple_wizard__activity_id
+msgid "Actividad ARCA (override)"
+msgstr "Actividad ARCA (override)"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,help:l10n_ar_reports.field_l10n_ar_iva_simple_wizard__activity_id
+msgid ""
+"Actividad ARCA a usar como fallback global. Cadena de prioridad:\n"
+"  1. Cuenta contable de la línea (account.l10n_ar_arca_activity_id)\n"
+"  2. Default de la empresa (company.l10n_ar_arca_activity_id)\n"
+"  3. Este campo del wizard\n"
+"Si nada matchea, se usa '0' (sin clasificar)."
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_res_company__l10n_ar_arca_activity_id
+msgid "Actividad ARCA principal"
+msgstr "Actividad ARCA principal"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,help:l10n_ar_reports.field_account_account__l10n_ar_arca_activity_id
+msgid ""
+"Actividad económica del nomenclador F-883 asignada a esta cuenta. Se usa al "
+"generar el reporte IVA Simple para agrupar movimientos por actividad. Si "
+"está vacío, cae al default de la empresa."
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,help:l10n_ar_reports.field_res_company__l10n_ar_arca_activity_id
+msgid ""
+"Actividad económica principal de la empresa según el nomenclador F-883. Se "
+"usa como default al generar IVA Simple si la cuenta contable no tiene "
+"actividad propia."
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_l10n_ar_iva_simple_wizard__activity
+msgid "Activity"
+msgstr "Actividad"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__afip_responsibility_type_name
+msgid "Afip Responsibility Type Name"
+msgstr "Nombre del tipo de responsabilidad AFIP"
+
+#. module: l10n_ar_reports
+#. odoo-python
+#: code:addons/custom/l10n_ar_reports/models/account_vat_ledger.py:0
+#: code:addons/l10n_ar_reports/models/account_vat_ledger.py:0
+#, python-format
+msgid "Alicuots_%s_%s.txt"
+msgstr "Alicuotas_%s_%s.txt"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__aliquots_file
+msgid "Aliquots File"
+msgstr "Archivo de alícuotas"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__aliquots_filename
+msgid "Aliquots Filename"
+msgstr "Nombre del archivo de alícuotas"
+
+#. module: l10n_ar_reports
+#: model:ir.actions.act_window,name:l10n_ar_reports.action_account_ar_vat_line
+#: model:ir.ui.menu,name:l10n_ar_reports.menu_current_account
+msgid "Análisis de IVA"
+msgstr "Análisis de IVA"
+
+#. module: l10n_ar_reports
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.view_iva_simple_wizard_form
+msgid "Archivo generado"
+msgstr "Archivo generado"
+
+#. module: l10n_ar_reports
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.account_vat_ledger_form
+msgid "Archivos TXT"
+msgstr "Archivos TXT"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__message_attachment_count
+msgid "Attachment Count"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:account.account.tag,name:l10n_ar_reports.tag_fixed_asset_account
+msgid "Bienes de Uso (IVA Simple)"
+msgstr "Bienes de Uso (IVA Simple)"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields.selection,name:l10n_ar_reports.selection__account_vat_ledger__prorate_type__by_voucher
+msgid "By Voucher"
+msgstr "Por comprobante"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields.selection,name:l10n_ar_reports.selection__account_vat_ledger__state__cancel
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.account_vat_ledger_form
+msgid "Cancel"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.view_iva_simple_wizard_form
+msgid "Cerrar"
+msgstr "Cerrar"
+
+#. module: l10n_ar_reports
+#: model:ir.model,name:l10n_ar_reports.model_res_company
+msgid "Companies"
+msgstr "Empresas"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__company_id
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__company_id
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_l10n_ar_iva_simple_wizard__company_id
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.view_account_ar_vat_line_search
+msgid "Company"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.account_vat_ledger_form
+msgid "Compute TXT Data"
+msgstr "Calcular datos TXT"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields.selection,name:l10n_ar_reports.selection__l10n_ar_iva_simple_wizard__state__draft
+msgid "Configurar"
+msgstr "Configurar"
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_410010
+msgid "Construcción de edificios residenciales"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_421000
+msgid "Construcción de obras de infraestructura para el transporte"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__create_uid
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_l10n_ar_arca_activity__create_uid
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_l10n_ar_iva_simple_wizard__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__create_date
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_l10n_ar_arca_activity__create_date
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_l10n_ar_iva_simple_wizard__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__tax_credit_computable_amount
+msgid "Credit Computable Amount"
+msgstr "Monto de crédito computable"
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_014110
+msgid "Cría de ganado bovino"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__cuit
+msgid "Cuit"
+msgstr "CUIT"
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_011990
+msgid "Cultivos n.c.p."
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__company_currency_id
+msgid "Currency"
+msgstr "Moneda"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields.selection,name:l10n_ar_reports.selection__account_ar_vat_line__move_type__out_refund
+msgid "Customer Credit Note"
+msgstr "Nota de crédito de cliente"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields.selection,name:l10n_ar_reports.selection__account_ar_vat_line__move_type__out_invoice
+msgid "Customer Invoice"
+msgstr "Factura de cliente"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_l10n_ar_arca_activity__code
+msgid "Código"
+msgstr "Código"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,help:l10n_ar_reports.field_l10n_ar_arca_activity__code
+msgid ""
+"Código del nomenclador F-883. Para IVA Simple se usan los 3 primeros "
+"dígitos."
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__date
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.view_account_ar_vat_line_search
+msgid "Date"
+msgstr "Fecha"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_l10n_ar_iva_simple_wizard__date_from
+msgid "Date From"
+msgstr "Fecha desde"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_l10n_ar_iva_simple_wizard__date_to
+msgid "Date To"
+msgstr "Fecha hasta"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_l10n_ar_arca_activity__name
+msgid "Descripción"
+msgstr "Descripción"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__display_name
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__display_name
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_l10n_ar_arca_activity__display_name
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_l10n_ar_iva_simple_wizard__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__document_type_id
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.view_account_ar_vat_line_search
+msgid "Document Type"
+msgstr "Tipo de documento"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields.selection,name:l10n_ar_reports.selection__account_vat_ledger__state__draft
+msgid "Draft"
+msgstr ""
+
+#. module: l10n_ar_reports
+#. odoo-python
+#: code:addons/custom/l10n_ar_reports/report/iva_simple_wizard.py:0
+#: code:addons/l10n_ar_reports/report/iva_simple_wizard.py:0
+#, python-format
+msgid "El 'Desde' debe ser anterior o igual al 'Hasta'."
+msgstr "El 'Desde' debe ser anterior o igual al 'Hasta'."
+
+#. module: l10n_ar_reports
+#: model:ir.model.constraint,message:l10n_ar_reports.constraint_l10n_ar_arca_activity_code_uniq
+msgid "El código de actividad debe ser único."
+msgstr "El código de actividad debe ser único."
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__date_to
+msgid "End Date"
+msgstr "Fecha hasta"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__move_id
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.view_account_ar_vat_line_search
+msgid "Entry"
+msgstr "Apunte"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_l10n_ar_iva_simple_wizard__file_content
+msgid "File Content"
+msgstr "Contenido del archivo"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_l10n_ar_iva_simple_wizard__file_name
+msgid "File Name"
+msgstr "Nombre del archivo"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__first_page
+msgid "First Page"
+msgstr "Primera hoja"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__message_follower_ids
+msgid "Followers"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__message_partner_ids
+msgid "Followers (Partners)"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.view_iva_simple_wizard_form
+msgid "Generar ZIP (4 CSV)"
+msgstr "Generar ZIP (4 CSV)"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields.selection,name:l10n_ar_reports.selection__account_vat_ledger__prorate_type__global
+msgid "Global"
+msgstr "Global"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__base_10
+msgid "Grav. 10,5%"
+msgstr "Grav. 10,5%"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__base_25
+msgid "Grav. 2,5%"
+msgstr "Grav. 2,5%"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__base_21
+msgid "Grav. 21%"
+msgstr "Grav. 21%"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__base_27
+msgid "Grav. 27%"
+msgstr "Grav. 27%"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__base_5
+msgid "Grav. 5%"
+msgstr "Grav. 5%"
+
+#. module: l10n_ar_reports
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.view_account_ar_vat_line_search
+msgid "Group By..."
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__has_message
+msgid "Has Message"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__id
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__id
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_l10n_ar_arca_activity__id
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_l10n_ar_iva_simple_wizard__id
+msgid "ID"
+msgstr "ID"
+
+#. module: l10n_ar_reports
+#: model:ir.ui.menu,name:l10n_ar_reports.menu_iva_simple
+msgid "IVA Simple"
+msgstr "IVA Simple"
+
+#. module: l10n_ar_reports
+#: model:ir.actions.act_window,name:l10n_ar_reports.action_iva_simple_wizard
+msgid "IVA Simple (4 CSV ARCA)"
+msgstr "IVA Simple (4 CSV ARCA)"
+
+#. module: l10n_ar_reports
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.view_iva_simple_wizard_form
+msgid "IVA Simple — 4 CSV ARCA"
+msgstr "IVA Simple — 4 CSV ARCA"
+
+#. module: l10n_ar_reports
+#: model:ir.model,name:l10n_ar_reports.model_l10n_ar_iva_simple_wizard
+msgid "IVA Simple — generar 4 CSV (régimen ARCA)"
+msgstr "IVA Simple — generar 4 CSV (régimen ARCA)"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,help:l10n_ar_reports.field_account_vat_ledger__message_needaction
+msgid "If checked, new messages require your attention."
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,help:l10n_ar_reports.field_account_vat_ledger__message_has_error
+#: model:ir.model.fields,help:l10n_ar_reports.field_account_vat_ledger__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__import_aliquots_file
+msgid "Import Aliquots File"
+msgstr "Archivo de alícuotas de importación"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__import_aliquots_filename
+msgid "Import Aliquots Filename"
+msgstr "Nombre del archivo de alícuotas de importación"
+
+#. module: l10n_ar_reports
+#. odoo-python
+#: code:addons/custom/l10n_ar_reports/models/account_vat_ledger.py:0
+#: code:addons/l10n_ar_reports/models/account_vat_ledger.py:0
+#, python-format
+msgid "Import_Alicuots_%s_%s.txt"
+msgstr "Importar_Alicuotas_%s_%s.txt"
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_181100
+msgid "Impresión"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__invoice_date
+msgid "Invoice Date"
+msgstr "Fecha de factura"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__invoice_ids
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.account_vat_ledger_form
+msgid "Invoices"
+msgstr "Facturas"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__message_is_follower
+msgid "Is Follower"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__journal_id
+msgid "Journal"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields.selection,name:l10n_ar_reports.selection__account_ar_vat_line__move_type__entry
+msgid "Journal Entry"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__journal_ids
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.account_vat_ledger_form
+msgid "Journals"
+msgstr "Diarios"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__last_page
+msgid "Last Page"
+msgstr "Última hoja"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__write_uid
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_l10n_ar_arca_activity__write_uid
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_l10n_ar_iva_simple_wizard__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__write_date
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_l10n_ar_arca_activity__write_date
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_l10n_ar_iva_simple_wizard__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields.selection,name:l10n_ar_reports.selection__l10n_ar_iva_simple_wizard__state__done
+msgid "Listo"
+msgstr "Listo"
+
+#. module: l10n_ar_reports
+#: model:account.account.tag,name:l10n_ar_reports.tag_leases_rentals_account
+msgid "Locaciones / Alquileres (IVA Simple)"
+msgstr "Locaciones / Alquileres (IVA Simple)"
+
+#. module: l10n_ar_reports
+#: model:ir.model,name:l10n_ar_reports.model_account_ar_vat_line
+msgid "Línea de IVA para análisis en localización argentina"
+msgstr "Línea de IVA para análisis en localización argentina"
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_101011
+msgid "Matanza de ganado bovino"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__message_has_error
+msgid "Message Delivery error"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__message_ids
+msgid "Messages"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__move_name
+msgid "Move Name"
+msgstr "Nombre del movimiento"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__move_type
+msgid "Move Type"
+msgstr "Tipo de movimiento"
+
+#. module: l10n_ar_reports
+#. odoo-python
+#: code:addons/custom/l10n_ar_reports/report/iva_simple_wizard.py:0
+#: code:addons/l10n_ar_reports/report/iva_simple_wizard.py:0
+#, python-format
+msgid ""
+"No se encontraron comprobantes posted con IVA para %(c)s entre %(d1)s y "
+"%(d2)s."
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__not_taxed
+msgid "Not taxed/ex"
+msgstr "No gravado/ex."
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__note
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.account_vat_ledger_form
+msgid "Notes"
+msgstr "Notas"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__message_needaction_counter
+msgid "Number of Actions"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__message_has_error_counter
+msgid "Number of errors"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,help:l10n_ar_reports.field_account_vat_ledger__message_needaction_counter
+msgid "Number of messages requiring action"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,help:l10n_ar_reports.field_account_vat_ledger__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.view_account_ar_vat_line_tree
+msgid "Open"
+msgstr "Abrir"
+
+#. module: l10n_ar_reports
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.view_account_ar_vat_line_tree
+msgid "Open journal entry"
+msgstr "Abrir apunte contable"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__other_taxes
+msgid "Other Taxes"
+msgstr "Otros impuestos"
+
+#. module: l10n_ar_reports
+#. odoo-python
+#: code:addons/custom/l10n_ar_reports/models/account_vat_ledger.py:0
+#: code:addons/l10n_ar_reports/models/account_vat_ledger.py:0
+#, python-format
+msgid ""
+"Para utilizar el prorrateo por comprobante:\n"
+"1) Exporte los archivos sin la opción \"Proratear Crédito de Impuestos\"\n"
+"2) Importe los mismos en el aplicativo\n"
+"3) En el aplicativo de afip, comprobante por comprobante, indique el valor correspondiente en el campo \"Crédito Fiscal Computable\""
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__partner_id
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.view_account_ar_vat_line_search
+msgid "Partner"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__partner_name
+msgid "Partner Name"
+msgstr "Nombre del partner"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields.selection,name:l10n_ar_reports.selection__account_ar_vat_line__state__posted
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.view_account_ar_vat_line_search
+msgid "Posted"
+msgstr "Publicado"
+
+#. module: l10n_ar_reports
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.view_account_ar_vat_line_search
+msgid "Posted Journal Items"
+msgstr "Apuntes contables publicados"
+
+#. module: l10n_ar_reports
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.account_vat_ledger_form
+msgid "Present"
+msgstr "Presentar"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields.selection,name:l10n_ar_reports.selection__account_vat_ledger__state__presented
+msgid "Presented"
+msgstr "Presentado"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__presented_ledger
+msgid "Presented Ledger"
+msgstr "Libro presentado"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__presented_ledger_name
+msgid "Presented Ledger Name"
+msgstr "Nombre del libro presentado"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,help:l10n_ar_reports.field_l10n_ar_iva_simple_wizard__date_from
+msgid "Primer día del período. Recomendado: día 1 del mes."
+msgstr "Primer día del período. Recomendado: día 1 del mes."
+
+#. module: l10n_ar_reports
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.account_vat_ledger_form
+msgid "Print"
+msgstr "Imprimir"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__prorate_tax_credit
+msgid "Prorate Tax Credit"
+msgstr "Prorratear crédito fiscal"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__prorate_type
+msgid "Prorate Type"
+msgstr "Tipo de prorrateo"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields.selection,name:l10n_ar_reports.selection__account_vat_ledger__type__purchase
+msgid "Purchase"
+msgstr "Compras"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields.selection,name:l10n_ar_reports.selection__account_ar_vat_line__move_type__in_receipt
+msgid "Purchase Receipt"
+msgstr "Recibo de compra"
+
+#. module: l10n_ar_reports
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.view_account_ar_vat_line_search
+msgid "Purchase VAT"
+msgstr "IVA Compras"
+
+#. module: l10n_ar_reports
+#. odoo-python
+#: code:addons/custom/l10n_ar_reports/models/account_vat_ledger.py:0
+#: code:addons/l10n_ar_reports/models/account_vat_ledger.py:0
+#, python-format
+msgid "Purchases"
+msgstr "Compras"
+
+#. module: l10n_ar_reports
+#: model:ir.actions.act_window,name:l10n_ar_reports.action_account_purchase_vat_ledger
+#: model:ir.ui.menu,name:l10n_ar_reports.menu_account_purchase_vat_ledger
+msgid "Purchases VAT Ledger"
+msgstr "Libro de IVA Compras"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__REGINFO_CV_ALICUOTAS
+msgid "REGINFO_CV_ALICUOTAS"
+msgstr "REGINFO_CV_ALICUOTAS"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__REGINFO_CV_CABECERA
+msgid "REGINFO_CV_CABECERA"
+msgstr "REGINFO_CV_CABECERA"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__REGINFO_CV_CBTE
+msgid "REGINFO_CV_CBTE"
+msgstr "REGINFO_CV_CBTE"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__REGINFO_CV_COMPRAS_IMPORTACIONES
+msgid "REGINFO_CV_COMPRAS_IMPORTACIONES"
+msgstr "REGINFO_CV_COMPRAS_IMPORTACIONES"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__reference
+msgid "Reference"
+msgstr "Referencia"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields.selection,name:l10n_ar_reports.selection__account_vat_ledger__type__sale
+msgid "Sale"
+msgstr "Ventas"
+
+#. module: l10n_ar_reports
+#. odoo-python
+#: code:addons/custom/l10n_ar_reports/models/account_vat_ledger.py:0
+#: code:addons/l10n_ar_reports/models/account_vat_ledger.py:0
+#, python-format
+msgid "Sales"
+msgstr "Ventas"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields.selection,name:l10n_ar_reports.selection__account_ar_vat_line__move_type__out_receipt
+msgid "Sales Receipt"
+msgstr "Recibo de venta"
+
+#. module: l10n_ar_reports
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.view_account_ar_vat_line_search
+msgid "Sales VAT"
+msgstr "IVA Ventas"
+
+#. module: l10n_ar_reports
+#: model:ir.actions.act_window,name:l10n_ar_reports.action_account_sale_vat_ledger
+#: model:ir.ui.menu,name:l10n_ar_reports.menu_account_sale_vat_ledger
+msgid "Sales VAT Ledger"
+msgstr "Libro de IVA Ventas"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,help:l10n_ar_reports.field_account_vat_ledger__sequence
+msgid ""
+"Se deberá indicar si la presentación es Original (00) o Rectificativa y su "
+"orden"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__sequence
+msgid "Sequence"
+msgstr "Secuencia"
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_492210
+msgid "Servicio de transporte automotor de cargas n.c.p."
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_661920
+msgid "Servicios auxiliares a la actividad financiera n.c.p."
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_551010
+msgid "Servicios de alojamiento en hoteles, hosterías y residenciales"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_862100
+msgid "Servicios de atención médica"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_731009
+msgid "Servicios de comercialización de tiempo y espacio publicitario n.c.p."
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_620200
+msgid "Servicios de consultores en equipo de informática"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_620100
+msgid ""
+"Servicios de consultores en informática y suministro de programas de "
+"informática"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_702010
+msgid "Servicios de consultores en organización y dirección de empresas"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_692000
+msgid "Servicios de contabilidad, auditoría y asesoría fiscal"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_701000
+msgid "Servicios de gerenciamiento de empresas"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_620900
+msgid "Servicios de informática n.c.p."
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_561011
+msgid "Servicios de restaurantes y cantinas sin espectáculo"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_681098
+msgid "Servicios inmobiliarios realizados por cuenta propia"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_960910
+msgid "Servicios personales n.c.p."
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_682091
+msgid "Servicios prestados por inmobiliarias por cuenta de terceros"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_711001
+msgid "Servicios relacionados con la construcción"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__date_from
+msgid "Start Date"
+msgstr "Fecha desde"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__state
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_l10n_ar_iva_simple_wizard__state
+msgid "State"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__state
+msgid "Status"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__name
+msgid "Titile"
+msgstr "Título"
+
+#. module: l10n_ar_reports
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.account_vat_ledger_form
+msgid "To Draft"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__total
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.view_account_ar_vat_line_tree
+msgid "Total"
+msgstr "Total"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__type
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.view_account_ar_vat_line_search
+msgid "Type"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields.selection,name:l10n_ar_reports.selection__account_ar_vat_line__state__draft
+msgid "Unposted"
+msgstr "Borrador"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__vat_10
+msgid "VAT 10,5%"
+msgstr "IVA 10,5%"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__vat_25
+msgid "VAT 2,5%"
+msgstr "IVA 2,5%"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__vat_21
+msgid "VAT 21%"
+msgstr "IVA 21%"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__vat_27
+msgid "VAT 27%"
+msgstr "IVA 27%"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__vat_5
+msgid "VAT 5%"
+msgstr "IVA 5%"
+
+#. module: l10n_ar_reports
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.account_vat_ledger_form
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.account_vat_ledger_tree
+msgid "VAT Ledger"
+msgstr "Libro de IVA"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_ar_vat_line__vat_per
+msgid "VAT Perc."
+msgstr "Percep. IVA"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields.selection,name:l10n_ar_reports.selection__account_ar_vat_line__move_type__in_invoice
+msgid "Vendor Bill"
+msgstr "Factura de proveedor"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields.selection,name:l10n_ar_reports.selection__account_ar_vat_line__move_type__in_refund
+msgid "Vendor Credit Note"
+msgstr "Nota de crédito de proveedor"
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_465390
+msgid "Venta al por mayor de máquinas y equipos n.c.p."
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_461001
+msgid "Venta al por mayor en comisión o consignación de productos agrícolas"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:l10n_ar.arca.activity,name:l10n_ar_reports.activity_471190
+msgid ""
+"Venta al por menor en kioscos, polirrubros y comercios no especializados"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__vouchers_file
+msgid "Vouchers File"
+msgstr "Archivo de comprobantes"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__vouchers_filename
+msgid "Vouchers Filename"
+msgstr "Nombre del archivo de comprobantes"
+
+#. module: l10n_ar_reports
+#. odoo-python
+#: code:addons/custom/l10n_ar_reports/models/account_vat_ledger.py:0
+#: code:addons/l10n_ar_reports/models/account_vat_ledger.py:0
+#, python-format
+msgid "Vouchers_%s_%s.txt"
+msgstr "Comprobantes_%s_%s.txt"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__website_message_ids
+msgid "Website Messages"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,help:l10n_ar_reports.field_account_vat_ledger__website_message_ids
+msgid "Website communication history"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model_terms:ir.ui.view,arch_db:l10n_ar_reports.view_account_ar_vat_line_search
+msgid "With Document Type"
+msgstr ""
+
+#. module: l10n_ar_reports
+#: model:ir.model,name:l10n_ar_reports.model_report_account_vat_ledger_xlsx
+msgid "report vat ledger in xlsx"
+msgstr "reporte libro de IVA en xlsx"
+
+#. module: l10n_ar_reports
+#: model:ir.model.fields,help:l10n_ar_reports.field_l10n_ar_iva_simple_wizard__date_to
+msgid "Último día del período."
+msgstr "Último día del período."
