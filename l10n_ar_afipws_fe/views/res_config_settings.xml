@@ -14,11 +14,12 @@
                             <button class="btn-link" icon="fa-arrow-right" name="%(l10n_ar_afipws.act_afipws_auth)d" string="List conections" type="action"/>
                             <label for="afip_ws_env_type"/>
                             <field class="font-weight-bold ms-4" name="afip_ws_env_type"/>
-                        </setting>
-                        <setting string="FCE MiPyME Transmission" id="afip_fe_fce_transmission_setting">
-                            <field name="l10n_ar_afip_fce_transmission" widget="radio"/>
-                            <div class="text-muted" style="margin-top:8px;">
-                                This information will be sent to AFIP by default when validating FCE documents. RG 4919/2021 requirement.
+                            <div class="mt16">
+                                <label for="l10n_ar_afip_fce_transmission" string="FCE MiPyME Transmission"/>
+                                <field name="l10n_ar_afip_fce_transmission" widget="radio" nolabel="1"/>
+                                <div class="text-muted" style="margin-top:8px;">
+                                    This information will be sent to AFIP by default when validating FCE documents. RG 4919/2021 requirement.
+                                </div>
                             </div>
                         </setting>
                         <setting string="Foreign Currency Payments" id="afip_fe_foreign_currency_setting">
@@ -36,9 +37,6 @@
                         </setting>
                     </block>
                 </xpath>
-                <field name="afip_ws_env_type" position="attributes">
-                    <attribute name="class">font-weight-bold ms-4</attribute>
-                </field>
             </field>
         </record>
     </data>
