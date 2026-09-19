@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <!--
+        Tags contables que distinguen Bienes de Uso vs Locaciones vs
+        Productos en el campo Concepto del CSV de Compras IVA Simple.
+
+        El usuario debe taguear las cuentas pertinentes (Bienes de Uso ↔
+        cuenta de activo fijo, Locaciones ↔ cuenta de alquileres). El
+        wizard usa estos tags para inferir el concepto.
+    -->
+    <record id="tag_fixed_asset_account" model="account.account.tag">
+        <field name="name">Bienes de Uso (IVA Simple)</field>
+        <field name="applicability">accounts</field>
+        <field name="country_id" ref="base.ar"/>
+    </record>
+
+    <record id="tag_leases_rentals_account" model="account.account.tag">
+        <field name="name">Locaciones / Alquileres (IVA Simple)</field>
+        <field name="applicability">accounts</field>
+        <field name="country_id" ref="base.ar"/>
+    </record>
+
+</odoo>

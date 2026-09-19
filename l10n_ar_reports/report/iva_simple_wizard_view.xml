@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_iva_simple_wizard_form" model="ir.ui.view">
+        <field name="name">l10n_ar.iva.simple.wizard.form</field>
+        <field name="model">l10n_ar.iva.simple.wizard</field>
+        <field name="arch" type="xml">
+            <form string="IVA Simple — 4 CSV ARCA">
+                <sheet>
+                    <group invisible="state == 'done'">
+                        <group>
+                            <field name="company_id" options="{'no_open': True}"/>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                        <group>
+                            <field name="activity_id"
+                                   options="{'no_create_edit': True}"/>
+                        </group>
+                    </group>
+                    <group invisible="state != 'done'" string="Archivo generado">
+                        <field name="file_name" readonly="1"/>
+                        <field name="file_content"
+                               filename="file_name"
+                               readonly="1"
+                               widget="binary"/>
+                    </group>
+                    <field name="state" invisible="1"/>
+                </sheet>
+                <footer>
+                    <button name="action_generate"
+                            type="object"
+                            string="Generar ZIP (4 CSV)"
+                            class="btn-primary"
+                            invisible="state == 'done'"/>
+                    <button string="Cerrar" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_iva_simple_wizard" model="ir.actions.act_window">
+        <field name="name">IVA Simple (4 CSV ARCA)</field>
+        <field name="res_model">l10n_ar.iva.simple.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_iva_simple"
+              name="IVA Simple"
+              parent="l10n_ar.account_reports_ar_statements_menu"
+              action="action_iva_simple_wizard"
+              sequence="8"/>
+</odoo>

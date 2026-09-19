@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Padrón inicial de actividades ARCA. Subset de las más usadas
+    (Sección/División del Nomenclador F-883). El usuario puede crear
+    más manualmente.
+
+    Códigos a 6 dígitos. Para IVA Simple se usan solo los primeros 3
+    (división), pero almacenamos el detalle completo.
+-->
+<odoo noupdate="1">
+    <!-- ============ Sección A: Agropecuario ============ -->
+    <record id="activity_011990" model="l10n_ar.arca.activity">
+        <field name="code">011990</field>
+        <field name="name">Cultivos n.c.p.</field>
+    </record>
+    <record id="activity_014110" model="l10n_ar.arca.activity">
+        <field name="code">014110</field>
+        <field name="name">Cría de ganado bovino</field>
+    </record>
+
+    <!-- ============ Sección C: Industria manufacturera ============ -->
+    <record id="activity_101011" model="l10n_ar.arca.activity">
+        <field name="code">101011</field>
+        <field name="name">Matanza de ganado bovino</field>
+    </record>
+    <record id="activity_181100" model="l10n_ar.arca.activity">
+        <field name="code">181100</field>
+        <field name="name">Impresión</field>
+    </record>
+
+    <!-- ============ Sección F: Construcción ============ -->
+    <record id="activity_410010" model="l10n_ar.arca.activity">
+        <field name="code">410010</field>
+        <field name="name">Construcción de edificios residenciales</field>
+    </record>
+    <record id="activity_421000" model="l10n_ar.arca.activity">
+        <field name="code">421000</field>
+        <field name="name">Construcción de obras de infraestructura para el transporte</field>
+    </record>
+
+    <!-- ============ Sección G: Comercio ============ -->
+    <record id="activity_461001" model="l10n_ar.arca.activity">
+        <field name="code">461001</field>
+        <field name="name">Venta al por mayor en comisión o consignación de productos agrícolas</field>
+    </record>
+    <record id="activity_465390" model="l10n_ar.arca.activity">
+        <field name="code">465390</field>
+        <field name="name">Venta al por mayor de máquinas y equipos n.c.p.</field>
+    </record>
+    <record id="activity_471190" model="l10n_ar.arca.activity">
+        <field name="code">471190</field>
+        <field name="name">Venta al por menor en kioscos, polirrubros y comercios no especializados</field>
+    </record>
+
+    <!-- ============ Sección H: Transporte ============ -->
+    <record id="activity_492210" model="l10n_ar.arca.activity">
+        <field name="code">492210</field>
+        <field name="name">Servicio de transporte automotor de cargas n.c.p.</field>
+    </record>
+
+    <!-- ============ Sección I: Alojamiento y comidas ============ -->
+    <record id="activity_551010" model="l10n_ar.arca.activity">
+        <field name="code">551010</field>
+        <field name="name">Servicios de alojamiento en hoteles, hosterías y residenciales</field>
+    </record>
+    <record id="activity_561011" model="l10n_ar.arca.activity">
+        <field name="code">561011</field>
+        <field name="name">Servicios de restaurantes y cantinas sin espectáculo</field>
+    </record>
+
+    <!-- ============ Sección J: Información y comunicaciones ============ -->
+    <record id="activity_620100" model="l10n_ar.arca.activity">
+        <field name="code">620100</field>
+        <field name="name">Servicios de consultores en informática y suministro de programas de informática</field>
+    </record>
+    <record id="activity_620200" model="l10n_ar.arca.activity">
+        <field name="code">620200</field>
+        <field name="name">Servicios de consultores en equipo de informática</field>
+    </record>
+    <record id="activity_620900" model="l10n_ar.arca.activity">
+        <field name="code">620900</field>
+        <field name="name">Servicios de informática n.c.p.</field>
+    </record>
+
+    <!-- ============ Sección K: Financieros ============ -->
+    <record id="activity_661920" model="l10n_ar.arca.activity">
+        <field name="code">661920</field>
+        <field name="name">Servicios auxiliares a la actividad financiera n.c.p.</field>
+    </record>
+
+    <!-- ============ Sección L: Inmobiliarios ============ -->
+    <record id="activity_681098" model="l10n_ar.arca.activity">
+        <field name="code">681098</field>
+        <field name="name">Servicios inmobiliarios realizados por cuenta propia</field>
+    </record>
+    <record id="activity_682091" model="l10n_ar.arca.activity">
+        <field name="code">682091</field>
+        <field name="name">Servicios prestados por inmobiliarias por cuenta de terceros</field>
+    </record>
+
+    <!-- ============ Sección M: Profesionales ============ -->
+    <record id="activity_692000" model="l10n_ar.arca.activity">
+        <field name="code">692000</field>
+        <field name="name">Servicios de contabilidad, auditoría y asesoría fiscal</field>
+    </record>
+    <record id="activity_701000" model="l10n_ar.arca.activity">
+        <field name="code">701000</field>
+        <field name="name">Servicios de gerenciamiento de empresas</field>
+    </record>
+    <record id="activity_702010" model="l10n_ar.arca.activity">
+        <field name="code">702010</field>
+        <field name="name">Servicios de consultores en organización y dirección de empresas</field>
+    </record>
+    <record id="activity_711001" model="l10n_ar.arca.activity">
+        <field name="code">711001</field>
+        <field name="name">Servicios relacionados con la construcción</field>
+    </record>
+    <record id="activity_731009" model="l10n_ar.arca.activity">
+        <field name="code">731009</field>
+        <field name="name">Servicios de comercialización de tiempo y espacio publicitario n.c.p.</field>
+    </record>
+
+    <!-- ============ Sección Q: Salud ============ -->
+    <record id="activity_862100" model="l10n_ar.arca.activity">
+        <field name="code">862100</field>
+        <field name="name">Servicios de atención médica</field>
+    </record>
+
+    <!-- ============ Sección S: Otras actividades ============ -->
+    <record id="activity_960910" model="l10n_ar.arca.activity">
+        <field name="code">960910</field>
+        <field name="name">Servicios personales n.c.p.</field>
+    </record>
+</odoo>
