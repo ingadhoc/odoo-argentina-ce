@@ -990,3 +990,18 @@ msgstr "<strong>No</strong>: Por defecto no reportará pagos en moneda extranjer
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
 msgid "<strong>Account's Currency Dependant</strong>: The information sent to ARCA will depend on the currency configured in the receivable account used in the transaction."
 msgstr "<strong>Depende de la moneda de la cuenta</strong>: La información enviada a ARCA dependerá de la moneda configurada en la cuenta por cobrar usada en la transacción."
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
+msgid "Electronic Invoice ARCA (ex AFIP)"
+msgstr "Factura electrónica ARCA (ex AFIP)"
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
+msgid "List certificates"
+msgstr "Listar certificados"
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
+msgid "List connections"
+msgstr "Listar conexiones"
