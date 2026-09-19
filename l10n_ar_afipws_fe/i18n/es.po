@@ -2,57 +2,57 @@
 # This file contains the translation of the following modules:
 # 	* l10n_ar_afipws_fe
 #
+# Translators:
+# Berisoft (zeep migration), 2026
+# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2022
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 17.0-20250415\n"
+"Project-Id-Version: Odoo Server 17.0-20260908\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-16 01:22+0000\n"
-"PO-Revision-Date: 2025-04-16 01:22+0000\n"
-"Last-Translator: Berisoft <berisoft.gestion@gmail.com>, 2025\n"
-"Language-Team: \n"
+"POT-Creation-Date: 2026-09-18 15:15+0000\n"
+"PO-Revision-Date: 2026-09-18 15:15+0000\n"
+"Last-Translator: \n"
+"Language: es\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Plural-Forms: \n"
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
+msgid "Electronic Invoice AFIP (ARCA)"
+msgstr "Factura electrónica AFIP (ARCA)"
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
+msgid "FCE MiPyME Transmission"
+msgstr "Transmisión FCE MiPyME"
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
+msgid "Transmission option sent to AFIP for FCE MiPyME documents. RG 4919/2021."
+msgstr "Opción de transmisión enviada a AFIP para documentos FCE MiPyME. RG 4919/2021."
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
+msgid "Foreign Currency Payments"
+msgstr "Pagos en moneda extranjera"
 
 #. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
 msgid ""
-"<strong>Account's Currency Dependant</strong>: The information sent to ARCA "
-"will depend on the currency configured in the receivable account used in the"
-" transaction."
-msgstr ""
-"<strong>Depende de la Moneda de la Cuenta</strong>: se informará dependiente "
-"de la moneda en la cuenta por cobrar usada en la transacción."
-
-
-#. module: l10n_ar_afipws_fe
-#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
-msgid "<strong>Default Policy for Foreign Currency Payments:</strong>"
-msgstr "<strong>Política por defecto para el Pago en Moneda Extranjera:</strong>"
-
-#. module: l10n_ar_afipws_fe
-#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
-msgid ""
-"<strong>No</strong>: By default, will not report payments as foreign "
+"Default policy to inform ARCA whether the payment will be made in foreign "
+"currency (RG 5616/2024): Yes, No, or depending on the receivable account "
 "currency."
 msgstr ""
-"<strong>No</strong>: No reportará que los pagos son en moneda extranjera por "
-"defecto."
-
-#. module: l10n_ar_afipws_fe
-#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
-msgid ""
-"<strong>Yes</strong>: Will always inform ARCA that payments are made in "
-"foreign currency."
-msgstr ""
-"<strong>Si</strong>: Siempre informará a ARCA que los pagos serán en "
-"moneda extranjera."
+"Política por defecto para informar a ARCA si el pago se hará en moneda "
+"extranjera (RG 5616/2024): Sí, No, o según la moneda de la cuenta por cobrar."
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields.selection,name:l10n_ar_afipws_fe.selection__res_config_settings__l10n_ar_afip_fce_transmission__adc
 msgid "ADC - AGENTE DE DEPOSITO COLECTIVO"
-msgstr ""
+msgstr "ADC - AGENTE DE DEPÓSITO COLECTIVO"
 
 #. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.view_move_form
@@ -94,9 +94,53 @@ msgid "AFIP WS"
 msgstr "WS ARCA"
 
 #. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/afipws_connection.py:0
+#: code:addons/l10n_ar_afipws_fe/models/afipws_connection.py:0
+#, python-format
+msgid "AFIP WS %s Not implemented yet"
+msgstr "WS AFIP %s aún no implementado"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal.py:0
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move.py:0
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid "AFIP WS %s not implemented"
+msgstr "WS AFIP %s no implementado"
+
+#. module: l10n_ar_afipws_fe
 #: model:ir.model,name:l10n_ar_afipws_fe.model_afipws_connection
 msgid "AFIP WS Connection"
-msgstr "Conexión de WS ARCA"
+msgstr "Conexión de WS AFIP"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move.py:0
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid "AFIP WS wsmtxca not implemented with zeep yet"
+msgstr "WS AFIP wsmtxca aún no implementado con zeep"
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields,field_description:l10n_ar_afipws_fe.field_account_bank_statement_line__afip_xml_request
@@ -130,11 +174,45 @@ msgid "AFIP authorization mode"
 msgstr "Modo de autorización ARCA"
 
 #. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move.py:0
+#, python-format
+msgid "AFIP connection error: %s"
+msgstr "Error de conexión AFIP: %s"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#, python-format
+msgid "AFIP error: %s"
+msgstr "Error AFIP: %s"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#, python-format
+msgid "AFIP error: %s - %s"
+msgstr "Error AFIP: %s - %s"
+
+#. module: l10n_ar_afipws_fe
 #: model:ir.model.fields,help:l10n_ar_afipws_fe.field_account_bank_statement_line__afip_result
 #: model:ir.model.fields,help:l10n_ar_afipws_fe.field_account_move__afip_result
 #: model:ir.model.fields,help:l10n_ar_afipws_fe.field_account_payment__afip_result
 msgid "AFIP request result"
 msgstr "Resultado solicitud ARCA"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal.py:0
+#, python-format
+msgid "AFIP service %s\n"
+msgstr "Servicio AFIP %s\n"
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields.selection,name:l10n_ar_afipws_fe.selection__res_company__l10n_ar_payment_foreign_currency__account
@@ -144,7 +222,15 @@ msgstr "Depende de la moneda de la cuenta"
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields.selection,name:l10n_ar_afipws_fe.selection__account_move__afip_result__a
 msgid "Aceptado"
-msgstr ""
+msgstr "Aceptado"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move.py:0
+#, python-format
+msgid "Actual afip rate is %s"
+msgstr "La cotización AFIP actual es %s"
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields,field_description:l10n_ar_afipws_fe.field_account_bank_statement_line__asynchronous_post
@@ -154,14 +240,24 @@ msgid "Asynchronous Post"
 msgstr "Publicación asincrónica"
 
 #. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#, python-format
+msgid ""
+"Authorized Document Clases on AFIP\n"
+"%s"
+msgstr ""
+
+#. module: l10n_ar_afipws_fe
 #: model:ir.model.fields.selection,name:l10n_ar_afipws_fe.selection__afipws_connection__afip_ws__wsbfe
 msgid "Bono Fiscal -con detalle- RG2557 (WSBFE)"
-msgstr ""
+msgstr "Bono fiscal -con detalle- RG2557 (WSBFE)"
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields.selection,name:l10n_ar_afipws_fe.selection__account_move__afip_auth_mode__cae
 msgid "CAE"
-msgstr ""
+msgstr "CAE"
 
 #. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.report_invoice_document
@@ -185,16 +281,35 @@ msgstr "Fecha de vencimiento CAE/CAI/CAEA"
 #. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.report_invoice_document
 msgid "CAE:"
-msgstr ""
+msgstr "CAE:"
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields.selection,name:l10n_ar_afipws_fe.selection__account_move__afip_auth_mode__caea
 msgid "CAEA"
-msgstr ""
+msgstr "CAEA"
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields.selection,name:l10n_ar_afipws_fe.selection__account_move__afip_auth_mode__cai
 msgid "CAI"
+msgstr "CAI"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid "Cancela misma moneda extranjera es obligatorio (S/N) en %s."
+msgstr "Cancela misma moneda extranjera es obligatorio (S/N) en %s."
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid ""
+"Cancela misma moneda extranjera es obligatorio (S/N) en %s. Revisar en "
+"Ajustes → Contabilidad → AFIP WS “Default Policy for Foreign Currency "
+"Payments” o el campo de la factura."
 msgstr ""
 
 #. module: l10n_ar_afipws_fe
@@ -215,7 +330,51 @@ msgstr "Código"
 #. module: l10n_ar_afipws_fe
 #: model:ir.model,name:l10n_ar_afipws_fe.model_res_company
 msgid "Companies"
-msgstr "Compañías"
+msgstr "Empresas"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid "Condición IVA del receptor es obligatoria (partner %s)."
+msgstr "Condición IVA del receptor es obligatoria (partner %s)."
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid ""
+"Condición IVA del receptor es obligatoria. Configurar responsabilidad AFIP "
+"en el partner %s."
+msgstr ""
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid ""
+"Condición IVA del receptor inválida (%s) en partner %s. Debe ser numérica "
+"(tabla AFIP FEParamGetCondicionIvaReceptor)."
+msgstr ""
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid "Condición IVA del receptor inválida (%s)."
+msgstr "Condición IVA del receptor inválida (%s)."
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid "Condición IVA del receptor inválida (%s). Debe ser numérica."
+msgstr "Condición IVA del receptor inválida (%s). Debe ser numérica."
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model,name:l10n_ar_afipws_fe.model_res_config_settings
@@ -225,7 +384,15 @@ msgstr "Ajustes de configuración"
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields.selection,name:l10n_ar_afipws_fe.selection__afipws_connection__afip_ws__wscdc
 msgid "Constatación de Comprobantes (WSCDC)"
-msgstr ""
+msgstr "Constatación de comprobantes (WSCDC)"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid "Cotización de moneda obligatoria (> 0) para %s en %s."
+msgstr "Cotización de moneda obligatoria (> 0) para %s en %s."
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields,field_description:l10n_ar_afipws_fe.field_account_bank_statement_line__l10n_ar_currency_code
@@ -258,14 +425,62 @@ msgid "Default Policy for Payment in Foreign Currency"
 msgstr "Política por defecto para el Pago en Moneda Extranjera"
 
 #. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid "Documentos %s exigen CUIT del receptor (DocTipo 80) en %s."
+msgstr "Documentos %s exigen CUIT del receptor (DocTipo 80) en %s."
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal.py:0
+#, python-format
+msgid "Domestic market -without detail- RG2485 (WSFEv1)"
+msgstr "Mercado interno -sin detalle- RG2485 (WSFEv1)"
+
+#. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.view_account_journal_form
 msgid "Dummy Test"
 msgstr "Prueba de conexión"
 
 #. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#, python-format
+msgid "Dummy not implemented for ws %s"
+msgstr "Dummy no implementado para el ws %s"
+
+#. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.view_account_journal_form
 msgid "Dummy test to check connection to selected webservice"
 msgstr "Prueba de conexión al webservice seleccionado"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal.py:0
+#, python-format
+msgid "Electronic Fiscal Bond - Web Service"
+msgstr "Bono fiscal electrónico - Web Service"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal.py:0
+#, python-format
+msgid "Electronic Invoice - Web Service"
+msgstr "Factura electrónica - Web Service"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#, python-format
+msgid "Enabled Point Of Sales on AFIP\n"
+msgstr "Puntos de venta habilitados en AFIP\n"
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields,help:l10n_ar_afipws_fe.field_res_config_settings__l10n_ar_afip_fce_transmission
@@ -274,9 +489,25 @@ msgid ""
 msgstr ""
 
 #. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal.py:0
+#, python-format
+msgid "Export -with detail- RG2758 (WSFEXv1)"
+msgstr "Exportación -con detalle- RG2758 (WSFEXv1)"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal.py:0
+#, python-format
+msgid "Export Voucher - Web Service"
+msgstr "Voucher de exportación - Web Service"
+
+#. module: l10n_ar_afipws_fe
 #: model:ir.model.fields.selection,name:l10n_ar_afipws_fe.selection__afipws_connection__afip_ws__wsfex
 msgid "Exportación -con detalle- RG2758 (WSFEXv1)"
-msgstr ""
+msgstr "Exportación -con detalle- RG2758 (WSFEXv1)"
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields,field_description:l10n_ar_afipws_fe.field_account_bank_statement_line__afip_fce_es_anulacion
@@ -288,7 +519,39 @@ msgstr "FCE: ¿Es anulación?"
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields,field_description:l10n_ar_afipws_fe.field_res_config_settings__l10n_ar_afip_fce_transmission
 msgid "FCE: Opción de Transmisión"
-msgstr ""
+msgstr "FCE: Opción de transmisión"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal.py:0
+#, python-format
+msgid "Fiscal Bond -with detail- RG2557 (WSBFE)"
+msgstr "Bono fiscal -con detalle- RG2557 (WSBFE)"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid "For WS \"%s\" country afip code is mandatory Country: %s"
+msgstr "Para el WS \"%s\" el código AFIP de país es obligatorio. País: %s"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid "For WS \"%s\" country code is mandatory Country: %s"
+msgstr "Para el WS \"%s\" el código de país es obligatorio. País: %s"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid "For WS \"%s\" country is required on partner"
+msgstr "Para el WS \"%s\" el país es obligatorio en el partner"
 
 #. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.view_account_journal_form
@@ -298,7 +561,8 @@ msgstr "Obtener conexión"
 #. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.view_account_journal_form
 msgid "Get Connection For this webservice and create it if no valid"
-msgstr "Obtener conexión para este webservice y crearla si no hay ningúna válida"
+msgstr "Obtener conexión para este webservice y crearla si no hay válida"
+"Obtener conexión para este webservice y crearla si no hay ningúna válida"
 
 #. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.view_account_journal_form
@@ -326,9 +590,25 @@ msgid "Get Zones"
 msgstr "Obtener zonas"
 
 #. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#, python-format
+msgid "Get document types for ws %s is not implemented yet"
+msgstr "Obtener tipos de documento para el ws %s aún no implementado"
+
+#. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.view_account_journal_form
 msgid "Get next Inv"
 msgstr "Obtener próxima factura"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#, python-format
+msgid "Get point of sale for ws %s is not implemented yet"
+msgstr "Obtener puntos de venta para el ws %s aún no implementado"
 
 #. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.view_account_journal_form
@@ -339,6 +619,24 @@ msgstr "Obtener tipos de documento válidos para este webservice"
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.view_account_journal_form
 msgid "Get zones for this webservice"
 msgstr "Obtener zonas para este webservice"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal.py:0
+#, python-format
+msgid "Great, everything seems fine. The connection did not fail."
+msgstr "Todo bien, la conexión no falló."
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#, python-format
+msgid ""
+"Hubo un error al conectarse a AFIP, contacte a su proveedor de Odoo para mas"
+" información"
+msgstr ""
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.actions.server,name:l10n_ar_afipws_fe.ir_cron_asynchronous_post_ir_actions_server
@@ -365,60 +663,134 @@ msgstr "l10_ar Pago en moenda extranjera"
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields.selection,name:l10n_ar_afipws_fe.selection__afipws_connection__afip_ws__wsmtxca
 msgid "Mercado interno -con detalle- RG2904 (WSMTXCA)"
-msgstr ""
+msgstr "Mercado interno -con detalle- RG2904 (WSMTXCA)"
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields.selection,name:l10n_ar_afipws_fe.selection__afipws_connection__afip_ws__wsfe
 msgid "Mercado interno -sin detalle- RG2485 (WSFEv1)"
-msgstr ""
+msgstr "Mercado interno -sin detalle- RG2485 (WSFEv1)"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/wizard/account_validate_account_move.py:0
+#: code:addons/l10n_ar_afipws_fe/wizard/account_validate_account_move.py:0
+#, python-format
+msgid "Missing 'active_model' in context."
+msgstr "Falta 'active_model' en el contexto."
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid "Moneda AFIP obligatoria en %s."
+msgstr "Moneda AFIP obligatoria en %s."
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields.selection,name:l10n_ar_afipws_fe.selection__account_move__l10n_ar_payment_foreign_currency__n
 #: model:ir.model.fields.selection,name:l10n_ar_afipws_fe.selection__res_company__l10n_ar_payment_foreign_currency__n
 msgid "No"
-msgstr ""
+msgstr "No"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal.py:0
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal.py:0
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#, python-format
+msgid "No AFIP WS selected"
+msgstr "Ningún WS AFIP seleccionado"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#, python-format
+msgid "No AFIP WS selected on point of sale %s"
+msgstr "Ningún WS AFIP seleccionado en el punto de venta %s"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid "No vat defined for the partner and also no CUIT set on country"
+msgstr "Sin CUIT definido para el partner y sin CUIT en el país"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid "Not afip code con producto UOM %s"
+msgstr "Sin código AFIP en la UdM de producto %s"
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields.selection,name:l10n_ar_afipws_fe.selection__account_move__afip_result__o
 msgid "Observado"
-msgstr ""
+msgstr "Observado"
 
 #. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.view_account_journal_form
 msgid "Obtener códigos del Nomenclador Común del Mercosur"
-msgstr ""
+msgstr "Obtener códigos del Nomenclador Común del Mercosur"
 
 #. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.view_account_journal_form
 msgid "Obtener numeros de factura"
-msgstr ""
-
-#. module: l10n_ar_afipws_fe
-#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
-msgid ""
-"Please select the default option that will be used to inform ARCA whether "
-"the payment will be made in foreign currency, as required by RG 5616/2024:"
-msgstr ""
-"Por favor seleccionar la opción por defecto que será usada para informar a "
-"ARCA si el pago se hará en moneda extranjera, como es requerido por la RG "
-"5616/2024:"
+msgstr "Obtener números de factura"
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields.selection,name:l10n_ar_afipws_fe.selection__account_move__afip_result__r
 msgid "Rechazado"
-msgstr ""
+msgstr "Rechazado"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move.py:0
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move.py:0
+#, python-format
+msgid "Rejected"
+msgstr "Rechazado"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move.py:0
+#, python-format
+msgid "Rejected without CAE"
+msgstr "Rechazado sin CAE"
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields,field_description:l10n_ar_afipws_fe.field_account_bank_statement_line__afip_result
 #: model:ir.model.fields,field_description:l10n_ar_afipws_fe.field_account_move__afip_result
 #: model:ir.model.fields,field_description:l10n_ar_afipws_fe.field_account_payment__afip_result
 msgid "Resultado"
-msgstr ""
+msgstr "Resultado"
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields.selection,name:l10n_ar_afipws_fe.selection__res_config_settings__l10n_ar_afip_fce_transmission__sca
 msgid "SCA - TRANSFERENCIA AL SISTEMA DE CIRCULACION ABIERTA"
-msgstr ""
+msgstr "SCA - TRANSFERENCIA AL SISTEMA DE CIRCULACIÓN ABIERTA"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#, python-format
+msgid "Servicio AFIP Ocupado reintente en unos minutos"
+msgstr "Servicio AFIP ocupado, reintente en unos minutos"
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields,help:l10n_ar_afipws_fe.field_account_bank_statement_line__afip_fce_es_anulacion
@@ -437,10 +809,33 @@ msgid ""
 "DECLARATION, OF NOT EXPORTING THE PROPERTY DURING THE TERM OF THREE 3 YEARS "
 "FROM THE ACQUISITION<br/>"
 msgstr ""
-"EL ADQUIRENTE ASUME EL COMPROMISO, CON CARÁCTER DE DECLARACIÓN JURADA, "
-"DE NO EXPORTAR EL BIEN DURANTE EL PLAZO DE TRES 3 AÑOS A PARTIR DE LA "
+"EL ADQUIRENTE ASUME EL COMPROMISO, CON CARÁCTER DE DECLARACIÓN JURADA, DE NO"
+" EXPORTAR EL BIEN DURANTE EL PLAZO DE TRES 3 AÑOS A PARTIR DE LA "
 "ADQUISICIÓN<br/>"
 
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/wizard/account_validate_account_move.py:0
+#: code:addons/l10n_ar_afipws_fe/wizard/account_validate_account_move.py:0
+#, python-format
+msgid "There are no journal items in the draft state to post."
+msgstr "No hay apuntes en borrador para publicar."
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#, python-format
+msgid "Use zeep BFEGetPARAM_NCM via get_afip_ncm (wsbfe)"
+msgstr "Usar BFEGetPARAM_NCM de zeep vía get_afip_ncm (wsbfe)"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_journal_ws.py:0
+#, python-format
+msgid "Use zeep BFEGetPARAM_Zonas via get_afip_zonas (wsbfe)"
+msgstr "Usar BFEGetPARAM_Zonas de zeep vía get_afip_zonas (wsbfe)"
 
 #. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.view_move_form
@@ -450,7 +845,7 @@ msgstr "Validar en ARCA"
 #. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.view_move_form
 msgid "Validar en HOMOLOGACION"
-msgstr ""
+msgstr "Validar en HOMOLOGACIÓN"
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model,name:l10n_ar_afipws_fe.model_validate_account_move
@@ -468,19 +863,145 @@ msgstr "Tipo de validación"
 #: model:ir.model.fields.selection,name:l10n_ar_afipws_fe.selection__account_move__l10n_ar_payment_foreign_currency__s
 #: model:ir.model.fields.selection,name:l10n_ar_afipws_fe.selection__res_company__l10n_ar_payment_foreign_currency__s
 msgid "Yes"
-msgstr "Si"
+msgstr "Sí"
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields,field_description:l10n_ar_afipws_fe.field_validate_account_move__async_post
 msgid "async_post"
-msgstr ""
+msgstr "publicación asíncrona"
 
 #. module: l10n_ar_afipws_fe
 #: model:ir.model.fields.selection,name:l10n_ar_afipws_fe.selection__account_move__afip_result__
 msgid "n/a"
-msgstr ""
+msgstr "n/d"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid "pyafipws removed"
+msgstr "pyafipws eliminado"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid "pyafipws removed, use zeep_wsbfe_request"
+msgstr "pyafipws eliminado, usar zeep_wsbfe_request"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid "pyafipws removed, use zeep_wsfe_request"
+msgstr "pyafipws eliminado, usar zeep_wsfe_request"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid "pyafipws removed, use zeep_wsfex_request"
+msgstr "pyafipws eliminado, usar zeep_wsfex_request"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid "pyafipws removed: info va incluida en el request zeep"
+msgstr "pyafipws eliminado: la info va incluida en el request zeep"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid "pyafipws removed: invoice data is built with zeep_*_request builders"
+msgstr "pyafipws eliminado: la factura se arma con builders zeep_*_request"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid "pyafipws removed: usar flujo zeep en do_pyafipws_request_cae"
+msgstr "pyafipws eliminado: usar flujo zeep en do_pyafipws_request_cae"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#: code:addons/l10n_ar_afipws_fe/models/account_move_ws.py:0
+#, python-format
+msgid "pyafipws removed: ver _zeep_get_vat_items/_zeep_get_tributes"
+msgstr "pyafipws eliminado: ver _zeep_get_vat_items/_zeep_get_tributes"
+
+#. module: l10n_ar_afipws_fe
+#. odoo-python
+#: code:addons/custom/l10n_ar_afipws_fe/models/afipws_connection.py:0
+#: code:addons/l10n_ar_afipws_fe/models/afipws_connection.py:0
+#, python-format
+msgid "pyafipws was removed, use zeep connect() for ws %s"
+msgstr "pyafipws eliminado, usar connect() de zeep para el ws %s"
 
 #. module: l10n_ar_afipws_fe
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.report_invoice_document
 msgid "qr"
 msgstr "QR"
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
+msgid "This information will be sent to AFIP by default when validating FCE documents. RG 4919/2021 requirement."
+msgstr "Esta información será enviada a AFIP de forma predeterminada al validar documentos FCE. Requisito RG 4919/2021."
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
+msgid ""
+"Please select the default option that will be used to inform ARCA whether "
+"the payment will be made in foreign currency, as required by RG 5616/2024:"
+msgstr ""
+"Seleccione la opción por defecto para informar a ARCA si el pago se hará en "
+"moneda extranjera, según RG 5616/2024:"
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
+msgid "<strong>Yes</strong>: Will always inform ARCA that payments are made in foreign currency."
+msgstr "<strong>Sí</strong>: Siempre informará a ARCA pagos en moneda extranjera."
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
+msgid "<strong>No</strong>: By default, will not report payments as foreign currency."
+msgstr "<strong>No</strong>: Por defecto no reportará pagos en moneda extranjera."
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
+msgid "<strong>Account's Currency Dependant</strong>: The information sent to ARCA will depend on the currency configured in the receivable account used in the transaction."
+msgstr "<strong>Depende de la moneda de la cuenta</strong>: La información enviada a ARCA dependerá de la moneda configurada en la cuenta por cobrar usada en la transacción."
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
+msgid "Electronic Invoice ARCA (ex AFIP)"
+msgstr "Factura electrónica ARCA (ex AFIP)"
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
+msgid "List certificates"
+msgstr "Listar certificados"
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.res_config_settings_view_form
+msgid "List connections"
+msgstr "Listar conexiones"

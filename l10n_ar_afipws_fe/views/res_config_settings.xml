@@ -7,23 +7,36 @@
             <field eval="40" name="priority"/>
             <field name="inherit_id" ref="l10n_ar_afipws.res_config_settings_view_form"/>
             <field name="arch" type="xml">
-                <field name="afip_ws_env_type" position="after">
-                    <group col="1">
-                        <field name="l10n_ar_afip_fce_transmission" class="o_form_label"/>
-                        <field name="l10n_ar_payment_foreign_currency" class="o_form_label"/>
-                        <div class="text-muted" style="margin-top:10px;">
-                            <p><strong>Default Policy for Foreign Currency Payments:</strong></p>
-                            <p>
-                                Please select the default option that will be used to inform ARCA whether the payment will be made in foreign currency, as required by RG 5616/2024:
-                            </p>
-                            <ul>
-                                <li><strong>Yes</strong>: Will always inform ARCA that payments are made in foreign currency.</li>
-                                <li><strong>No</strong>: By default, will not report payments as foreign currency.</li>
-                                <li><strong>Account's Currency Dependant</strong>: The information sent to ARCA will depend on the currency configured in the receivable account used in the transaction.</li>
-                            </ul>
-                        </div>
-                    </group>
-                </field>
+                <xpath expr="//block[@id='invoicing_settings']/setting[@type='header']" position="replace">
+                    <block title="Electronic Invoice ARCA (ex AFIP)" name="afip_fe_settings_container">
+                        <setting string="AFIP WS" id="afip_fe_ws_setting">
+                            <button class="btn-link" icon="fa-arrow-right" name="%(l10n_ar_afipws.act_afipws_certificate_alias)d" string="List certificates" type="action"/>
+                            <button class="btn-link" icon="fa-arrow-right" name="%(l10n_ar_afipws.act_afipws_auth)d" string="List connections" type="action"/>
+                            <label for="afip_ws_env_type"/>
+                            <field class="font-weight-bold ms-4" name="afip_ws_env_type"/>
+                            <div class="mt16">
+                                <div class="mb8"><label for="l10n_ar_afip_fce_transmission" string="FCE MiPyME Transmission"/></div>
+                                <div><field name="l10n_ar_afip_fce_transmission" widget="radio" nolabel="1"/></div>
+                                <div class="text-muted" style="margin-top:8px;">
+                                    This information will be sent to AFIP by default when validating FCE documents. RG 4919/2021 requirement.
+                                </div>
+                            </div>
+                        </setting>
+                        <setting string="Foreign Currency Payments" id="afip_fe_foreign_currency_setting">
+                            <field name="l10n_ar_payment_foreign_currency" widget="radio"/>
+                            <div class="text-muted" style="margin-top:8px;">
+                                <p>
+                                    Please select the default option that will be used to inform ARCA whether the payment will be made in foreign currency, as required by RG 5616/2024:
+                                </p>
+                                <ul class="mb-0">
+                                    <li><strong>Yes</strong>: Will always inform ARCA that payments are made in foreign currency.</li>
+                                    <li><strong>No</strong>: By default, will not report payments as foreign currency.</li>
+                                    <li><strong>Account's Currency Dependant</strong>: The information sent to ARCA will depend on the currency configured in the receivable account used in the transaction.</li>
+                                </ul>
+                            </div>
+                        </setting>
+                    </block>
+                </xpath>
             </field>
         </record>
     </data>

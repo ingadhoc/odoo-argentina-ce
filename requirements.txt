@@ -1,5 +1,5 @@
 pyOpenSSL
-M2Crypto
-httplib2>=0.7
-pysimplesoap~=1.8.22
-git+https://github.com/reingart/pyafipws
+zeep
+lxml
+cryptography
+requests
