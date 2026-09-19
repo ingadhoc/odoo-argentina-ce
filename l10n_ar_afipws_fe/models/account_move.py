@@ -77,7 +77,7 @@ class AccountMove(models.Model):
         readonly=False
     )
     l10n_ar_currency_code = fields.Char("Currency Code", related="currency_id.name")
- 
+
     @api.onchange("currency_id", "line_ids")
     @api.depends("currency_id")
     def compute_l10n_ar_payment_foreign_currency(self):
@@ -133,7 +133,7 @@ class AccountMove(models.Model):
                 return
         super()._set_next_sequence()
 
-    # TODO Esto se deprecaria si la secuencia solo viene de  result de afip 
+    # TODO Esto se deprecaria si la secuencia solo viene de  result de afip
     def _get_last_sequence(self, relaxed=False, with_prefix=None):
         if self._name == 'account.move' and \
             self.journal_id.l10n_latam_use_documents and \
