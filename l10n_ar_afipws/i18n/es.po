@@ -516,7 +516,7 @@ msgstr "Listar certificados"
 
 #. module: l10n_ar_afipws
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws.res_config_settings_view_form
-msgid "List conections"
+msgid "List connections"
 msgstr "Listar conexiones"
 
 #. module: l10n_ar_afipws

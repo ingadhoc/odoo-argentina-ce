@@ -15,7 +15,7 @@
                             <label for="afip_ws_env_type"/>
                             <field class="font-weight-bold ms-4" name="afip_ws_env_type"/>
                             <div class="mt16">
-                                <div><label for="l10n_ar_afip_fce_transmission" string="FCE MiPyME Transmission"/></div>
+                                <div class="mb8"><label for="l10n_ar_afip_fce_transmission" string="FCE MiPyME Transmission"/></div>
                                 <div><field name="l10n_ar_afip_fce_transmission" widget="radio" nolabel="1"/></div>
                                 <div class="text-muted" style="margin-top:8px;">
                                     This information will be sent to AFIP by default when validating FCE documents. RG 4919/2021 requirement.

@@ -10,7 +10,7 @@
                 <xpath expr="//block[@id='invoicing_settings']" position="inside">
                     <setting type="header" string="AFIP WS" help="Configure AFIP web services">
                         <button class="btn-link" icon="fa-arrow-right" name="%(l10n_ar_afipws.act_afipws_certificate_alias)d" string="List certificates" type="action"/>
-                        <button class="btn-link" icon="fa-arrow-right" name="%(l10n_ar_afipws.act_afipws_auth)d" string="List conections" type="action"/>
+                        <button class="btn-link" icon="fa-arrow-right" name="%(l10n_ar_afipws.act_afipws_auth)d" string="List connections" type="action"/>
                         <label for="afip_ws_env_type"/>
                         <field class="font-weight-bold" name="afip_ws_env_type"/>
                     </setting>
