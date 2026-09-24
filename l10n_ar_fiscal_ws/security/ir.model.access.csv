@@ -1,0 +1,15 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_fiscal_ws_user,l10n_ar.fiscal.ws.user,model_l10n_ar_fiscal_ws,base.group_user,1,0,0,0
+access_fiscal_ws_manager,l10n_ar.fiscal.ws.manager,model_l10n_ar_fiscal_ws,base.group_system,1,1,1,1
+access_fiscal_ws_mapping_user,l10n_ar.fiscal.ws.mapping.user,model_l10n_ar_fiscal_ws_mapping,base.group_user,1,0,0,0
+access_fiscal_ws_mapping_manager,l10n_ar.fiscal.ws.mapping.manager,model_l10n_ar_fiscal_ws_mapping,base.group_system,1,1,1,1
+access_fiscal_ws_mapping_line_user,l10n_ar.fiscal.ws.mapping.line.user,model_l10n_ar_fiscal_ws_mapping_line,base.group_user,1,0,0,0
+access_fiscal_ws_mapping_line_manager,l10n_ar.fiscal.ws.mapping.line.manager,model_l10n_ar_fiscal_ws_mapping_line,base.group_system,1,1,1,1
+access_fiscal_connection_manager,l10n_ar.fiscal.ws.connection.manager,model_l10n_ar_fiscal_ws_connection,base.group_user,1,1,1,1
+access_fiscal_certificate_alias_manager,l10n_ar.fiscal.certificate.alias.manager,model_l10n_ar_fiscal_certificate_alias,base.group_system,1,1,1,1
+access_fiscal_certificate_alias_user,l10n_ar.fiscal.certificate.alias.user,model_l10n_ar_fiscal_certificate_alias,base.group_user,1,0,0,0
+access_fiscal_certificate_manager,l10n_ar.fiscal.certificate.manager,model_l10n_ar_fiscal_certificate,base.group_system,1,1,1,1
+access_fiscal_certificate_user,l10n_ar.fiscal.certificate.user,model_l10n_ar_fiscal_certificate,base.group_user,1,0,0,0
+access_a5_wizard,res.partner.update.from.padron.wizard,model_res_partner_update_from_padron_wizard,base.group_user,1,1,1,1
+access_fiscal_upload_certificate_wizard,l10n_ar.fiscal.certificate.upload.wizard,model_l10n_ar_fiscal_certificate_upload_wizard,base.group_system,1,1,1,1
+access_res_partner_update_from_padron_field,res.partner.update.from.padron.field,model_res_partner_update_from_padron_field,base.group_user,1,1,1,1

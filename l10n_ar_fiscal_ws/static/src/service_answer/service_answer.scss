@@ -1,0 +1,8 @@
+// The answer is read line by line, so it gets the full height of the dialog
+.o_l10n_ar_fiscal_answer_dialog {
+    .o_l10n_ar_fiscal_answer {
+        max-height: 70vh;
+        overflow: auto;
+        font-size: 0.875rem;
+    }
+}

@@ -1,0 +1,53 @@
+{
+    "name": "Web Services Fiscales Argentina",
+    "version": "19.0.1.0.0",
+    "category": "Localization/Argentina",
+    "author": "ADHOC SA, Moldeo Interactive,Odoo Community Association (OCA)",
+    "license": "AGPL-3",
+    "summary": "Conexión con los web services fiscales de ARCA y facturación electrónica",
+    "depends": [
+        "l10n_ar",  # needed for CUIT and also demo data
+        "account_debit_note",
+    ],
+    "external_dependencies": {},
+    "data": [
+        "security/ir.model.access.csv",
+        "security/security.xml",
+        # the wizards first: the views use their actions
+        "wizard/upload_certificate_view.xml",
+        "wizard/res_partner_update_from_padron_wizard_view.xml",
+        "views/menuitem.xml",
+        "views/fiscal_ws_view.xml",
+        "views/fiscal_ws_connection_view.xml",
+        "views/fiscal_ws_request.xml",
+        "views/fiscal_certificate_view.xml",
+        "views/fiscal_certificate_alias_view.xml",
+        "views/account_journal_view.xml",
+        "views/account_move_views.xml",
+        "views/report_invoice.xml",
+        "views/res_config_settings.xml",
+        "views/res_partner.xml",
+        "views/product_template.xml",
+        "data/fiscal_ws.xml",
+        "data/fiscal_ws_mapping.xml",
+        "data/l10n_ar.fiscal.ws.mapping.line.csv",
+        "data/ir.actions.url_data.xml",
+    ],
+    "assets": {
+        "web.assets_backend": [
+            "l10n_ar_fiscal_ws/static/src/errors/fiscal_ws_error.js",
+            "l10n_ar_fiscal_ws/static/src/errors/fiscal_ws_error.xml",
+            "l10n_ar_fiscal_ws/static/src/service_answer/service_answer.js",
+            "l10n_ar_fiscal_ws/static/src/service_answer/service_answer.xml",
+            "l10n_ar_fiscal_ws/static/src/service_answer/service_answer.scss",
+        ],
+    },
+    "demo": [
+        "demo/certificate_demo.xml",
+        "demo/parameter_demo.xml",
+    ],
+    "images": [],
+    "installable": True,
+    "auto_install": False,
+    "application": False,
+}

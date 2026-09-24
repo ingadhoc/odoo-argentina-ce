@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_journal_form" model="ir.ui.view">
+        <field name="name">account.journal.form.fiscal.ws</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.view_account_journal_form"/>
+        <field name="arch" type="xml">
+            <form>
+                <field name="l10n_ar_fiscal_ws_id" invisible="1"/>
+            </form>
+            <sheet position="before">
+                <header>
+                    <button name="l10n_ar_action_check_service" string="Probar servicio"
+                            help="Consulta si el web service está disponible"
+                            type="object" invisible="not l10n_ar_fiscal_ws_id"/>
+                    <button name="l10n_ar_action_get_points_of_sale" string="Puntos de venta"
+                            help="Puntos de venta habilitados para este web service"
+                            type="object" invisible="not l10n_ar_fiscal_ws_id"/>
+                    <button name="l10n_ar_action_get_document_types" string="Tipos de documento"
+                            help="Tipos de documento habilitados para este web service"
+                            type="object" invisible="not l10n_ar_fiscal_ws_id"/>
+                </header>
+            </sheet>
+        </field>
+    </record>
+</odoo>

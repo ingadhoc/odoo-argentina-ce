@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="l10n_ar_fiscal_ws.FiscalWsErrorDialog">
+        <Dialog title="title" size="'xl'" contentClass="'o_error_dialog'">
+            <div role="alert">
+                <pre class="mb-0" t-esc="message"/>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary o-default-button" t-on-click="props.close">Cerrar</button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>
