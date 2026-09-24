@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <record id="wsfe_dummy" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSFE: prueba de disponibilidad</field>
+        <field name="code">dummy</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_fe"/>
+        <field name="method_name">FEDummy</field>
+        <field name="auth_style">none</field>
+    </record>
+
+    <record id="wsfex_dummy" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSFEX: prueba de disponibilidad</field>
+        <field name="code">dummy</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_fex"/>
+        <field name="method_name">FEXDummy</field>
+        <field name="auth_style">none</field>
+    </record>
+
+    <record id="wsbfe_dummy" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSBFE: prueba de disponibilidad</field>
+        <field name="code">dummy</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_bfe"/>
+        <field name="method_name">BFEDummy</field>
+        <field name="auth_style">none</field>
+    </record>
+
+    <record id="padron_a5_dummy" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">Padrón A5: prueba de disponibilidad</field>
+        <field name="code">dummy</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_padron_a5"/>
+        <field name="method_name">dummy</field>
+        <field name="auth_style">none</field>
+    </record>
+
+    <record id="wsfecred_dummy" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSFECRED: prueba de disponibilidad</field>
+        <field name="code">dummy</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_fecred"/>
+        <field name="method_name">dummy</field>
+        <field name="auth_style">none</field>
+    </record>
+
+    <record id="wsfe_point_of_sale" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSFE: puntos de venta habilitados</field>
+        <field name="code">point_of_sale</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_fe"/>
+        <field name="method_name">FEParamGetPtosVenta</field>
+    </record>
+
+    <record id="wsfe_document_types" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSFE: tipos de documento habilitados</field>
+        <field name="code">document_types</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_fe"/>
+        <field name="method_name">FEParamGetTiposDoc</field>
+    </record>
+
+    <record id="wsfe_currency_rate" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSFE: cotización de una moneda</field>
+        <field name="code">currency_rate</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_fe"/>
+        <field name="method_name">FEParamGetCotizacion</field>
+    </record>
+
+    <record id="wsfe_last_invoice" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSFE: último comprobante autorizado</field>
+        <field name="code">last_invoice</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_fe"/>
+        <field name="method_name">FECompUltimoAutorizado</field>
+    </record>
+
+    <record id="wsfe_cae_request" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSFE: pedido de CAE</field>
+        <field name="code">cae_request</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_fe"/>
+        <field name="method_name">FECAESolicitar</field>
+    </record>
+
+    <record id="wsfe_cae_response" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSFE: respuesta del pedido de CAE</field>
+        <field name="code">cae_response</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_fe"/>
+        <field name="method_name">FECAESolicitar</field>
+    </record>
+
+    <record id="padron_a5_person" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">Padrón A5: datos de una persona</field>
+        <field name="code">person</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_padron_a5"/>
+        <field name="method_name">getPersona_v2</field>
+        <field name="auth_style">plain</field>
+    </record>
+
+    <record id="wsfecred_obliged_amount" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSFECRED: monto obligado de recepción</field>
+        <field name="code">obliged_amount</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_fecred"/>
+        <field name="method_name">consultarMontoObligadoRecepcion</field>
+        <field name="auth_style">request</field>
+    </record>
+
+    <record id="wsfe_last_invoice_response" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSFE: respuesta del último comprobante</field>
+        <field name="code">last_invoice_response</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_fe"/>
+        <field name="method_name">FECompUltimoAutorizado</field>
+    </record>
+
+    <record id="wsfex_last_invoice" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSFEX: último comprobante autorizado</field>
+        <field name="code">last_invoice</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_fex"/>
+        <field name="method_name">FEXGetLast_CMP</field>
+        <field name="auth_style">inline</field>
+    </record>
+
+    <record id="wsfex_last_invoice_response" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSFEX: respuesta del último comprobante</field>
+        <field name="code">last_invoice_response</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_fex"/>
+        <field name="method_name">FEXGetLast_CMP</field>
+    </record>
+
+    <record id="wsfex_last_id" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSFEX: último id de pedido</field>
+        <field name="code">last_id</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_fex"/>
+        <field name="method_name">FEXGetLast_ID</field>
+    </record>
+
+    <record id="wsfex_last_id_response" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSFEX: respuesta del último id de pedido</field>
+        <field name="code">last_id_response</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_fex"/>
+        <field name="method_name">FEXGetLast_ID</field>
+    </record>
+
+    <record id="wsfex_cae_request" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSFEX: pedido de CAE</field>
+        <field name="code">cae_request</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_fex"/>
+        <field name="method_name">FEXAuthorize</field>
+    </record>
+
+    <record id="wsfex_cae_response" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSFEX: respuesta del pedido de CAE</field>
+        <field name="code">cae_response</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_fex"/>
+        <field name="method_name">FEXAuthorize</field>
+    </record>
+
+    <record id="wsbfe_last_invoice" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSBFE: último comprobante autorizado</field>
+        <field name="code">last_invoice</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_bfe"/>
+        <field name="method_name">BFEGetLast_CMP</field>
+        <field name="auth_style">inline</field>
+    </record>
+
+    <record id="wsbfe_last_invoice_response" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSBFE: respuesta del último comprobante</field>
+        <field name="code">last_invoice_response</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_bfe"/>
+        <field name="method_name">BFEGetLast_CMP</field>
+    </record>
+
+    <record id="wsbfe_last_id" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSBFE: último id de pedido</field>
+        <field name="code">last_id</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_bfe"/>
+        <field name="method_name">BFEGetLast_ID</field>
+    </record>
+
+    <record id="wsbfe_last_id_response" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSBFE: respuesta del último id de pedido</field>
+        <field name="code">last_id_response</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_bfe"/>
+        <field name="method_name">BFEGetLast_ID</field>
+    </record>
+
+    <record id="wsbfe_cae_request" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSBFE: pedido de CAE</field>
+        <field name="code">cae_request</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_bfe"/>
+        <field name="method_name">BFEAuthorize</field>
+    </record>
+
+    <record id="wsbfe_cae_response" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSBFE: respuesta del pedido de CAE</field>
+        <field name="code">cae_response</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_bfe"/>
+        <field name="method_name">BFEAuthorize</field>
+    </record>
+
+</odoo>

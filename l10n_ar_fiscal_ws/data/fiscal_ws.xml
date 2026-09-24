@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <record id="fiscal_ws_login_cms" model="l10n_ar.fiscal.ws">
+        <field name="name">Autenticación (WSAA)</field>
+        <field name="code">LoginCms</field>
+        <field name="production_url">https://wsaa.afip.gov.ar/ws/services/LoginCms?wsdl</field>
+        <field name="homologation_url">https://wsaahomo.afip.gov.ar/ws/services/LoginCms?wsdl</field>
+    </record>
+
+    <record id="fiscal_ws_padron_a5" model="l10n_ar.fiscal.ws">
+        <field name="name">Padrón alcance 5</field>
+        <field name="code">ws_sr_padron_a5</field>
+        <field name="production_url">https://aws.afip.gov.ar/sr-padron/webservices/personaServiceA5?wsdl</field>
+        <field name="homologation_url">https://awshomo.afip.gov.ar/sr-padron/webservices/personaServiceA5?wsdl</field>
+    </record>
+
+    <record id="fiscal_ws_fecred" model="l10n_ar.fiscal.ws">
+        <field name="name">Factura de crédito electrónica (WSFECRED)</field>
+        <field name="code">wsfecred</field>
+        <field name="production_url">https://serviciosjava.afip.gob.ar/wsfecred/FECredService?wsdl</field>
+        <field name="homologation_url">https://fwshomo.afip.gov.ar/wsfecred/FECredService?wsdl</field>
+    </record>
+
+    <record id="fiscal_ws_fe" model="l10n_ar.fiscal.ws">
+        <field name="name">Factura electrónica sin detalle RG2485 (WSFEv1)</field>
+        <field name="code">wsfe</field>
+        <field name="production_url">https://servicios1.afip.gov.ar/wsfev1/service.asmx?WSDL</field>
+        <field name="homologation_url">https://wswhomo.afip.gov.ar/wsfev1/service.asmx?WSDL</field>
+    </record>
+
+    <record id="fiscal_ws_fex" model="l10n_ar.fiscal.ws">
+        <field name="name">Factura electrónica de exportación (WSFEXv1)</field>
+        <field name="code">wsfex</field>
+        <field name="production_url">https://servicios1.afip.gov.ar/wsfexv1/service.asmx?WSDL</field>
+        <field name="homologation_url">https://wswhomo.afip.gov.ar/wsfexv1/service.asmx?WSDL</field>
+    </record>
+
+    <record id="fiscal_ws_bfe" model="l10n_ar.fiscal.ws">
+        <field name="name">Bono fiscal electrónico con detalle RG2557 (WSBFE)</field>
+        <field name="code">wsbfe</field>
+        <field name="production_url">https://servicios1.afip.gov.ar/wsbfe/service.asmx?WSDL</field>
+        <field name="homologation_url">https://wswhomo.afip.gov.ar/wsbfe/service.asmx?WSDL</field>
+    </record>
+
+</odoo>

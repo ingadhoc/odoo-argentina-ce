@@ -1,0 +1,26 @@
+{
+    "name": "Reportes fiscales Argentina (CE)",
+    "version": "19.0.1.0.0",
+    "category": "Localization/Argentina",
+    "sequence": 14,
+    "author": "ADHOC SA, Moldeo Interactive, Odoo Community Association (OCA)",
+    "license": "AGPL-3",
+    "summary": "Libro de IVA de ventas y compras, sus archivos de intercambio para ARCA y el análisis de IVA",
+    "depends": [
+        "l10n_ar_fiscal_ws",
+        "report_xlsx",
+    ],
+    "external_dependencies": {},
+    "data": [
+        "report/account_ar_vat_line_view.xml",
+        "report/account_vat_ledger_report.xml",
+        "views/account_vat_report_views.xml",
+        "security/ir.model.access.csv",
+        "security/security.xml",
+    ],
+    "demo": [],
+    "images": [],
+    "installable": True,
+    "auto_install": False,
+    "application": False,
+}

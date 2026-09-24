@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_fiscal_ws_form" model="ir.ui.view">
+        <field name="name">l10n_ar.fiscal.ws.form</field>
+        <field name="model">l10n_ar.fiscal.ws</field>
+        <field name="arch" type="xml">
+            <form string="Fiscal Web Service">
+                <sheet>
+                    <header>
+                        <button name="action_check_service" type="object" string="Probar servicio"
+                                class="oe_highlight" invisible="not has_dummy"/>
+                    </header>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                        <field name="has_dummy" invisible="1"/>
+                        <field name="active" widget="boolean_toggle"/>
+                    </group>
+                    <group string="Endpoints">
+                        <field name="production_url"/>
+                        <field name="homologation_url"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_fiscal_ws_list" model="ir.ui.view">
+        <field name="name">l10n_ar.fiscal.ws.list</field>
+        <field name="model">l10n_ar.fiscal.ws</field>
+        <field name="arch" type="xml">
+            <list string="Fiscal Web Services">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="has_dummy" column_invisible="1"/>
+                <button name="action_check_service" type="object" string="Probar servicio"
+                        icon="fa-plug" invisible="not has_dummy"/>
+            </list>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="act_fiscal_ws">
+        <field name="name">Fiscal Web Services</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">l10n_ar.fiscal.ws</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem name="Servicios" action="act_fiscal_ws" id="menu_action_fiscal_ws" parent="menu_fiscal_ws" sequence="10"/>
+
+</odoo>

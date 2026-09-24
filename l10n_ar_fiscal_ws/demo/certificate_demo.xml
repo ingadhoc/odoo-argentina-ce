@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="main_company_certificate_alias" model="l10n_ar.fiscal.certificate.alias">
+        <field name="common_name">AFIPWShomologationYourCompany14092018</field>
+        <field name="key">-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCj4tVufRBH9j1Q
+1cag4xHHgYhNOWSTPtkZbB6ZVfxng/MLGgUF+InNRn2ZWFKpTsQucSa1JKWaYWt+
+gmq+7NMUu1smgdhyZxbGXubVEm8bp1AQO7432V4pOU06NW8i6YqRb79ru+wY32RN
+yWU1GnDyoGFfndM94ewlAkP9THwg6RHl5uYPcy+4PLRixhnMi+CoPhJ53yA8stHZ
+rsTKpYXvMLgbOVjI5+7mRq4ixlbmtIwifXdv0yExcj6Q0VJ+iq8aRxcxIRlNV6/6
+ifp7+cZUNpw/KzWVOQ+DcMgzMir7nn2YatLSPTcqv7YjQqpS/D2ZUu8S/SNxmQ50
+nF4/xoknAgMBAAECggEAen9gfReqBb/+kN9ZeoR/k5o0oVRW4uDFMYVpUb+9zDoK
+fq/SNWZSykb4NpiYIMkpRnV5M0jTJ5PN31/oHhGyrPpl5WCEwu5fTaM98uG2fvsO
+kzO0uNYW1cVo/itWiMf7tT3L3OE4VlcUCDiTF6BN8G0Em43CiazG79rDqx9yYL3j
+Vnj/NLiY0OnxXL6SkjxZHvjXPl8jjTrf8oZl+twpwskiC5cqIpfsTGSsDq5WS2rh
+eYdGhH4EcUAfK5PHTTIwBGFReekrTXv1PXm3EK36T8himQVX5sSd2F79QsVXsnfM
+PR5W85W7MhEKYD4mZSQsKThj+CCE8G7U5uJ2Ah+LYQKBgQDOPNQYdfrY2Ivcy1X7
+umVniEyoJ5fs3GLRwXTH+nPNxIa5/YtzLqd17GU/Ec6nyEDGcDqEpuKfopcEEqqw
+w6Z9JPudOPJoVRugTHkpAzv/A9Sq5IC3P2SJUDV11u80x9qe3j5oKj/woEE2HsUI
+uCn8HF9NUO7r8G/eg5+8vFcHiQKBgQDLbfnt2xFRFgF06+E2GIK/GAKbkJHhYO1L
+2obZQnGj7+irMlt+uaDbHk+jFCHk+q3xd48x+o1aliNwXSDQ3QJfxCSIfcP9xG2W
+3l6kCO5irwgt589E5rEUEegQM2F6oS3OtcUr9zjeW1rDMjHHLD87Tb9rB2GAweQf
+yLqsoZovLwKBgERjX2GNHdVyWU6qDqUetimSxPityG8+1XYA1JzLrEL7fEGIlgln
+2xf7f8dePEze1rv20zDRtiyBWdp75iYfesHc1aLZE2kNb8/EDBlRfT+fIZJZm2Uo
+nEn8Uv30e/Xgn9o2kDMyb2l3eqhbo7K0fxeewOt+fvu2CyKaOwn22lUhAoGBAKQz
+YfAmykR8EbLxjnhesnJSjBBLUiTsWr3GZuBI7HdZ96Dv5cBVT0xum/NTFcTAvtRQ
+IApEZgJ/e51/3jQYoIjyRlbRxPg5rAeB+DxJZTnMdDqxiLDh0H8VsQ4amw0juljG
+iZ9iTsnUTV+PTXSp92QD7oUSkRYf6uXo3Rzo2A5LAoGAI4o8zbghCrqJvkuk0hfh
+UP5X/eu06EMYVLamZit64kJMdumKcJuVDo4jyz+DYhz6T3bMPbAzRBqsZA4M8l73
+XWp9z1bKS/AHsZSXLLRKk1C/OR7z5zLz/j8BgbqKpjNtRCp1DFu1IgPC2+3rVr89
+mQa1nuu+xYOkgxcs7F5qM7g=
+-----END PRIVATE KEY-----</field>
+        <field name="company_id" ref="base.company_ri"/>
+        <field name="country_id" ref="base.ar"/>
+        <!-- <field name="state_id" ref="l10n_ar_account.demo_S"/> -->
+        <field name="city">Rosario</field>
+        <field name="service_provider_cuit">20313932975</field>
+        <field name="service_type">outsourced</field>
+        <!-- <field name="company_cuit">30111111118</field> -->
+        <!-- <field name="service_type">in_house</field> -->
+        <field name="type">homologation</field>
+        <field name="state">confirmed</field>
+    </record>
+
+    <record id="main_company_certificate" model="l10n_ar.fiscal.certificate">
+        <field name="alias_id" ref="main_company_certificate_alias"/>
+        <field name="state">confirmed</field>
+        <field name="crt">-----BEGIN CERTIFICATE-----
+MIIDSTCCAjGgAwIBAgIIYQLQYWNiDBMwDQYJKoZIhvcNAQENBQAwODEaMBgGA1UEAwwRQ29tcHV0
+YWRvcmVzIFRlc3QxDTALBgNVBAoMBEFGSVAxCzAJBgNVBAYTAkFSMB4XDTI1MDkwODE5MDE1MFoX
+DTI3MDkwODE5MDE1MFowLzESMBAGA1UEAwwJT2Rvb0NlcnQzMRkwFwYDVQQFExBDVUlUIDIwMzEz
+OTMyOTc1MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo+LVbn0QR/Y9UNXGoOMRx4GI
+TTlkkz7ZGWwemVX8Z4PzCxoFBfiJzUZ9mVhSqU7ELnEmtSSlmmFrfoJqvuzTFLtbJoHYcmcWxl7m
+1RJvG6dQEDu+N9leKTlNOjVvIumKkW+/a7vsGN9kTcllNRpw8qBhX53TPeHsJQJD/Ux8IOkR5ebm
+D3MvuDy0YsYZzIvgqD4Sed8gPLLR2a7EyqWF7zC4GzlYyOfu5kauIsZW5rSMIn13b9MhMXI+kNFS
+foqvGkcXMSEZTVev+on6e/nGVDacPys1lTkPg3DIMzIq+559mGrS0j03Kr+2I0KqUvw9mVLvEv0j
+cZkOdJxeP8aJJwIDAQABo2AwXjAMBgNVHRMBAf8EAjAAMB8GA1UdIwQYMBaAFLOy0//96bre3o2v
+ESGc1iB98k9vMB0GA1UdDgQWBBSHE0w7lo5R7BEUxusOyICwULBveTAOBgNVHQ8BAf8EBAMCBeAw
+DQYJKoZIhvcNAQENBQADggEBAJxk1g6YFuXVKgO8UyBPMdidb8qWZbTZ5e1Wkq+sDazGaX/z2Esc
+Y1H5wIq4kJO+Ju4h1wpLmCq+zjwBSdsklGelyovg7l8rSFuLfy1RgxMo8ex2mdwd3SkIRP9crb0h
+7Dep2neMiY2x3u2Uo4cIOvDCozQxmh7Ms3PJ3Y3lecJDOsROE9ikQ6110KwFEWsaB5MkgIftDSsY
+dkf8D4SeQ7JLL4je0b8ntWdelcY8wukjSJphfudNl/InKk1cyqvHdt2zpIcGUzCEeRKdUmLvTlVK
+T397fi4YkItuppMxkO3FHH9jykGfeu9C9IcAaznW44COhY25Dvm1r8KXq4nE00A=
+-----END CERTIFICATE-----
+</field>
+    </record>
+</odoo>

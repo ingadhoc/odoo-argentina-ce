@@ -1,0 +1,108 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<odoo>
+    <record model='ir.ui.view' id='account_vat_ledger_tree'>
+        <field name='name'>Account VAT Ledger</field>
+        <field name="model">account.vat.ledger</field>
+        <field name='arch' type='xml'>
+            <list string="VAT Ledger">
+                <field name="name"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="first_page"/>
+                <field name="last_page"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record model='ir.ui.view' id='account_vat_ledger_form'>
+        <field name='name'>Account VAT Ledger</field>
+        <field name="model">account.vat.ledger</field>
+        <field name='arch' type='xml'>
+            <form string="VAT Ledger">
+                <field name="type" invisible="1"/>
+                <field name="company_id"  invisible="1"/>
+                <header>
+                    <button name="action_print" string="Imprimir" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_print" string="Imprimir" type="object" invisible="state not in ['cancel', 'presented']"/>
+                    <button name="action_present" string="Presentar" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_cancel" string="Cancelar" type="object" invisible="state not in ['draft', 'presented']"/>
+                    <button name="action_to_draft" string="Volver a borrador" type="object" invisible="state != 'cancel'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,presented"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="company_id" widget="selection" groups="base.group_multi_company" readonly="state != 'draft'"/>
+                            <field name="date_from" readonly="state != 'draft'"/>
+                            <field name="date_to" readonly="state != 'draft'"/>
+                            <field name="presented_ledger_name" invisible="1"/>
+                            <field name="presented_ledger" filename="presented_ledger_name" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="first_page" readonly="state != 'draft'"/>
+                            <field name="last_page" readonly="state != 'draft'"/>
+                            <field name="prorate_tax_credit"/>
+                            <field name="prorate_type" invisible="not prorate_tax_credit" required="prorate_tax_credit"/>
+                            <field name="reference"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Invoices" name="invoices">
+                            <field name="invoice_ids"/>
+                        </page>
+                        <page string="Journals" name="journal_ids">
+                            <field name="journal_ids" readonly="state != 'draft'" domain="[('type', '=', type), ('company_id', '=', company_id), ('l10n_latam_use_documents', '=', True)]"/>
+                        </page>
+                        <page string="Archivos TXT" name="txt_files">
+                            <button name="compute_txt_data" type="object" string="Generar los TXT" invisible="state != 'draft'"/>
+                            <group>
+                                <field name="vouchers_filename" invisible="1"/>
+                                <field name="aliquots_filename" invisible="1"/>
+                                <field name="import_aliquots_filename" invisible="1"/>
+                                <group>
+                                    <field name="vouchers_file" filename="vouchers_filename"/>
+                                    <field name="aliquots_file" filename="aliquots_filename"/>
+                                    <field name="import_aliquots_file" filename="import_aliquots_filename"/>
+                                </group>
+                            </group>
+                            <group col="1" groups="base.group_no_one">
+                                <!-- <field name="REGINFO_CV_CABECERA"/> -->
+                                <field name="REGINFO_CV_CBTE"/>
+                                <field name="REGINFO_CV_ALICUOTAS"/>
+                                <field name="REGINFO_CV_COMPRAS_IMPORTACIONES" invisible="type != 'purchase'"/>
+                            </group>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="note"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_account_purchase_vat_ledger" model="ir.actions.act_window">
+        <field name="name">Purchases VAT Ledger</field>
+        <field name="res_model">account.vat.ledger</field>
+        <field name="context">{'default_type':'purchase'}</field>
+        <field name="domain">[('type','=','purchase')]</field>
+    </record>
+
+    <record id="action_account_sale_vat_ledger" model="ir.actions.act_window">
+        <field name="name">Sales VAT Ledger</field>
+        <field name="res_model">account.vat.ledger</field>
+        <field name="context">{'default_type':'sale'}</field>
+        <field name="domain">[('type','=','sale')]</field>
+    </record>
+
+    <menuitem id="menu_account_purchase_vat_ledger"
+                action="action_account_purchase_vat_ledger"
+                parent="l10n_ar.account_reports_ar_statements_menu"
+                sequence="6"/>
+
+    <menuitem id="menu_account_sale_vat_ledger"
+                action="action_account_sale_vat_ledger"
+                parent="l10n_ar.account_reports_ar_statements_menu"
+                sequence="4"/>
+</odoo>

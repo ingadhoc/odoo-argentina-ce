@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_move_form" model="ir.ui.view">
+        <field name="model">account.move</field>
+        <field name="name">account.move.form.fiscal.ws</field>
+        <field name="inherit_id" ref="l10n_ar.view_move_form"/>
+        <field name="arch" type="xml">
+            <!-- the label says where the invoice is going to be authorized -->
+            <button name="action_post" position="attributes">
+                <attribute name="invisible">state != 'draft' or l10n_ar_fiscal_validation_type</attribute>
+            </button>
+            <button name="action_post" position="after">
+                <button name="action_post" type="object" string="Validar en ARCA" class="oe_highlight"
+                        invisible="state != 'draft' or l10n_ar_fiscal_validation_type != 'production'"
+                        groups="account.group_account_invoice"/>
+                <button name="action_post" type="object" string="Validar en homologación" class="oe_highlight"
+                        invisible="state != 'draft' or l10n_ar_fiscal_validation_type != 'homologation'"
+                        groups="account.group_account_invoice"/>
+                <button name="l10n_ar_action_get_currency_rate" type="object" string="Consultar cotización"
+                        invisible="state != 'draft' or not l10n_ar_fiscal_validation_type or not invoice_date"
+                        groups="account.group_account_invoice"/>
+            </button>
+            <field name="l10n_ar_afip_concept" position="after">
+                <field name="l10n_ar_fiscal_fce_is_cancellation"/>
+                <field name="l10n_ar_fiscal_document_internal_type" invisible="1"/>
+                <label for="l10n_ar_fiscal_period_from" string="Período asociado"
+                       invisible="l10n_ar_fiscal_document_internal_type not in ['credit_note', 'debit_note']"/>
+                <div class="oe_inline"
+                     invisible="l10n_ar_fiscal_document_internal_type not in ['credit_note', 'debit_note']">
+                    <field name="l10n_ar_fiscal_period_from" class="oe_inline" placeholder="Desde"/> -
+                    <field name="l10n_ar_fiscal_period_to" class="oe_inline" placeholder="Hasta"/>
+                </div>
+                <field name="l10n_ar_fiscal_payment_foreign_currency"/>
+            </field>
+            <notebook>
+                <page string="ARCA" name="l10n_ar_fiscal_ws" invisible="move_type not in ['out_invoice', 'out_refund']">
+                    <group>
+                        <field name="l10n_ar_fiscal_validation_type" invisible="1"/>
+                        <label for="l10n_ar_fiscal_auth_code" string="Autorización"/>
+                        <div class="oe_inline">
+                            <field name="l10n_ar_fiscal_auth_mode" class="oe_inline" readonly="state != 'draft'"/>
+                            <field name="l10n_ar_fiscal_auth_code" class="oe_inline" readonly="state != 'draft'"
+                                   required="l10n_ar_fiscal_auth_mode" placeholder="Código"/>
+                        </div>
+                        <field name="l10n_ar_fiscal_auth_code_due" readonly="state != 'draft'"/>
+                        <field name="l10n_ar_fiscal_result" readonly="state != 'draft'"/>
+                        <field name="l10n_ar_fiscal_message"/>
+                        <field name="l10n_ar_fiscal_xml_request" widget="ace" groups="base.group_no_one"/>
+                        <field name="l10n_ar_fiscal_xml_response" widget="ace" groups="base.group_no_one"/>
+                    </group>
+                </page>
+            </notebook>
+        </field>
+    </record>
+
+</odoo>
