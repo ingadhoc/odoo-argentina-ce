@@ -79,10 +79,12 @@ class TestFiscalWsCommon(TestArCommon, FiscalWsInvariants):
     def _number_it(self, invoice, number=42):
         """Give the invoice the number the service would have authorized.
 
-        Posting is not an option here: the module commits after each authorized
-        invoice and Odoo forbids committing from inside a test.
+        Posting is not an option here: the module commits once the batch is
+        authorized, and Odoo forbids committing from inside a test.
         """
         ws_code = invoice.journal_id.l10n_ar_fiscal_ws_id.code
+        # each call stands for its own transaction, so nothing is remembered between them
+        invoice._l10n_ar_forget_numbering()
         # writing the number recomputes the sequence, which asks the service for the last one
         with self._answers(last_invoice=self._last_invoice_answer(ws_code, number - 1)):
             invoice.l10n_latam_document_number = "%05d-%08d" % (

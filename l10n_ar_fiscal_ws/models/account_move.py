@@ -158,11 +158,13 @@ class AccountMove(models.Model):
         Asked once per journal and document type: inside a batch the sequence cache
         of Odoo hands out the numbers that follow, and the service is asked again
         when the batch commits.
+
+        It is remembered in the cache of the cursor, next to the sequence cache of
+        Odoo and with the same life: the precommit data does not survive a flush,
+        and every savepoint flushes, so there it was asked once per invoice.
         """
         self.ensure_one()
-        if "l10n_ar_next_number" not in self.env.cr.precommit.data:
-            self.env.cr.precommit.data["l10n_ar_next_number"] = {}
-        cache = self.env.cr.precommit.data["l10n_ar_next_number"]
+        cache = self.env.cr.cache.setdefault("l10n_ar_next_number", {})
         key = (self.journal_id.id, self.l10n_latam_document_type_id.id)
         if key not in cache:
             cache[key] = self.journal_id._l10n_ar_get_last_invoice_number(self.l10n_latam_document_type_id) + 1
@@ -254,9 +256,7 @@ class AccountMove(models.Model):
             self._l10n_ar_forget_numbering()
 
         if refused is not None:
-            text = self._l10n_ar_rejection_message(
-                results[refused]["l10n_ar_fiscal_message"], authorized, undone_names
-            )
+            text = self._l10n_ar_rejection_message(results[refused]["l10n_ar_fiscal_message"], authorized, undone_names)
             self[refused]._l10n_ar_keep_rejection(results[refused])
             raise FiscalWsError(text)
         return authorized
@@ -269,7 +269,7 @@ class AccountMove(models.Model):
         transaction may take the next one, so the next batch asks again.
         """
         self.env.cr.cache.pop("sequence.mixin", None)
-        self.env.cr.precommit.data.pop("l10n_ar_next_number", None)
+        self.env.cr.cache.pop("l10n_ar_next_number", None)
 
     def _l10n_ar_keep_rejection(self, values):
         """Keep what the authority answered on an invoice it refused.
@@ -281,6 +281,7 @@ class AccountMove(models.Model):
         """
         self.ensure_one()
         self.env.cr.rollback()
+        self._l10n_ar_forget_numbering()
         self.env.invalidate_all(flush=False)
         self.sudo().write(values)
         self.env.cr.commit()  # pylint: disable=invalid-commit
