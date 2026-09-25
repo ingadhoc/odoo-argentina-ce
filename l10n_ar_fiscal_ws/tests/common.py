@@ -101,8 +101,25 @@ class TestFiscalWsCommon(TestArCommon, FiscalWsInvariants):
     def _cae_answers(self, response):
         """Answer the authorization request with a fixture, keeping the xml the flow expects."""
         xml = {"xml_request": "<request/>", "xml_response": "<response/>"}
-        return patch.object(
+
+        def _call(mapping, record, extra=None):
+            return response, xml
+
+        return patch.multiple(
             type(self.env["l10n_ar.fiscal.ws.mapping"]),
-            "call",
-            lambda mapping, record, extra=None: (response, xml),
+            call=_call,
+            call_batch=_call,
         )
+
+    def _build_cae_batch(self, invoices, extra=None):
+        """Payload this batch would send, built without calling the service."""
+        ws_code = invoices.journal_id.l10n_ar_fiscal_ws_id.code
+        mapping = self.env["l10n_ar.fiscal.ws.mapping"]._get_mapping(ws_code, "cae_request")
+        return mapping.build_batch(invoices, dict(extra or {}, request_id=1))
+
+    def _numbered_invoices(self, journal, count, first=42):
+        """Invoices of this journal already carrying the numbers the service would give."""
+        invoices = self.env["account.move"]
+        for offset in range(count):
+            invoices |= self._number_it(self._new_invoice(journal), number=first + offset)
+        return invoices

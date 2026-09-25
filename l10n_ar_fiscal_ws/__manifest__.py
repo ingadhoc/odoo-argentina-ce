@@ -28,6 +28,7 @@
         "views/res_config_settings.xml",
         "views/res_partner.xml",
         "views/product_template.xml",
+        "data/ir_config_parameter.xml",
         "data/fiscal_ws.xml",
         "data/fiscal_ws_mapping.xml",
         "data/l10n_ar.fiscal.ws.mapping.line.csv",

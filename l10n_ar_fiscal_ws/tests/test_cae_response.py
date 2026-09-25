@@ -38,9 +38,10 @@ class TestCaeResponse(TestFiscalWsCommon):
         """An accepted answer leaves the invoice with its CAE and its due date."""
         self._as_production()
         with self._cae_answers(cae_answer()):
-            message, values = self.invoice._l10n_ar_request_cae()
+            values = self.invoice._l10n_ar_request_cae()[0]
 
-        self.assertFalse(message, "Una respuesta aceptada no devuelve rechazo")
+        self.assertEqual(values["l10n_ar_fiscal_result"], "A", "Una respuesta aceptada no es un rechazo")
+        self.invoice.write(values)
         self.assertEqual(self.invoice.l10n_ar_fiscal_auth_mode, "CAE")
         self.assertEqual(self.invoice.l10n_ar_fiscal_auth_code, "61234567890123")
         self.assertEqual(self.invoice.l10n_ar_fiscal_auth_code_due.strftime("%Y%m%d"), "20301231")
@@ -52,10 +53,10 @@ class TestCaeResponse(TestFiscalWsCommon):
         self._as_production()
         errors = [answer(Code=10015, Msg="El comprobante ya fue autorizado")]
         with self._cae_answers(cae_answer(result="R", errors=errors)):
-            message, values = self.invoice._l10n_ar_request_cae()
+            values = self.invoice._l10n_ar_request_cae()[0]
 
         with self.subTest("la respuesta se devuelve como rechazo, con el motivo de ARCA"):
-            self.assertIn("El comprobante ya fue autorizado", message)
+            self.assertIn("El comprobante ya fue autorizado", values["l10n_ar_fiscal_message"])
             self.assertEqual(values["l10n_ar_fiscal_result"], "R")
 
         with self.subTest("no queda ningún rastro de autorización"):
@@ -72,26 +73,29 @@ class TestCaeResponse(TestFiscalWsCommon):
         self._as_production()
         observations = [answer(Code=10016, Msg="El número de comprobante no es correlativo")]
         with self._cae_answers(cae_answer(observations=observations)):
-            message, values = self.invoice._l10n_ar_request_cae()
+            values = self.invoice._l10n_ar_request_cae()[0]
 
-        self.assertFalse(message)
+        self.assertEqual(values["l10n_ar_fiscal_result"], "A")
+        self.invoice.write(values)
         self.assertIn("no es correlativo", self.invoice.l10n_ar_fiscal_message)
         self.assert_invoice_is_sound(self.invoice)
 
     def test_local_validation_without_certificates(self):
         """In homologation without certificates the invoice is authorized locally, and says so."""
-        message, values = self.invoice._l10n_ar_request_cae()
+        ws_code = self.invoice.journal_id.l10n_ar_fiscal_ws_id.code
+        with self._answers(last_invoice=self._last_invoice_answer(ws_code, 41)):
+            self.invoice._l10n_ar_post_batch(soft=True)
 
-        with self.subTest("queda autorizada con el código local"):
-            self.assertFalse(message)
+        with self.subTest("queda posteada y autorizada con el código local"):
+            self.assertEqual(self.invoice.state, "posted")
             self.assertEqual(self.invoice.l10n_ar_fiscal_auth_code, LOCAL_AUTH_CODE)
+            self.assert_number_matches_authorization(self.invoice, 42)
             self.assert_invoice_is_sound(self.invoice)
 
         with self.subTest("el motivo queda en el historial de la factura"):
             self.assertTrue(self.invoice.message_ids.filtered(lambda x: "solo localmente" in (x.body or "")))
 
         with self.subTest("el código QR informa los datos del comprobante"):
-            self._number_it(self.invoice)
             values = json.loads(base64.b64decode(self.invoice.l10n_ar_fiscal_qr_code.split("p=")[1]))
             self.assertEqual(values["importe"], float("%.2f" % self.invoice.amount_total))
             self.assertEqual(values["moneda"], self.invoice.currency_id.l10n_ar_afip_code)

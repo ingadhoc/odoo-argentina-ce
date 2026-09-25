@@ -6,8 +6,10 @@ import logging
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+from odoo.tools import SQL
+from psycopg2 import errors as pg_errors
 
-from .exceptions import serialize_answer
+from .exceptions import FiscalWsError, serialize_answer
 
 _logger = logging.getLogger(__name__)
 
@@ -38,6 +40,28 @@ class AccountJournal(models.Model):
         by_code = {service.code: service for service in services}
         for rec in self:
             rec.l10n_ar_fiscal_ws_id = by_code.get(POS_SYSTEM_WS.get(rec.l10n_ar_afip_pos_system))
+
+    def _l10n_ar_lock(self, document_type):
+        """Serialize the numbering of this journal and document type.
+
+        Two posts at the same time would ask the service for the same last number
+        and request the authorization of the same voucher; sending batches, they
+        would collide over whole ranges. The lock lives in the transaction, so the
+        commit of the batch releases it.
+        """
+        self.ensure_one()
+        config = self.env["ir.config_parameter"].sudo()
+        timeout = int(config.get_param("l10n_ar_fiscal_ws.lock_timeout", 30))
+        key = "l10n_ar_fiscal_ws-%s-%s-%s" % (self.company_id.id, self.id, document_type.id)
+        self.env.cr.execute(SQL("SELECT set_config('lock_timeout', %s, true)", "%ss" % timeout))
+        try:
+            self.env.cr.execute(SQL("SELECT pg_advisory_xact_lock(hashtext(%s))", key))
+        except pg_errors.LockNotAvailable as error:
+            # the failed lock leaves the transaction aborted, so nothing can be read after it
+            self.env.cr.rollback()
+            raise FiscalWsError(
+                "Hay otro proceso facturando en el diario %s. Probá de nuevo en unos segundos." % self.display_name
+            ) from error
 
     def _l10n_ar_call(self, code, extra=None):
         """Call a mapping of this journal's service and return its response."""

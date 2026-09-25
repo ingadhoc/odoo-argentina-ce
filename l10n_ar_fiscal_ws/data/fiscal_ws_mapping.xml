@@ -74,6 +74,7 @@
         <field name="code">cae_request</field>
         <field name="fiscal_ws_id" ref="fiscal_ws_fe"/>
         <field name="method_name">FECAESolicitar</field>
+        <field name="batch_limit">250</field>
     </record>
 
     <record id="wsfe_cae_response" model="l10n_ar.fiscal.ws.mapping">
@@ -81,6 +82,7 @@
         <field name="code">cae_response</field>
         <field name="fiscal_ws_id" ref="fiscal_ws_fe"/>
         <field name="method_name">FECAESolicitar</field>
+        <field name="batch_response_path">FeDetResp.FECAEDetResponse</field>
     </record>
 
     <record id="padron_a5_person" model="l10n_ar.fiscal.ws.mapping">

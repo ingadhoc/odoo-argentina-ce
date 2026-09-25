@@ -17,6 +17,35 @@ _logger = logging.getLogger(__name__)
 PROVIDER_PREFIX = "_l10n_ar_fiscal_provider_"
 
 
+def read_path(source, path):
+    """Read a path over a record, a dict or a web service response.
+
+    Accepts an index at the end of a part, as in FECAEDetResponse[0].
+    """
+    value = source
+    for part in (path or "").split("."):
+        index = None
+        if part.endswith("]") and "[" in part:
+            part, _sep, raw_index = part[:-1].partition("[")
+            index = int(raw_index)
+        value = value.get(part) if isinstance(value, dict) else getattr(value, part)
+        if index is not None and value:
+            value = value[index]
+        if value is None or value is False:
+            return value
+    return value
+
+
+def walk_to(values, names):
+    """Container holding the last name of the path, and that name."""
+    node = values
+    for name in names[:-1]:
+        node = node.get(name) if isinstance(node, dict) else None
+        if node is None:
+            return None, names[-1]
+    return node, names[-1]
+
+
 class L10nArFiscalWsMapping(models.Model):
     _name = "l10n_ar.fiscal.ws.mapping"
     _description = "Fiscal Web Service Mapping"
@@ -39,6 +68,15 @@ class L10nArFiscalWsMapping(models.Model):
         "services take them as loose parameters.",
     )
     line_ids = fields.One2many("l10n_ar.fiscal.ws.mapping.line", "mapping_id")
+    batch_limit = fields.Integer(
+        default=1,
+        required=True,
+        help="How many records the method takes in one request. Above one, the line that "
+        "repeats per record has to be marked as the batch detail.",
+    )
+    batch_response_path = fields.Char(
+        help="Where the answer carries one detail per record, e.g. FeDetResp.FECAEDetResponse.",
+    )
 
     _unique_code_per_ws = models.Constraint(
         "unique (fiscal_ws_id, code)",
@@ -56,17 +94,26 @@ class L10nArFiscalWsMapping(models.Model):
         return mapping
 
     def call(self, record, extra=None):
-        """Build the payload of this mapping and call the service with it.
+        """Build the payload of this mapping and call the service with it."""
+        self.ensure_one()
+        return self._call_payload(self.build(record, extra), getattr(record, "company_id", False))
+
+    def call_batch(self, records, extra=None):
+        """Same call carrying several records: one request for the whole batch."""
+        self.ensure_one()
+        return self._call_payload(self.build_batch(records, extra), records[:1].company_id)
+
+    def _call_payload(self, payload, company):
+        """Send a payload already built.
 
         A method that takes no credentials —the dummy of every service— is called
         without asking for an access ticket, so it works without certificates.
         """
         self.ensure_one()
-        payload = self.build(record, extra)
         if self.auth_style == "none":
             client, transport = build_client(self.env, self._get_service_url())
             return call_service(client, transport, self.method_name, payload)
-        company = getattr(record, "company_id", False) or self.env.company
+        company = company or self.env.company
         connection = company._get_fiscal_ws_connection(self.fiscal_ws_id.code)
         auth = connection.auth_payload(self.auth_style)
         if self.auth_style == "inline":
@@ -90,6 +137,58 @@ class L10nArFiscalWsMapping(models.Model):
         if isinstance(source, models.BaseModel):
             source.ensure_one()
         return self.line_ids.filtered(lambda line: not line.parent_id)._build(source, extra or {})
+
+    def build_batch(self, records, extra=None):
+        """Payload of one request carrying several records.
+
+        The header is common to the batch, so the first record builds it, and the
+        line marked as the batch detail is repeated once per record.
+        """
+        self.ensure_one()
+        detail = self._batch_detail_line()
+        if not detail:
+            return self.build(records, extra)
+        names = detail._path_names()
+        base = dict(extra or {}, batch_size=len(records))
+        payload = {}
+        details = []
+        for index, record in enumerate(records):
+            values = self.build(record, dict(base))
+            node, key = walk_to(values, names)
+            item = node.pop(key, None) if node else None
+            if item is None:
+                raise UserError(_("El comprobante %s no armó su detalle del lote.", record.display_name))
+            details.extend(item if isinstance(item, list) else [item])
+            if not index:
+                payload = values
+        node, key = walk_to(payload, names)
+        node[key] = details
+        return payload
+
+    def _batch_detail_line(self):
+        self.ensure_one()
+        return self.line_ids.filtered("batch_detail")[:1]
+
+    def _batch_size(self, limit):
+        """How many records travel in one request: what the method takes, capped by the
+        configured size, and one when no line is marked as the batch detail.
+        """
+        self.ensure_one()
+        if not self._batch_detail_line():
+            return 1
+        return max(1, min(self.batch_limit, limit))
+
+    def _response_details(self, response, count):
+        """One detail of the answer per record, in the order they were sent.
+
+        A method that authorizes a single voucher answers the only record; a missing
+        detail means the service did not even look at that one.
+        """
+        self.ensure_one()
+        if not self.batch_response_path:
+            return [response] * count
+        details = list(read_path(response, self.batch_response_path) or [])
+        return (details + [None] * count)[:count]
 
 
 class L10nArFiscalWsMappingLine(models.Model):
@@ -139,6 +238,20 @@ class L10nArFiscalWsMappingLine(models.Model):
     is_list = fields.Boolean(
         help="For nested structures: send the structure inside a list, as some services expect.",
     )
+    batch_detail = fields.Boolean(
+        help="For nested structures: the structure that repeats once per record when several "
+        "records travel in the same request.",
+    )
+
+    def _path_names(self):
+        """Names from the root of the payload down to this line."""
+        self.ensure_one()
+        names = []
+        line = self
+        while line:
+            names.insert(0, line.name)
+            line = line.parent_id
+        return names
 
     @api.constrains("condition")
     def _check_condition(self):
@@ -192,8 +305,8 @@ class L10nArFiscalWsMappingLine(models.Model):
         if self.source == "provider":
             return self._format(self._call_provider(record, self.value, extra))
         if self.source == "extra":
-            return self._format(self._read_path(extra, self.value))
-        return self._format(self._read_path(record, self.value))
+            return self._format(read_path(extra, self.value))
+        return self._format(read_path(record, self.value))
 
     def _get_child_value(self, record, extra):
         """Nested structure: one dict, or a list of dicts when it repeats."""
@@ -218,26 +331,7 @@ class L10nArFiscalWsMappingLine(models.Model):
                 )
             )
         result = provider(extra)
-        return self._read_path(result, path) if path else result
-
-    @staticmethod
-    def _read_path(source, path):
-        """Read a path over a record, a dict or a web service response.
-
-        Accepts an index at the end of a part, as in FECAEDetResponse[0].
-        """
-        value = source
-        for part in (path or "").split("."):
-            index = None
-            if part.endswith("]") and "[" in part:
-                part, _, raw_index = part[:-1].partition("[")
-                index = int(raw_index)
-            value = value.get(part) if isinstance(value, dict) else getattr(value, part)
-            if index is not None and value:
-                value = value[index]
-            if value is None or value is False:
-                return value
-        return value
+        return read_path(result, path) if path else result
 
     def _format(self, value):
         if self.format == "bool_sn":

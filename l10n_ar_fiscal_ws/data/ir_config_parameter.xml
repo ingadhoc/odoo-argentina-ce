@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo noupdate="1">
+
+    <record id="parameter_batch_size" model="ir.config_parameter">
+        <field name="key">l10n_ar_fiscal_ws.batch_size</field>
+        <field name="value">20</field>
+    </record>
+
+    <record id="parameter_lock_timeout" model="ir.config_parameter">
+        <field name="key">l10n_ar_fiscal_ws.lock_timeout</field>
+        <field name="value">30</field>
+    </record>
+
+</odoo>

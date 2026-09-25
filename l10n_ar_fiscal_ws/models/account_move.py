@@ -153,7 +153,12 @@ class AccountMove(models.Model):
         )
 
     def _l10n_ar_get_next_number(self):
-        """Next number for this document type, asked once per invoice."""
+        """Next number for this document type.
+
+        Asked once per journal and document type: inside a batch the sequence cache
+        of Odoo hands out the numbers that follow, and the service is asked again
+        when the batch commits.
+        """
         self.ensure_one()
         if "l10n_ar_next_number" not in self.env.cr.precommit.data:
             self.env.cr.precommit.data["l10n_ar_next_number"] = {}
@@ -166,13 +171,11 @@ class AccountMove(models.Model):
     # ------------------------------------------------------------- CAE request
 
     def _post(self, soft=True):
-        """Post and then ask for the CAE, one invoice at a time.
+        """Post and then ask for the authorization, in batches.
 
-        The order matters: posting first lets Odoo number the document and run
-        everything it prepares on posting, and the authority is asked with that
-        number. A refusal raises, and the rollback undoes the posting of that
-        invoice —the number goes back— while the ones already authorized stay,
-        because their CAE was committed.
+        The order matters: posting first lets Odoo number the documents and run
+        everything it prepares on posting, and the authority is asked with those
+        numbers.
         """
         to_authorize = self.filtered(
             lambda x: x.is_invoice()
@@ -185,23 +188,88 @@ class AccountMove(models.Model):
             return super()._post(soft=soft)
 
         posted = super(AccountMove, self - to_authorize)._post(soft=soft)
-        rejection = False
-        for invoice in to_authorize:
-            posted |= super(AccountMove, invoice)._post(soft=soft)
-            message, values = invoice._l10n_ar_request_cae()
-            if message:
-                posted -= invoice
-                rejection = (invoice, message, values)
-                break
-            # once authorized there is no way back, so it is kept even if a later one fails
-            invoice.env.cr.commit()  # pylint: disable=invalid-commit
-
-        if rejection:
-            invoice, message, values = rejection
-            text = self._l10n_ar_rejection_message(message, posted)
-            invoice._l10n_ar_keep_rejection(values)
-            raise FiscalWsError(text)
+        for batch in to_authorize._l10n_ar_batches():
+            posted |= batch._l10n_ar_post_batch(soft)
         return posted
+
+    def _l10n_ar_batches(self):
+        """Groups that can travel in the same request.
+
+        The header of the request is common to the batch, so it goes by company,
+        journal and document type; the service says how many it takes at once.
+        """
+        limit = int(self.env["ir.config_parameter"].sudo().get_param("l10n_ar_fiscal_ws.batch_size", 20))
+        mapping_model = self.env["l10n_ar.fiscal.ws.mapping"]
+        groups = {}
+        for invoice in self:
+            key = (invoice.company_id.id, invoice.journal_id.id, invoice.l10n_latam_document_type_id.id)
+            groups[key] = groups.get(key, self.browse()) | invoice
+        batches = []
+        for group in groups.values():
+            mapping = mapping_model._get_mapping(group.journal_id.l10n_ar_fiscal_ws_id.code, "cae_request")
+            size = mapping._batch_size(limit)
+            # the same order Odoo numbers with, so the batch travels by growing number
+            group = group.sorted(lambda move: (move.date, move.ref or "", move._origin.id))
+            batches.extend(group[index : index + size] for index in range(0, len(group), size))
+        return batches
+
+    def _l10n_ar_post_batch(self, soft):
+        """Post this batch and ask the authority for all of it in one request.
+
+        A savepoint before each invoice is what makes the batch recoverable: the
+        service processes in order and refuses everything behind the first bad one,
+        so the rollback to the savepoint of the refused one undoes its posting and
+        the ones behind it —their numbers go back— while the authorized ones keep
+        the number the service authorized.
+        """
+        self.journal_id._l10n_ar_lock(self.l10n_latam_document_type_id)
+        if not self[0].l10n_ar_fiscal_validation_type:
+            posted = super(AccountMove, self)._post(soft=soft)
+            for invoice in self:
+                invoice._l10n_ar_set_local_validation()
+            return posted
+
+        savepoints = []
+        for invoice in self:
+            savepoints.append(self.env.cr.savepoint(flush=True))
+            super(AccountMove, invoice)._post(soft=soft)
+
+        results = self._l10n_ar_request_cae()
+        refused = next(
+            (index for index, values in enumerate(results) if values.get("l10n_ar_fiscal_result") != "A"),
+            None,
+        )
+        authorized = self if refused is None else self[:refused]
+        # the numbers of what is about to go back to draft, which the rollback erases
+        undone_names = [] if refused is None else self[refused:].mapped("name")
+        for savepoint in reversed(savepoints[len(authorized) :]):
+            savepoint.close(rollback=True)
+        for invoice, values in zip(authorized, results):
+            invoice.sudo().write(values)
+        for savepoint in reversed(savepoints[: len(authorized)]):
+            savepoint.close(rollback=False)
+        if authorized:
+            # once authorized there is no way back, so they are kept even if a later one fails
+            self.env.cr.commit()  # pylint: disable=invalid-commit
+            self._l10n_ar_forget_numbering()
+
+        if refused is not None:
+            text = self._l10n_ar_rejection_message(
+                results[refused]["l10n_ar_fiscal_message"], authorized, undone_names
+            )
+            self[refused]._l10n_ar_keep_rejection(results[refused])
+            raise FiscalWsError(text)
+        return authorized
+
+    def _l10n_ar_forget_numbering(self):
+        """Drop what was remembered about the numbering, which the commit made stale.
+
+        Inside the batch nothing is committed, so the sequence cache of Odoo hands
+        out the numbers that follow; after the commit the lock is gone and another
+        transaction may take the next one, so the next batch asks again.
+        """
+        self.env.cr.cache.pop("sequence.mixin", None)
+        self.env.cr.precommit.data.pop("l10n_ar_next_number", None)
 
     def _l10n_ar_keep_rejection(self, values):
         """Keep what the authority answered on an invoice it refused.
@@ -213,60 +281,78 @@ class AccountMove(models.Model):
         """
         self.ensure_one()
         self.env.cr.rollback()
-        self.env.invalidate_all()
+        self.env.invalidate_all(flush=False)
         self.sudo().write(values)
         self.env.cr.commit()  # pylint: disable=invalid-commit
 
-    def _l10n_ar_rejection_message(self, message, posted):
-        """What the authority answered, saying which invoices did stay posted."""
+    def _l10n_ar_rejection_message(self, message, posted, undone_names):
+        """What the authority answered, and what happened with the rest of the batch.
+
+        Only the refused invoice keeps the answer, so the message has to say which
+        one was refused and what became of the ones that travelled with it. The
+        numbers come from before the rollback, which is what gave them back.
+        """
         text = message
         authorized = posted.filtered("l10n_ar_fiscal_auth_code")
+        if undone_names:
+            text = _(
+                "El servicio rechazó el comprobante %(name)s:\n\n%(message)s",
+                name=undone_names[0],
+                message=message,
+            )
         if authorized:
             text += _(
                 "\n\nEstos comprobantes ya quedaron autorizados y no se dan de baja: %s",
                 ", ".join(authorized.mapped("name")),
             )
+        if undone_names[1:]:
+            text += _(
+                "\n\nEstos venían detrás en el mismo pedido y vuelven a borrador sin enviarse: %s",
+                ", ".join(undone_names[1:]),
+            )
         return text
 
     def _l10n_ar_request_cae(self):
-        """Ask the service to authorize this invoice.
+        """Ask the service to authorize this batch, in one request.
 
-        Returns the refusal and what to write about it; the refusal is not written
-        here because the caller has to undo the posting first.
+        Returns the values to write for each invoice, in the order they were sent.
+        Nothing is written here because the caller has to undo the posting of what
+        was refused first.
         """
-        self.ensure_one()
-        if not self.l10n_ar_fiscal_validation_type:
-            self._l10n_ar_set_local_validation()
-            return False, {}
-
         ws_code = self.journal_id.l10n_ar_fiscal_ws_id.code
-        mapping = self.env["l10n_ar.fiscal.ws.mapping"]._get_mapping(ws_code, "cae_request")
+        mapping_model = self.env["l10n_ar.fiscal.ws.mapping"]
+        request = mapping_model._get_mapping(ws_code, "cae_request")
         try:
-            response, xml = mapping.call(self)
+            response, xml = request.call_batch(self)
         except FiscalWsError as error:
-            return str(error), {"l10n_ar_fiscal_result": "R", "l10n_ar_fiscal_message": str(error)}
+            # the request never got through, so nothing of the batch was authorized
+            return [{"l10n_ar_fiscal_result": "R", "l10n_ar_fiscal_message": str(error)} for _invoice in self]
 
-        values = self.env["l10n_ar.fiscal.ws.mapping"]._get_mapping(ws_code, "cae_response").build(response)
-        values.update(
-            {
-                "l10n_ar_fiscal_xml_request": xml["xml_request"],
-                "l10n_ar_fiscal_xml_response": xml["xml_response"],
-                "l10n_ar_fiscal_message": self._l10n_ar_parse_observations(response),
-            }
-        )
-        if values.get("l10n_ar_fiscal_result") != "A":
-            # a refusal authorizes nothing: the mapping fills the authorization for every answer
+        answer = mapping_model._get_mapping(ws_code, "cae_response")
+        results = []
+        for invoice, detail in zip(self, answer._response_details(response, len(self))):
+            values = answer.build(detail) if detail is not None else {}
             values.update(
                 {
-                    "l10n_ar_fiscal_result": "R",
-                    "l10n_ar_fiscal_auth_mode": False,
-                    "l10n_ar_fiscal_auth_code": False,
-                    "l10n_ar_fiscal_auth_code_due": False,
+                    "l10n_ar_fiscal_xml_request": xml["xml_request"],
+                    "l10n_ar_fiscal_xml_response": xml["xml_response"],
+                    "l10n_ar_fiscal_message": invoice._l10n_ar_parse_observations(response, detail),
                 }
             )
-            return values["l10n_ar_fiscal_message"], values
-        self.sudo().write(values)
-        return False, {}
+            if values.get("l10n_ar_fiscal_result") != "A":
+                # a refusal authorizes nothing: the mapping fills the authorization for every answer
+                values.update(
+                    {
+                        "l10n_ar_fiscal_result": "R",
+                        "l10n_ar_fiscal_auth_mode": False,
+                        "l10n_ar_fiscal_auth_code": False,
+                        "l10n_ar_fiscal_auth_code_due": False,
+                        "l10n_ar_fiscal_message": values["l10n_ar_fiscal_message"]
+                        or _("El servicio no autorizó el comprobante y no informó el motivo."),
+                    }
+                )
+            results.append(values)
+        return results
 
     def _l10n_ar_set_local_validation(self):
         self.ensure_one()
@@ -281,22 +367,25 @@ class AccountMove(models.Model):
         )
         self.message_post(body=message)
 
-    def _l10n_ar_parse_observations(self, response):
-        """Observations of the service, as one readable text. Each service answers its own shape."""
+    def _l10n_ar_parse_observations(self, response, detail):
+        """Observations for this invoice, as one readable text.
+
+        Each service answers its own shape, and the detail is the part of the answer
+        that belongs to this invoice, which in a batch is one of many.
+        """
         self.ensure_one()
         ws_code = self.journal_id.l10n_ar_fiscal_ws_id.code
-        return getattr(self, "_l10n_ar_observations_" + ws_code)(response)
+        return getattr(self, "_l10n_ar_observations_" + ws_code)(response, detail)
 
-    def _l10n_ar_observations_wsfe(self, response):
+    def _l10n_ar_observations_wsfe(self, response, detail):
         observations = []
-        details = getattr(getattr(response, "FeDetResp", None), "FECAEDetResponse", None)
-        for observation in getattr(getattr(details and details[0], "Observaciones", None), "Obs", []) or []:
+        for observation in getattr(getattr(detail, "Observaciones", None), "Obs", []) or []:
             observations.append("(%s) %s" % (observation.Code, observation.Msg))
         for error in getattr(getattr(response, "Errors", None), "Err", []) or []:
             observations.append("(%s) %s" % (error.Code, error.Msg))
         return "\n".join(observations)
 
-    def _l10n_ar_observations_wsfex(self, response):
+    def _l10n_ar_observations_wsfex(self, response, _detail):
         """The export service answers a single error, a single event and a free text of reasons."""
         return self._l10n_ar_join_observations(
             getattr(response, "FEXErr", None),
@@ -304,7 +393,7 @@ class AccountMove(models.Model):
             getattr(getattr(response, "FEXResultAuth", None), "Motivos_Obs", None),
         )
 
-    def _l10n_ar_observations_wsbfe(self, response):
+    def _l10n_ar_observations_wsbfe(self, response, _detail):
         return self._l10n_ar_join_observations(
             getattr(response, "BFEErr", None),
             getattr(response, "BFEEvents", None),
@@ -348,6 +437,10 @@ class AccountMove(models.Model):
         if "base_lines" not in extra:
             extra["base_lines"] = self._get_rounded_base_and_tax_lines()[0]
         return extra["base_lines"]
+
+    def _l10n_ar_fiscal_provider_batch_count(self, extra):
+        """How many vouchers travel in this request."""
+        return extra.get("batch_size", 1)
 
     def _l10n_ar_fiscal_provider_invoice_number(self, extra):
         """Number Odoo already gave to the document when posting it."""
