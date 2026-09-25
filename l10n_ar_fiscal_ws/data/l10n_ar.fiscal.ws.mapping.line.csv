@@ -26,7 +26,7 @@ wsfe_cae_FchServDesde,wsfe_cae_request,wsfe_cae_det,130,FchServDesde,field,l10n_
 wsfe_cae_FchServHasta,wsfe_cae_request,wsfe_cae_det,140,FchServHasta,field,l10n_ar_afip_service_end,date,"[('l10n_ar_afip_concept','!=','1')]",,,,
 wsfe_cae_FchVtoPago,wsfe_cae_request,wsfe_cae_det,150,FchVtoPago,provider,due_payment_date,date,,,,,
 wsfe_cae_MonId,wsfe_cae_request,wsfe_cae_det,160,MonId,field,currency_id.l10n_ar_afip_code,str,,,,,
-wsfe_cae_MonCotiz,wsfe_cae_request,wsfe_cae_det,170,MonCotiz,provider,currency_rate,float6,,record.currency_id.l10n_ar_afip_code != 'PES',,,
+wsfe_cae_MonCotiz,wsfe_cae_request,wsfe_cae_det,170,MonCotiz,provider,currency_rate,float6,,not (record.currency_id.l10n_ar_afip_code != 'PES' and record.l10n_ar_fiscal_payment_foreign_currency == 'S' and record.invoice_date > today),,,
 wsfe_cae_CanMisMonExt,wsfe_cae_request,wsfe_cae_det,180,CanMisMonExt,field,l10n_ar_fiscal_payment_foreign_currency,str,,record.currency_id.l10n_ar_afip_code != 'PES',,,
 wsfe_cae_CondicionIVA,wsfe_cae_request,wsfe_cae_det,190,CondicionIVAReceptorId,field,partner_id.l10n_ar_afip_responsibility_type_id.code,int,,,,,
 wsfe_cae_Iva,wsfe_cae_request,wsfe_cae_det,200,Iva,child,,,,,,,
