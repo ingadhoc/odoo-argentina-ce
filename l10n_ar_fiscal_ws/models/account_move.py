@@ -179,13 +179,7 @@ class AccountMove(models.Model):
         everything it prepares on posting, and the authority is asked with those
         numbers.
         """
-        to_authorize = self.filtered(
-            lambda x: x.is_invoice()
-            and x.move_type in ("out_invoice", "out_refund")
-            and x.journal_id.l10n_ar_fiscal_ws_id
-            and not x.l10n_ar_fiscal_auth_code
-            and x.company_id.account_fiscal_country_id.code == "AR"
-        )
+        to_authorize = self._l10n_ar_to_authorize()
         if not to_authorize:
             return super()._post(soft=soft)
 
@@ -193,6 +187,16 @@ class AccountMove(models.Model):
         for batch in to_authorize._l10n_ar_batches():
             posted |= batch._l10n_ar_post_batch(soft)
         return posted
+
+    def _l10n_ar_to_authorize(self):
+        """The invoices of this set that the service has to authorize."""
+        return self.filtered(
+            lambda x: x.is_invoice()
+            and x.move_type in ("out_invoice", "out_refund")
+            and x.journal_id.l10n_ar_fiscal_ws_id
+            and not x.l10n_ar_fiscal_auth_code
+            and x.company_id.account_fiscal_country_id.code == "AR"
+        )
 
     def _l10n_ar_batches(self):
         """Groups that can travel in the same request.
