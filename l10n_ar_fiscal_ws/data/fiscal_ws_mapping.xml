@@ -194,4 +194,18 @@
         <field name="method_name">BFEAuthorize</field>
     </record>
 
+    <record id="wsfe_invoice_query" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSFE: consulta de un comprobante</field>
+        <field name="code">invoice_query</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_fe"/>
+        <field name="method_name">FECompConsultar</field>
+    </record>
+
+    <record id="wsfe_invoice_query_response" model="l10n_ar.fiscal.ws.mapping">
+        <field name="name">WSFE: respuesta de la consulta de un comprobante</field>
+        <field name="code">invoice_query_response</field>
+        <field name="fiscal_ws_id" ref="fiscal_ws_fe"/>
+        <field name="method_name">FECompConsultar</field>
+    </record>
+
 </odoo>

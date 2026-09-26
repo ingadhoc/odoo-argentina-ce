@@ -11,4 +11,9 @@
         <field name="value">30</field>
     </record>
 
+    <record id="parameter_recover_limit" model="ir.config_parameter">
+        <field name="key">l10n_ar_fiscal_ws.recover_limit</field>
+        <field name="value">100</field>
+    </record>
+
 </odoo>

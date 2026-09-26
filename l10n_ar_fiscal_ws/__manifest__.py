@@ -16,6 +16,7 @@
         # the wizards first: the views use their actions
         "wizard/upload_certificate_view.xml",
         "wizard/res_partner_update_from_padron_wizard_view.xml",
+        "wizard/fiscal_ws_recover_wizard_view.xml",
         "views/menuitem.xml",
         "views/fiscal_ws_view.xml",
         "views/fiscal_ws_connection_view.xml",

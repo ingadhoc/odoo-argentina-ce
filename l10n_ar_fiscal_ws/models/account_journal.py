@@ -79,6 +79,17 @@ class AccountJournal(models.Model):
         values = self._l10n_ar_build_response("last_invoice_response", response)
         return int(values.get("number") or 0)
 
+    def _l10n_ar_get_invoice(self, document_type, number):
+        """What the service has registered under a number of this journal.
+
+        Empty when it has nothing: a number it never authorized comes back as an
+        error instead of a voucher.
+        """
+        self.ensure_one()
+        response = self._l10n_ar_call("invoice_query", {"document_type_code": document_type.code, "number": number})
+        values = self._l10n_ar_build_response("invoice_query_response", response)
+        return values if values.get("auth_code") else {}
+
     def _l10n_ar_build_response(self, code, response):
         """Read a response through the mapping of this journal's service."""
         self.ensure_one()
@@ -97,6 +108,13 @@ class AccountJournal(models.Model):
     def l10n_ar_action_get_document_types(self):
         self.ensure_one()
         return self._l10n_ar_show(self._l10n_ar_call("document_types"), _("Tipos de documento habilitados"))
+
+    def l10n_ar_action_recover_invoices(self):
+        """Asistente para traer del servicio los comprobantes que autorizó y Odoo no tiene."""
+        self.ensure_one()
+        action = self.env["ir.actions.act_window"]._for_xml_id("l10n_ar_fiscal_ws.action_fiscal_ws_recover")
+        action["context"] = {"default_journal_id": self.id}
+        return action
 
     @staticmethod
     def _l10n_ar_show(answer, title):

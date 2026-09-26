@@ -27,6 +27,10 @@ Características
 - Código QR, código de autorización y su vencimiento en el comprobante impreso.
 - Rechazo de ARCA: la factura vuelve a borrador sin autorización, con el motivo
   del organismo en el historial y el XML enviado y recibido guardados.
+- Recuperación de comprobantes: cuando el organismo autoriza y la respuesta no
+  llega, un asistente en el diario recorre el rango de números con
+  ``FECompConsultar``, los compara con los borradores y propone asignarlos o
+  crearlos, con la opción de neutralizarlos en el acto.
 
 Detalles Técnicos
 =================
@@ -58,6 +62,8 @@ Wizards
 -------
 
 - ``l10n_ar.fiscal.certificate.upload.wizard``: carga del certificado firmado.
+- ``l10n_ar.fiscal.ws.recover`` y ``l10n_ar.fiscal.ws.recover.line``: recuperación
+  de los comprobantes que el organismo autorizó y Odoo no llegó a registrar.
 - ``res.partner.update.from.padron.wizard``: muestra los cambios que propone el
   padrón antes de aplicarlos.
 
@@ -85,6 +91,42 @@ Uso
    servicio y la aplica.
 #. Para una nota de crédito o de débito sin comprobante asociado, cargar el período
    asociado en la pestaña ARCA.
+#. Si el organismo autorizó comprobantes y la respuesta no llegó, el botón
+   "Recuperar comprobantes" del diario abre el asistente: elegí el tipo de
+   comprobante y el rango, traé lo que tiene el organismo y revisá la propuesta de
+   cada uno.
+
+Recuperación de comprobantes
+============================
+
+Pedir la autorización de a lotes trajo un riesgo nuevo: si el organismo registra el
+rango y la respuesta no llega, lo que se pierde es un lote entero y no un
+comprobante. El asistente del diario lo recupera.
+
+Por cada número del rango le pregunta al servicio (``FECompConsultar``). Con lo que
+contesta busca el contacto por su identificación —un consumidor final anónimo va al
+contacto que crea la localización— y un borrador del mismo diario, tipo de
+comprobante, contacto e importe total. Si lo encuentra propone asignarlo: le escribe
+el número y la autorización y lo valida, sin volver a pedirle nada al organismo. Si
+no lo encuentra propone crearlo, con una línea por alícuota de IVA informada más el
+no gravado y el exento, sobre la cuenta contable que se elija. Tildando
+"Neutralizar" emite además el comprobante que lo deja en cero: una nota de crédito
+si lo recuperado es una factura, y una nota de débito si es una nota de crédito.
+Ese sí se valida por el circuito de siempre, que le pide su propia autorización.
+
+Un comprobante creado nunca queda con un total distinto al que informó el organismo:
+si no coincide, el asistente corta y no lo registra.
+
+Limitaciones conocidas
+----------------------
+
+- Solo WSFE. El servicio de exportación y el de bono fiscal autorizan un
+  comprobante por pedido, así que ahí una respuesta perdida cuesta uno.
+- Un comprobante con percepciones u otros tributos, o en moneda extranjera, se puede
+  asignar a un borrador pero no crear: el asistente lo deja marcado y con el motivo.
+- Los comprobantes se recuperan de a uno, en orden, y cada uno queda registrado
+  aunque falle el siguiente. Volver a abrir el asistente sobre el mismo rango
+  muestra los ya recuperados como "ya está en Odoo".
 
 Arquitectura
 ============

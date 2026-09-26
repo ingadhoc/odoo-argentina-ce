@@ -19,6 +19,9 @@
                     <button name="l10n_ar_action_get_document_types" string="Tipos de documento"
                             help="Tipos de documento habilitados para este web service"
                             type="object" invisible="not l10n_ar_fiscal_ws_id"/>
+                    <button name="l10n_ar_action_recover_invoices" string="Recuperar comprobantes"
+                            help="Trae del servicio los comprobantes que autorizó y Odoo no tiene"
+                            type="object" invisible="not l10n_ar_fiscal_ws_id"/>
                 </header>
             </sheet>
         </field>
