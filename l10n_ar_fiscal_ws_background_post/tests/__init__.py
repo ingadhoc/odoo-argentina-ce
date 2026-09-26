@@ -4,3 +4,4 @@
 ##############################################################################
 from . import test_cron_batches
 from . import test_deferral
+from . import test_validate_wizard
