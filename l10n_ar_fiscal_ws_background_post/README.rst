@@ -23,6 +23,10 @@ Características
   con el circuito de siempre, que le carga el intento al que corresponde.
 - Si otro proceso está facturando el mismo diario, el lote queda para la próxima
   corrida sin cargarle el intento a nadie.
+- El botón de validar con varios comprobantes seleccionados también manda un
+  pedido por lote, en vez de uno por comprobante. El tope del asistente no
+  cambia: arriba de ``account_background_post.batch_size`` sigue pidiendo que se
+  validen en background.
 - Los comprobantes de la cola que no facturan por web service siguen validándose
   de a uno.
 - Marcar un comprobante para la cola gana sobre pedir la autorización: un diferido
@@ -48,6 +52,8 @@ Métodos heredados
   y delega en el circuito original lo que no va por web service.
 - ``account.move._post()``: resuelve primero el diferido a background, para que el
   orden en que se encadenan los dos ``_post`` deje de importar.
+- ``validate.account.move.validate_move()``: valida de una sola vez los
+  comprobantes que van por web service, y deja el resto en el bucle original.
 
 Limitaciones conocidas
 ======================
