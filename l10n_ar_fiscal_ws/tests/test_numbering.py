@@ -28,6 +28,7 @@ class TestNumbering(TestFiscalWsCommon):
         second = self._new_invoice(self.journal_wsfe)
         ws_code = self.journal_wsfe.l10n_ar_fiscal_ws_id.code
 
+        first._l10n_ar_forget_numbering()
         with self._answers(last_invoice=self._last_invoice_answer(ws_code, 41)):
             first._l10n_ar_get_next_number()
             second._l10n_ar_get_next_number()

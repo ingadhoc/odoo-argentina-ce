@@ -37,9 +37,10 @@ class TestCaePayload(TestFiscalWsCommon):
         with self.subTest("los importes cierran contra el total"):
             self.assert_payload_amounts_add_up("wsfe", voucher)
 
-        with self.subTest("en pesos no se informa cotización"):
+        with self.subTest("la cotización viaja siempre, también en pesos"):
             self.assertEqual(voucher["MonId"], "PES")
-            self.assertNotIn("MonCotiz", voucher)
+            self.assertEqual(float(voucher["MonCotiz"]), 1)
+            self.assertNotIn("CanMisMonExt", voucher)
 
         self.assert_invoice_is_sound(invoice)
 
