@@ -7,6 +7,7 @@ import json
 import logging
 
 from odoo import _, api, fields, models
+from odoo.addons.l10n_ar.tools.partner_identifiers import AR_SIGD_AFIP_CODE
 from odoo.exceptions import UserError
 from odoo.tools import float_repr, float_round, html2plaintext
 
@@ -112,7 +113,7 @@ class AccountMove(models.Model):
             values = {
                 "ver": 1,
                 "fecha": str(rec.invoice_date),
-                "cuit": int(rec.company_id.partner_id.l10n_ar_vat),
+                "cuit": int(rec.company_id.partner_id.ensure_vat()),
                 "ptoVta": number_parts["point_of_sale"],
                 "tipoCmp": int(rec.l10n_latam_document_type_id.code),
                 "nroCmp": number_parts["invoice_number"],
@@ -123,9 +124,9 @@ class AccountMove(models.Model):
                 "codAut": int(rec.l10n_ar_fiscal_auth_code),
             }
             partner = rec.commercial_partner_id
-            if partner.l10n_latam_identification_type_id and partner.vat:
-                values["tipoDocRec"] = int(partner.l10n_latam_identification_type_id.l10n_ar_afip_code)
-                values["nroDocRec"] = int(partner.vat.replace("-", "").replace(".", ""))
+            if partner.l10n_ar_afip_code and partner.l10n_ar_afip_id_value:
+                values["tipoDocRec"] = int(partner.l10n_ar_afip_code)
+                values["nroDocRec"] = partner._get_id_number_sanitize()
             data = base64.b64encode(json.dumps(values, indent=None).encode("ascii")).decode("ascii")
             rec.l10n_ar_fiscal_qr_code = "https://www.afip.gob.ar/fe/qr/?p=%s" % data
 
@@ -204,7 +205,7 @@ class AccountMove(models.Model):
         The header of the request is common to the batch, so it goes by company,
         journal and document type; the service says how many it takes at once.
         """
-        limit = int(self.env["ir.config_parameter"].sudo().get_param("l10n_ar_fiscal_ws.batch_size", 20))
+        limit = self.env["ir.config_parameter"].sudo().get_int("l10n_ar_fiscal_ws.batch_size", 20)
         mapping_model = self.env["l10n_ar.fiscal.ws.mapping"]
         groups = {}
         for invoice in self:
@@ -466,11 +467,15 @@ class AccountMove(models.Model):
         return extra["amounts"]
 
     def _l10n_ar_fiscal_provider_document_code(self, extra):
-        return self.commercial_partner_id.l10n_latam_identification_type_id.l10n_ar_afip_code
+        partner = self.commercial_partner_id
+        if partner.l10n_ar_afip_responsibility_type_id == self.env.ref("l10n_ar.res_CF") and (
+            not partner._get_id_number_sanitize()
+        ):
+            return AR_SIGD_AFIP_CODE
+        return partner.l10n_ar_afip_code or 0
 
     def _l10n_ar_fiscal_provider_document_number(self, extra):
-        vat = self.commercial_partner_id.vat or ""
-        return vat.replace("-", "").replace(".", "") or 0
+        return self.commercial_partner_id._get_id_number_sanitize()
 
     def _l10n_ar_fiscal_provider_currency_rate(self, extra):
         return 1 / self.invoice_currency_rate if self.invoice_currency_rate else 1
@@ -534,7 +539,7 @@ class AccountMove(models.Model):
                     "Tipo": invoice.l10n_latam_document_type_id.code,
                     "PtoVta": parts["point_of_sale"],
                     "Nro": parts["invoice_number"],
-                    "Cuit": self.company_id.partner_id.l10n_ar_vat,
+                    "Cuit": self.company_id.partner_id.ensure_vat(),
                     "CbteFch": invoice.invoice_date,
                 }
             )

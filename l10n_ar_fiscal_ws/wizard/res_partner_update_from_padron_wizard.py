@@ -2,6 +2,7 @@ import logging
 from ast import literal_eval
 
 from odoo import _, api, fields, models
+from odoo.addons.l10n_ar.tools.partner_identifiers import AR_CUIT_AFIP_CODE
 from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
@@ -29,7 +30,7 @@ class ResPartnerUpdateFromPadronWizard(models.TransientModel):
         # TODO deberiamos buscar de otro manera estos partners
         domain = [
             ("vat", "!=", False),
-            ("l10n_latam_identification_type_id.l10n_ar_afip_code", "=", 80),
+            ("l10n_ar_afip_code", "=", AR_CUIT_AFIP_CODE),
         ]
         active_ids = self._context.get("active_ids", [])
         if active_ids:
@@ -66,7 +67,7 @@ class ResPartnerUpdateFromPadronWizard(models.TransientModel):
 
     @api.model
     def _get_default_title_case(self):
-        parameter = self.env["ir.config_parameter"].sudo().get_param("use_title_case_on_padron_afip")
+        parameter = self.env["ir.config_parameter"].sudo().get_str("use_title_case_on_padron_afip")
         if parameter == "False" or parameter == "0":
             return False
         return True

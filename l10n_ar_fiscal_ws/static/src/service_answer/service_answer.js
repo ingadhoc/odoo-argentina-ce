@@ -11,7 +11,6 @@ export class ServiceAnswerDialog extends Component {
         message: { type: String },
         close: { type: Function },
     };
-    static defaultProps = { title: _t("Respuesta de ARCA") };
 }
 
 // Answer of a fiscal web service. It always opens a dialog: the answers are long,
@@ -21,7 +20,7 @@ export function serviceAnswerAction(env, action) {
     if (!message) {
         return;
     }
-    env.services.dialog.add(ServiceAnswerDialog, { title, message });
+    env.services.dialog.add(ServiceAnswerDialog, { title: title || _t("Respuesta de ARCA"), message });
 }
 
 registry.category("actions").add("l10n_ar_fiscal_ws.service_answer", serviceAnswerAction);

@@ -51,7 +51,7 @@ class AccountJournal(models.Model):
         """
         self.ensure_one()
         config = self.env["ir.config_parameter"].sudo()
-        timeout = int(config.get_param("l10n_ar_fiscal_ws.lock_timeout", 30))
+        timeout = config.get_int("l10n_ar_fiscal_ws.lock_timeout", 30)
         key = "l10n_ar_fiscal_ws-%s-%s-%s" % (self.company_id.id, self.id, document_type.id)
         self.env.cr.execute(SQL("SELECT set_config('lock_timeout', %s, true)", "%ss" % timeout))
         try:

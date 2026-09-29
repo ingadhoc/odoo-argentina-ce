@@ -1,6 +1,6 @@
 {
     "name": "Web Services Fiscales Argentina",
-    "version": "19.0.1.0.0",
+    "version": "20.0.1.0.0",
     "category": "Localization/Argentina",
     "author": "ADHOC SA, Moldeo Interactive,Odoo Community Association (OCA)",
     "license": "AGPL-3",
@@ -8,11 +8,10 @@
     "depends": [
         "l10n_ar",  # needed for CUIT and also demo data
         "account_debit_note",
+        "contacts",  # menus hang from its configuration menu
     ],
     "external_dependencies": {},
     "data": [
-        "security/ir.model.access.csv",
-        "security/security.xml",
         # the wizards first: the views use their actions
         "wizard/upload_certificate_view.xml",
         "wizard/res_partner_update_from_padron_wizard_view.xml",
@@ -34,6 +33,7 @@
         "data/fiscal_ws_mapping.xml",
         "data/l10n_ar.fiscal.ws.mapping.line.csv",
         "data/ir.actions.url_data.xml",
+        "security/ir.access.csv",
     ],
     "assets": {
         "web.assets_backend": [

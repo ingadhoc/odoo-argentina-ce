@@ -6,6 +6,7 @@
 import logging
 
 from odoo import _, fields, models
+from odoo.addons.l10n_ar.tools.partner_identifiers import AR_CUIT_AFIP_CODE
 from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
@@ -83,14 +84,12 @@ class ResPartner(models.Model):
         response, _xml = mapping.call(self)
         census = getattr(response, "datosGenerales", None)
         if not census or not census.apellido and not census.razonSocial:
-            raise UserError(
-                _("El padrón no devolvió datos para %(name)s (%(vat)s).", name=self.name, vat=self.l10n_ar_vat)
-            )
+            raise UserError(_("El padrón no devolvió datos para %(name)s (%(vat)s).", name=self.name, vat=self.vat))
         return self._l10n_ar_census_values(response)
 
     def l10n_ar_update_mipyme_status(self):
         """Whether this contact must be invoiced with a credit invoice, and from which amount."""
-        for record in self.filtered("l10n_ar_vat"):
+        for record in self.filtered(lambda p: p.l10n_ar_afip_code == AR_CUIT_AFIP_CODE and p.vat):
             mapping = self.env["l10n_ar.fiscal.ws.mapping"]._get_mapping("wsfecred", "obliged_amount")
             response, _xml = mapping.call(record, {"date": fields.Date.context_today(record)})
             record.mipyme_required = response.obligado == "S"

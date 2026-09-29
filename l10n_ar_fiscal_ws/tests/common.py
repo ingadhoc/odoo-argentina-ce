@@ -35,7 +35,6 @@ class TestFiscalWsCommon(TestArCommon, FiscalWsInvariants):
                 "zip": "01000",
                 "country_id": cls.env.ref("base.br").id,
                 "l10n_ar_afip_responsibility_type_id": cls.env.ref("l10n_ar.res_EXT").id,
-                "l10n_latam_identification_type_id": cls.env.ref("l10n_ar.it_Sigd").id,
             }
         )
 

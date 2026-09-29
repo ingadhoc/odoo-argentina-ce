@@ -2,10 +2,10 @@
 <templates xml:space="preserve">
 
     <t t-name="l10n_ar_fiscal_ws.ServiceAnswerDialog">
-        <Dialog title="props.title" size="'xl'" contentClass="'o_l10n_ar_fiscal_answer_dialog'">
-            <pre class="mb-0 o_l10n_ar_fiscal_answer" t-esc="props.message"/>
+        <Dialog title="this.props.title" size="'xl'" contentClass="'o_l10n_ar_fiscal_answer_dialog'">
+            <pre class="mb-0 o_l10n_ar_fiscal_answer" t-out="this.props.message"/>
             <t t-set-slot="footer">
-                <button class="btn btn-primary o-default-button" t-on-click="props.close">Cerrar</button>
+                <button class="btn btn-primary o-default-button" t-on-click="this.props.close">Cerrar</button>
             </t>
         </Dialog>
     </t>
