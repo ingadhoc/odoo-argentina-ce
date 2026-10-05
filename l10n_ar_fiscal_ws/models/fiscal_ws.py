@@ -6,7 +6,6 @@ import logging
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
-from odoo.tools import ormcache
 
 from .exceptions import serialize_answer
 
@@ -50,7 +49,7 @@ class L10nArFiscalWs(models.Model):
         }
 
     @api.model
-    @ormcache("code", "environment_type", cache="stable")
+    @api.ormcache("code", "environment_type", cache="stable")
     def _get_url(self, code, environment_type):
         """URL of a service for the given environment, cached by (code, environment)."""
         service = self.search([("code", "=", code)], limit=1)

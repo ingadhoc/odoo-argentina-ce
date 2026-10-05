@@ -59,7 +59,7 @@ class FiscalTransport(Transport):
 
 def build_client(env, url):
     """zeep client for a service url, with the wsdl cache and the trace of its calls."""
-    ttl = int(env["ir.config_parameter"].sudo().get_param(WSDL_CACHE_TTL_PARAM, DEFAULT_WSDL_CACHE_TTL))
+    ttl = env["ir.config_parameter"].sudo().get_int(WSDL_CACHE_TTL_PARAM, DEFAULT_WSDL_CACHE_TTL)
     cache = InMemoryCache(timeout=ttl) if ttl > 0 else None
     transport = FiscalTransport(cache=cache, operation_timeout=60, timeout=60)
     try:

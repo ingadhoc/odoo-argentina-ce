@@ -32,7 +32,7 @@ class TestCaeResponse(TestFiscalWsCommon):
 
     def _as_production(self):
         """Without this the invoice validates locally, which is another scenario."""
-        self.env["ir.config_parameter"].sudo().set_param("l10n_ar_fiscal_ws.env_type", "production")
+        self.env["ir.config_parameter"].sudo().set_str("l10n_ar_fiscal_ws.env_type", "production")
 
     def test_authorized_invoice_keeps_the_authorization(self):
         """An accepted answer leaves the invoice with its CAE and its due date."""

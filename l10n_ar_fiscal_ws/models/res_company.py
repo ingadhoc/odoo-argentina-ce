@@ -67,7 +67,7 @@ class ResCompany(models.Model):
         The system parameter wins; without it, a server_mode other than
         production means homologation.
         """
-        parameter = self.env["ir.config_parameter"].sudo().get_param("l10n_ar_fiscal_ws.env_type")
+        parameter = self.env["ir.config_parameter"].sudo().get_str("l10n_ar_fiscal_ws.env_type")
         if parameter in ("production", "homologation"):
             return parameter
         server_mode = config.get("server_mode")

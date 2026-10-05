@@ -87,7 +87,7 @@ class TestCaeBatch(TestFiscalWsCommon):
 
     def test_the_batch_is_split_by_the_configured_size(self):
         """Nothing forces the whole selection into one request."""
-        self.env["ir.config_parameter"].sudo().set_param("l10n_ar_fiscal_ws.batch_size", 2)
+        self.env["ir.config_parameter"].sudo().set_int("l10n_ar_fiscal_ws.batch_size", 2)
         invoices = self.env["account.move"]
         for _index in range(5):
             invoices |= self._new_invoice(self.journal_wsfe)

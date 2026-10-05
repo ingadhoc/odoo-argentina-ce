@@ -133,7 +133,7 @@ class L10nArFiscalWsRecover(models.TransientModel):
         self.ensure_one()
         if self.number_to < self.number_from:
             raise UserError(_("El número final no puede ser menor que el inicial."))
-        limit = int(self.env["ir.config_parameter"].sudo().get_param("l10n_ar_fiscal_ws.recover_limit", 100))
+        limit = self.env["ir.config_parameter"].sudo().get_int("l10n_ar_fiscal_ws.recover_limit", 100)
         size = self.number_to - self.number_from + 1
         if size > limit:
             raise UserError(
@@ -228,8 +228,8 @@ class L10nArFiscalWsRecover(models.TransientModel):
             candidates.append("%s-%s-%s" % (number[:2], number[2:10], number[10:]))
         return self.env["res.partner"].search(
             [
-                ("vat", "in", candidates),
-                ("l10n_latam_identification_type_id.l10n_ar_afip_code", "=", code),
+                ("l10n_ar_afip_id_value", "in", candidates),
+                ("l10n_ar_afip_code", "=", code),
                 ("company_id", "in", (False, self.company_id.id)),
             ],
             limit=1,
@@ -483,10 +483,18 @@ class L10nArFiscalWsRecoverLine(models.TransientModel):
         # validación
         context = {"active_model": "account.move", "active_ids": move.ids}
         if move.move_type == "out_refund":
-            self.env["account.debit.note"].with_context(**context).create(
-                {"date": today, "reason": reason, "copy_lines": True}
-            ).create_debit()
-            reverse = self.env["account.move"].search([("debit_origin_id", "=", move.id)], limit=1)
+            debit_wizard = (
+                self.env["account.debit.note"]
+                .with_context(**context)
+                .create({"date": today, "reason": reason, "copy_lines": True})
+            )
+            # the wizard never copies the lines of a credit note, and they are what neutralizes it
+            default_values = debit_wizard._prepare_default_values(move)
+            default_values.pop("line_ids", None)
+            reverse = move.with_context(include_business_fields=True).copy(default=default_values)
+            # what l10n_latam_invoice_document does after the copy in create_debit
+            reverse._compute_l10n_latam_document_type()
+            reverse._onchange_l10n_latam_document_type_id()
         else:
             reversal = (
                 self.env["account.move.reversal"]
