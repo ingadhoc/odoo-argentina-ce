@@ -1,6 +1,6 @@
 {
     "name": "Argentinian Reports (CE)",
-    "version": "19.0.2.0.0",
+    "version": "19.0.3.0.0",
     "category": "Localization/Argentina",
     "sequence": 14,
     "author": "ADHOC SA, Moldeo Interactive, Odoo Community Association (OCA), Be OnlyOne",
