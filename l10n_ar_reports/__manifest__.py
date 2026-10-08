@@ -1,6 +1,6 @@
 {
     "name": "Argentinian Reports (CE)",
-    "version": "19.0.1.0.0",
+    "version": "19.0.2.0.0",
     "category": "Localization/Argentina",
     "sequence": 14,
     "author": "ADHOC SA, Moldeo Interactive, Odoo Community Association (OCA), Be OnlyOne",
@@ -12,15 +12,15 @@
     ],
     "external_dependencies": {"python": ["xlrd"]},
     "data": [
-        "report/account_ar_vat_line_view.xml",
-        "report/account_vat_ledger_report.xml",
-        "views/account_vat_report_views.xml",
         "security/ir.model.access.csv",
         "security/security.xml",
+        "report/account_vat_ledger_report.xml",
+        "report/account_ar_vat_line_view.xml",
+        "views/account_vat_report_views.xml",
     ],
     "demo": [],
     "images": [],
-    "installable": False,
+    "installable": True,
     "auto_install": False,
     "application": False,
 }

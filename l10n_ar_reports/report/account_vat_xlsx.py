@@ -49,12 +49,12 @@ class AccountVatLedgerXlsx(models.AbstractModel):
             index = 0
             sheet.set_column("A:F", 30)
             for i, obj in enumerate(vat_ledger.invoice_ids):
-                sheet.write(row + index, 0, obj.invoice_date.strftime("%Y-%m-%d"))
-                sheet.write(row + index, 1, obj.partner_name)
-                sheet.write(row + index, 2, obj.cuit)
-                sheet.write(row + index, 3, obj.document_type_id.display_name)
-                sheet.write(row + index, 4, obj.afip_responsibility_type_name)
-                sheet.write(row + index, 5, obj.move_name)
+                sheet.write(row + index, 0, obj.invoice_date.strftime("%Y-%m-%d") if obj.invoice_date else "")
+                sheet.write(row + index, 1, obj.partner_name or "")
+                sheet.write(row + index, 2, obj.cuit or "")
+                sheet.write(row + index, 3, obj.document_type_id.display_name or "")
+                sheet.write(row + index, 4, obj.afip_responsibility_type_name or "")
+                sheet.write(row + index, 5, obj.move_name or "")
                 sheet.write(row + index, 6, obj.not_taxed, money_format)
                 sheet.write(row + index, 7, obj.base_25, money_format)
                 sheet.write(row + index, 8, obj.vat_25, money_format)

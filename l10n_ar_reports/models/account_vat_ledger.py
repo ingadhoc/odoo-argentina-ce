@@ -15,27 +15,20 @@ class AccountVatLedger(models.Model):
     _inherit = ["mail.thread"]
     _order = "date_from desc"
 
+    @api.model
+    def _default_company_id(self):
+        """Return the company of the current environment."""
+        return self.env.company
+
     company_id = fields.Many2one(
         "res.company",
         string="Company",
         required=True,
-        readonly=True,
-        states={"draft": [("readonly", False)]},
-        default=lambda self: self.env["res.company"]._company_default_get("account.vat.ledger"),
+        default=_default_company_id,
     )
     type = fields.Selection([("sale", "Sale"), ("purchase", "Purchase")], required=True)
-    date_from = fields.Date(
-        string="Start Date",
-        required=True,
-        readonly=True,
-        states={"draft": [("readonly", False)]},
-    )
-    date_to = fields.Date(
-        string="End Date",
-        required=True,
-        readonly=True,
-        states={"draft": [("readonly", False)]},
-    )
+    date_from = fields.Date(string="Start Date", required=True)
+    date_to = fields.Date(string="End Date", required=True)
     journal_ids = fields.Many2many(
         "account.journal",
         "account_vat_ledger_journal_rel",
@@ -43,22 +36,10 @@ class AccountVatLedger(models.Model):
         "journal_id",
         string="Journals",
         required=True,
-        readonly=True,
-        states={"draft": [("readonly", False)]},
     )
-    first_page = fields.Integer(
-        required=True,
-        readonly=True,
-        states={"draft": [("readonly", False)]},
-    )
-    last_page = fields.Integer(
-        readonly=True,
-        states={"draft": [("readonly", False)]},
-    )
-    presented_ledger = fields.Binary(
-        readonly=True,
-        states={"draft": [("readonly", False)]},
-    )
+    first_page = fields.Integer(required=True)
+    last_page = fields.Integer()
+    presented_ledger = fields.Binary()
     presented_ledger_name = fields.Char()
     state = fields.Selection(
         [("draft", "Draft"), ("presented", "Presented"), ("cancel", "Cancel")],
@@ -164,13 +145,13 @@ class AccountVatLedger(models.Model):
         self.journal_ids = journals
 
     def action_present(self):
-        self.state = "presented"
+        self.write({"state": "presented"})
 
     def action_cancel(self):
-        self.state = "cancel"
+        self.write({"state": "cancel"})
 
     def action_to_draft(self):
-        self.state = "draft"
+        self.write({"state": "draft"})
 
     def action_print(self):
         self.ensure_one()
@@ -192,40 +173,31 @@ class AccountVatLedger(models.Model):
         # 'period_id.name'
     )
     def _compute_files(self):
-        self.ensure_one()
-        # segun vimos aca la afip espera "ISO-8859-1" en vez de utf-8
-        # http://www.planillasutiles.com.ar/2015/08/
-        # como-descargar-los-archivos-de.html
-        if self.REGINFO_CV_ALICUOTAS:
-            self.aliquots_filename = _("Alicuots_%s_%s.txt") % (
-                self.type,
-                self.date_to,
-                # self.period_id.name
-            )
-            self.aliquots_file = base64.encodestring(self.REGINFO_CV_ALICUOTAS.encode("ISO-8859-1"))
-        else:
-            self.aliquots_file = False
-            self.aliquots_filename = False
-        if self.REGINFO_CV_COMPRAS_IMPORTACIONES:
-            self.import_aliquots_filename = _("Import_Alicuots_%s_%s.txt") % (
-                self.type,
-                self.date_to,
-                # self.period_id.name
-            )
-            self.import_aliquots_file = base64.encodestring(self.REGINFO_CV_COMPRAS_IMPORTACIONES.encode("ISO-8859-1"))
-        else:
-            self.import_aliquots_file = False
-            self.import_aliquots_filename = False
-        if self.REGINFO_CV_CBTE:
-            self.vouchers_filename = _("Vouchers_%s_%s.txt") % (
-                self.type,
-                self.date_to,
-                # self.period_id.name
-            )
-            self.vouchers_file = base64.encodestring(self.REGINFO_CV_CBTE.encode("ISO-8859-1"))
-        else:
-            self.vouchers_file = False
-            self.vouchers_filename = False
+        """Build the CITI download files encoded as base64.
+
+        AFIP expects the TXT payload in ISO-8859-1.
+        """
+        for rec in self:
+            if rec.REGINFO_CV_ALICUOTAS:
+                rec.aliquots_filename = _("Alicuots_%s_%s.txt") % (rec.type, rec.date_to)
+                rec.aliquots_file = base64.b64encode(rec.REGINFO_CV_ALICUOTAS.encode("ISO-8859-1"))
+            else:
+                rec.aliquots_file = False
+                rec.aliquots_filename = False
+            if rec.REGINFO_CV_COMPRAS_IMPORTACIONES:
+                rec.import_aliquots_filename = _("Import_Alicuots_%s_%s.txt") % (rec.type, rec.date_to)
+                rec.import_aliquots_file = base64.b64encode(
+                    rec.REGINFO_CV_COMPRAS_IMPORTACIONES.encode("ISO-8859-1")
+                )
+            else:
+                rec.import_aliquots_file = False
+                rec.import_aliquots_filename = False
+            if rec.REGINFO_CV_CBTE:
+                rec.vouchers_filename = _("Vouchers_%s_%s.txt") % (rec.type, rec.date_to)
+                rec.vouchers_file = base64.b64encode(rec.REGINFO_CV_CBTE.encode("ISO-8859-1"))
+            else:
+                rec.vouchers_file = False
+                rec.vouchers_filename = False
 
     def compute_txt_data(self):
         alicuotas = self._get_REGINFO_CV_ALICUOTAS()

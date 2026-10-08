@@ -78,7 +78,7 @@ SELECT
     (CASE WHEN lit.l10n_ar_afip_code = '80' THEN rp.vat ELSE null END) as cuit,
     art.name as afip_responsibility_type_name,
     am.name as move_name,
-    rp.name as partner_name,
+    COALESCE(rp.name->>'es_AR', rp.name->>'en_US') as partner_name,
     am.id as move_id,
     move_type,
     am.date,
