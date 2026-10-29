@@ -152,8 +152,11 @@ class ResCompany(models.Model):
         # —un rechazo— el ticket tiene que sobrevivir igual; y con un cursor propio ese
         # rollback sigue deshaciendo el asiento, que es lo que _post da por sentado.
         with self.env.registry.cursor() as ticket_cr:
-            ticket_id = self.env(cr=ticket_cr)["l10n_ar.fiscal.ws.connection"].create(values).id
-        return self.env["l10n_ar.fiscal.ws.connection"].browse(ticket_id)
+            self.env(cr=ticket_cr)["l10n_ar.fiscal.ws.connection"].create(values)
+        # Esta transacción no ve lo que commiteó el otro cursor (REPEATABLE READ): un
+        # browse() del id daría MissingError en el primer uso de cada ticket nuevo. El
+        # ticket solo se lee (token, firma, servicio), así que se usa en memoria.
+        return self.env["l10n_ar.fiscal.ws.connection"].new(values)
 
     def _sign_login_ticket_request(self, code, pkey, cert):
         """Build the login ticket request and sign it in PKCS7, as WSAA expects."""
