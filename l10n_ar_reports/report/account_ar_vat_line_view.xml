@@ -36,7 +36,7 @@
         <field name="name">account.ar.vat.line.tree</field>
         <field name="model">account.ar.vat.line</field>
         <field name="arch" type="xml">
-            <tree editable="bottom">
+            <list editable="bottom">
                 <field name="date" />
                 <field name="move_id" />
                 <field name="partner_id" />
@@ -57,7 +57,7 @@
                 <field name="other_taxes" sum="Total" />
                 <field name="total" sum="Total" />
                 <button name="open_journal_entry" string="Open" type="object" icon="fa-external-link" help="Open journal entry" />
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -89,7 +89,7 @@
     <record id="action_account_ar_vat_line" model="ir.actions.act_window">
         <field name="name">Análisis de IVA</field>
         <field name="res_model">account.ar.vat.line</field>
-        <field name="view_mode">pivot,tree</field>
+        <field name="view_mode">pivot,list</field>
         <field name="context">{'search_default_posted': 1, 'time_ranges': {'field': 'date', 'range': 'last_month'}}</field>
     </record>
 
