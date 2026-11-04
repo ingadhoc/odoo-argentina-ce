@@ -1,0 +1,5 @@
+Odoo 18 compatibility patch: tree -> list, view_mode, states -> invisible, attrs -> expressions.
+This is a preliminary XML compatibility patch, NOT a verified functional migration. Test installation and fiscal output on a test database.
+Original manifest retained.
+
+Revision 2: campos editables en borrador (date_from/date_to y otros campos con states heredados). Se elimina readonly=True y states del modelo para esos campos, y se aplica readonly condicional en vista. Requiere actualizar el modulo (-u l10n_ar_reports) y reiniciar Odoo. No se ha probado funcionalmente.
