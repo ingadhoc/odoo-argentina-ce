@@ -41,10 +41,8 @@ class AccountVatLedger(models.Model):
     first_page = fields.Integer(
         required=True,
     )
-    last_page = fields.Integer(
-    )
-    presented_ledger = fields.Binary(
-    )
+    last_page = fields.Integer()
+    presented_ledger = fields.Binary()
     presented_ledger_name = fields.Char()
     state = fields.Selection(
         [("draft", "Draft"), ("presented", "Presented"), ("cancel", "Cancel")],
