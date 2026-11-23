@@ -67,7 +67,7 @@ class AccountJournalWs(models.Model):
                 raise UserError(_("Servicio AFIP Ocupado reintente en unos minutos"))
             else:
                 raise UserError(
-                    _("Hubo un error al conectarse a AFIP, contacte a su" " proveedor de Odoo para mas información")
+                    _("Hubo un error al conectarse a AFIP, contacte a su proveedor de Odoo para mas información")
                 )
 
     def test_pyafipws_point_of_sales(self):

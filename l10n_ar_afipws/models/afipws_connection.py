@@ -87,14 +87,14 @@ class AfipwsConnection(models.Model):
         afip_ws_url = False
         if afip_ws == "ws_sr_padron_a4":
             if environment_type == "production":
-                afip_ws_url = "https://aws.afip.gov.ar/sr-padron/webservices/" "personaServiceA4?wsdl"
+                afip_ws_url = "https://aws.afip.gov.ar/sr-padron/webservices/personaServiceA4?wsdl"
             else:
-                afip_ws_url = "https://awshomo.afip.gov.ar/sr-padron/webservices/" "personaServiceA4?wsdl"
+                afip_ws_url = "https://awshomo.afip.gov.ar/sr-padron/webservices/personaServiceA4?wsdl"
         elif afip_ws == "ws_sr_padron_a5":
             if environment_type == "production":
-                afip_ws_url = "https://aws.afip.gov.ar/sr-padron/webservices/" "personaServiceA5?wsdl"
+                afip_ws_url = "https://aws.afip.gov.ar/sr-padron/webservices/personaServiceA5?wsdl"
             else:
-                afip_ws_url = "https://awshomo.afip.gov.ar/sr-padron/webservices/" "personaServiceA5?wsdl"
+                afip_ws_url = "https://awshomo.afip.gov.ar/sr-padron/webservices/personaServiceA5?wsdl"
         elif afip_ws == "wsfecred":
             if environment_type == "production":
                 afip_ws_url = "https://serviciosjava.afip.gob.ar/wsfecred/FECredService?wsdl"
@@ -108,8 +108,7 @@ class AfipwsConnection(models.Model):
         self.ensure_one()
         if self.afip_ws != afip_ws:
             raise UserError(
-                _("This method is for %s connections and you call it from an" " %s connection")
-                % (afip_ws, self.afip_ws)
+                _("This method is for %s connections and you call it from an %s connection") % (afip_ws, self.afip_ws)
             )
 
     def connect(self):
@@ -117,7 +116,7 @@ class AfipwsConnection(models.Model):
         Method to be called
         """
         self.ensure_one()
-        _logger.info("Getting connection to ws %s from libraries on " "connection id %s" % (self.afip_ws, self.id))
+        _logger.info("Getting connection to ws %s from libraries on connection id %s" % (self.afip_ws, self.id))
         ws = self._get_ws(self.afip_ws)
 
         # parche por este error que da al consultar por esa opción de homo

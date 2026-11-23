@@ -516,3 +516,18 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.report_invoice_document
 msgid "qr"
 msgstr ""
+
+#. module: l10n_ar_afipws_fe
+#: model_terms:ir.ui.view,arch_db:l10n_ar_afipws_fe.report_invoice_document
+msgid "Shipping Permit:"
+msgstr "Permiso de Embarque:"
+
+#. module: l10n_ar_afipws_fe
+#: model:ir.model.fields,field_description:l10n_ar_afipws_fe.field_account_move__wsfex_id_permiso
+msgid "ID Permiso Embarque"
+msgstr "ID Permiso de Embarque"
+
+#. module: l10n_ar_afipws_fe
+#: model:ir.model.fields,field_description:l10n_ar_afipws_fe.field_account_move__wsfex_dst_merc
+msgid "País destino mercadería"
+msgstr "País Destino Mercadería"

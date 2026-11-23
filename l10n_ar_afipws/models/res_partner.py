@@ -53,7 +53,7 @@ class ResPartner(models.Model):
         elif census.monotributo == "S":
             vals["imp_ganancias_padron"] = "NC"
         else:
-            _logger.info("We couldn't get impuesto a las ganancias from padron, you" "must set it manually")
+            _logger.info("We couldn't get impuesto a las ganancias from padron, youmust set it manually")
 
         if census.provincia:
             # depending on the database, caba can have one of this codes
@@ -84,7 +84,7 @@ class ResPartner(models.Model):
         elif imp_iva == "EX":
             vals["l10n_ar_afip_responsibility_type_id"] = self.env.ref("l10n_ar.res_IVAE").id
         else:
-            _logger.info("We couldn't infer the AFIP responsability from padron, you" "must set it manually.")
+            _logger.info("We couldn't infer the AFIP responsability from padron, youmust set it manually.")
 
         return vals
 
