@@ -19,7 +19,6 @@ class ResConfigSettings(models.TransientModel):
     )
 
     l10n_ar_payment_foreign_currency = fields.Selection(
-        [("S", "Yes"), ("N", "No"), ("account", "Account's Currency Dependant")],
         related="company_id.l10n_ar_payment_foreign_currency",
         readonly=False,
     )
