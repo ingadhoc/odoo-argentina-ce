@@ -38,7 +38,7 @@ class L10nArFiscalWs(models.Model):
         mapping = self.mapping_ids.filtered(lambda m: m.code == "dummy")[:1]
         if not mapping:
             raise UserError(_("El servicio %s no tiene definido el método de prueba.", self.name))
-        answer, _xml = mapping.call(self)
+        answer, _xml = mapping._call(self)
         return {
             "type": "ir.actions.client",
             "tag": "l10n_ar_fiscal_ws.service_answer",

@@ -93,12 +93,12 @@ class L10nArFiscalWsMapping(models.Model):
             raise UserError(_("The service %(service)s has no '%(code)s' mapping.", service=ws_code, code=code))
         return mapping
 
-    def call(self, record, extra=None):
+    def _call(self, record, extra=None):
         """Build the payload of this mapping and call the service with it."""
         self.ensure_one()
         return self._call_payload(self.build(record, extra), getattr(record, "company_id", False))
 
-    def call_batch(self, records, extra=None):
+    def _call_batch(self, records, extra=None):
         """Same call carrying several records: one request for the whole batch."""
         self.ensure_one()
         return self._call_payload(self.build_batch(records, extra), records[:1].company_id)
@@ -115,7 +115,7 @@ class L10nArFiscalWsMapping(models.Model):
             return call_service(client, transport, self.method_name, payload)
         company = company or self.env.company
         connection = company._get_fiscal_ws_connection(self.fiscal_ws_id.code)
-        auth = connection.auth_payload(self.auth_style)
+        auth = connection._auth_payload(self.auth_style)
         if self.auth_style == "inline":
             # the export and fiscal bond services take the parameters inside the credentials block
             auth["Auth"].update(payload)

@@ -329,7 +329,7 @@ class AccountMove(models.Model):
         mapping_model = self.env["l10n_ar.fiscal.ws.mapping"]
         request = mapping_model._get_mapping(ws_code, "cae_request")
         try:
-            response, xml = request.call_batch(self)
+            response, xml = request._call_batch(self)
         except FiscalWsError as error:
             # the request never got through, so nothing of the batch was authorized
             return [{"l10n_ar_fiscal_result": "R", "l10n_ar_fiscal_message": str(error)} for _invoice in self]

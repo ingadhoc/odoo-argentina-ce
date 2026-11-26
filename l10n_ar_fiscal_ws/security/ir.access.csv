@@ -5,7 +5,9 @@ access_fiscal_ws_mapping_user,l10n_ar.fiscal.ws.mapping.user,l10n_ar.fiscal.ws.m
 access_fiscal_ws_mapping_manager,l10n_ar.fiscal.ws.mapping.manager,l10n_ar.fiscal.ws.mapping,base.group_system,crud,
 access_fiscal_ws_mapping_line_user,l10n_ar.fiscal.ws.mapping.line.user,l10n_ar.fiscal.ws.mapping.line,base.group_user,r,
 access_fiscal_ws_mapping_line_manager,l10n_ar.fiscal.ws.mapping.line.manager,l10n_ar.fiscal.ws.mapping.line,base.group_system,crud,
-access_fiscal_connection_manager,l10n_ar.fiscal.ws.connection.manager,l10n_ar.fiscal.ws.connection,base.group_user,crud,
+access_fiscal_connection_user,l10n_ar.fiscal.ws.connection.user,l10n_ar.fiscal.ws.connection,base.group_user,r,
+access_fiscal_connection_manager,l10n_ar.fiscal.ws.connection.manager,l10n_ar.fiscal.ws.connection,base.group_system,crud,
+fiscal_connection_multi_company_rule,Fiscal WS Connection Multi-company,l10n_ar.fiscal.ws.connection,,crud,"[('company_id', 'in', company_ids)]"
 access_fiscal_certificate_alias_manager,l10n_ar.fiscal.certificate.alias.manager,l10n_ar.fiscal.certificate.alias,base.group_system,crud,
 access_fiscal_certificate_alias_user,l10n_ar.fiscal.certificate.alias.user,l10n_ar.fiscal.certificate.alias,base.group_user,r,
 fiscal_certificate_alias_multi_company_rule,Afipws Certificate Alias Multi-company,l10n_ar.fiscal.certificate.alias,,crud,"[('company_id', 'in', company_ids)]"

@@ -92,7 +92,8 @@ class ResCompany(models.Model):
             )
         if certificate:
             _logger.info("Using the certificate stored in the database")
-            return certificate.alias_id.key, certificate.crt
+            # the private key is restricted to admins, but every invoicing user signs with it
+            return certificate.sudo().alias_id.key, certificate.crt
 
         prefix = "l10n_ar_fiscal_prod" if environment_type == "production" else "l10n_ar_fiscal_homo"
         pkey_path = config.get("%s_pkey_file" % prefix)
@@ -152,7 +153,7 @@ class ResCompany(models.Model):
         # —un rechazo— el ticket tiene que sobrevivir igual; y con un cursor propio ese
         # rollback sigue deshaciendo el asiento, que es lo que _post da por sentado.
         with self.env.registry.cursor() as ticket_cr:
-            ticket_id = self.env(cr=ticket_cr)["l10n_ar.fiscal.ws.connection"].create(values).id
+            ticket_id = self.env(cr=ticket_cr)["l10n_ar.fiscal.ws.connection"].sudo().create(values).id
         return self.env["l10n_ar.fiscal.ws.connection"].browse(ticket_id)
 
     def _sign_login_ticket_request(self, code, pkey, cert):

@@ -5,3 +5,4 @@ from . import test_cae_batch
 from . import test_numbering
 from . import test_currency_rate
 from . import test_recover
+from . import test_security

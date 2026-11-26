@@ -69,7 +69,7 @@ class AccountJournal(models.Model):
         if not self.l10n_ar_fiscal_ws_id:
             raise UserError(_("El diario %s no factura por web service.", self.display_name))
         mapping = self.env["l10n_ar.fiscal.ws.mapping"]._get_mapping(self.l10n_ar_fiscal_ws_id.code, code)
-        response, _xml = mapping.call(self, extra)
+        response, _xml = mapping._call(self, extra)
         return response
 
     def _l10n_ar_get_last_invoice_number(self, document_type):
