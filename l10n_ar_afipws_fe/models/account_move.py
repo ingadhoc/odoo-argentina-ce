@@ -47,6 +47,7 @@ class AccountMove(models.Model):
     afip_xml_request = fields.Text(
         string="AFIP XML Request",
         copy=False,
+        groups="base.group_system",
     )
     afip_xml_response = fields.Text(
         string="AFIP XML Response",

@@ -40,6 +40,7 @@ class AfipwsCertificateAlias(models.Model):
     key = fields.Text(
         "Private Key",
         readonly=True,
+        groups="base.group_system",
     )
     company_id = fields.Many2one(
         "res.company",

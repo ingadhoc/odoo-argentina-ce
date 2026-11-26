@@ -29,9 +29,11 @@ class AfipwsConnection(models.Model):
     )
     token = fields.Text(
         readonly=True,
+        groups="base.group_system",
     )
     sign = fields.Text(
         readonly=True,
+        groups="base.group_system",
     )
     generationtime = fields.Datetime("Generation Time", readonly=True)
     expirationtime = fields.Datetime("Expiration Time", readonly=True)
@@ -112,6 +114,7 @@ class AfipwsConnection(models.Model):
                 % (afip_ws, self.afip_ws)
             )
 
+    @api.private
     def connect(self):
         """
         Method to be called
@@ -156,8 +159,9 @@ class AfipwsConnection(models.Model):
 
         cuit = self.company_id.partner_id.ensure_vat()
         ws.Cuit = cuit
-        ws.Token = self.token
-        ws.Sign = self.sign
+        # the credentials are restricted to admins, but every user of the services sends them
+        ws.Token = self.sudo().token
+        ws.Sign = self.sudo().sign
         # TODO till this this PR is accepted
         ws.Obs = ""
         ws.Errores = []

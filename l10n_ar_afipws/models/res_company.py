@@ -60,6 +60,7 @@ class ResCompany(models.Model):
         _logger.info("Running arg electronic invoice on %s mode" % environment_type)
         return environment_type
 
+    @api.private
     def get_key_and_certificate(self, environment_type):
         """
         Funcion que busca para el environment_type definido,
@@ -90,7 +91,8 @@ class ResCompany(models.Model):
                 % (environment_type, environment_type)
             )
         if certificate:
-            pkey = certificate.alias_id.key
+            # the private key is restricted to admins, but every invoicing user signs with it
+            pkey = certificate.sudo().alias_id.key
             cert = certificate.crt
             _logger.info("Using DB certificates")
         # not certificate on bd, we search on odo conf file
@@ -176,7 +178,7 @@ class ResCompany(models.Model):
         )
 
         _logger.info("Successful Connection to AFIP.")
-        return self.connection_ids.create(auth_data)
+        return self.connection_ids.sudo().create(auth_data).sudo(False)
 
     @api.model
     def authenticate(
