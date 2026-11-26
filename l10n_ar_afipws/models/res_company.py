@@ -63,6 +63,13 @@ class ResCompany(models.Model):
         return environment_type
 
     def get_key_and_certificate(self, environment_type):
+        """Kept for other modules: it reads the key with the user's rights.
+
+        Being public it can be called through RPC, so it must not use sudo.
+        """
+        return self._afipws_get_key_and_certificate(environment_type, as_sudo=False)
+
+    def _afipws_get_key_and_certificate(self, environment_type, as_sudo=True):
         """
         Funcion que busca para el environment_type definido,
         una clave y un certificado en los siguientes lugares y segun estas
@@ -92,7 +99,8 @@ class ResCompany(models.Model):
                 % (environment_type, environment_type)
             )
         if certificate:
-            pkey = certificate.alias_id.key
+            # the private key is restricted to admins, but every invoicing user signs with it
+            pkey = (certificate.sudo() if as_sudo else certificate).alias_id.key
             cert = certificate.crt
             _logger.info("Using DB certificates")
         # not certificate on bd, we search on odo conf file
@@ -159,7 +167,7 @@ class ResCompany(models.Model):
             "%s" % (self.name, environment_type, afip_ws)
         )
         login_url = self.env["afipws.connection"].get_afip_login_url(environment_type)
-        pkey, cert = self.get_key_and_certificate(environment_type)
+        pkey, cert = self._afipws_get_key_and_certificate(environment_type)
         # because pyafipws wsaa loos for "BEGIN RSA PRIVATE KEY" we change key
         if pkey.startswith("-----BEGIN PRIVATE KEY-----"):
             pkey = pkey.replace(" PRIVATE KEY", " RSA PRIVATE KEY")
@@ -184,7 +192,7 @@ class ResCompany(models.Model):
         )
 
         _logger.info("Successful Connection to AFIP.")
-        return self.connection_ids.create(auth_data)
+        return self.connection_ids.sudo().create(auth_data).sudo(False)
 
     @api.model
     def authenticate(

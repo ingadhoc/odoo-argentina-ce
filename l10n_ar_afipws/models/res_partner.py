@@ -110,7 +110,7 @@ class ResPartner(models.Model):
         company = self.env.user.company_id
         env_type = company._get_environment_type()
         try:
-            certificate = company.get_key_and_certificate(
+            certificate = company._afipws_get_key_and_certificate(
                 company._get_environment_type()
             )
         except Exception:

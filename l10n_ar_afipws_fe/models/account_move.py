@@ -49,6 +49,7 @@ class AccountMove(models.Model):
     afip_xml_request = fields.Text(
         string="AFIP XML Request",
         copy=False,
+        groups="base.group_system",
     )
     afip_xml_response = fields.Text(
         string="AFIP XML Response",
@@ -161,7 +162,7 @@ class AccountMove(models.Model):
                 # we validate only locally
                 if validation_type == "homologation":
                     try:
-                        rec.company_id.get_key_and_certificate(validation_type)
+                        rec.company_id._afipws_get_key_and_certificate(validation_type)
                     except Exception:
                         validation_type = False
                 rec.validation_type = validation_type
