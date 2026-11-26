@@ -109,8 +109,8 @@ class TestFiscalWsCommon(TestArCommon, FiscalWsInvariants):
 
         return patch.multiple(
             type(self.env["l10n_ar.fiscal.ws.mapping"]),
-            call=_call,
-            call_batch=_call,
+            _call=_call,
+            _call_batch=_call,
         )
 
     def _build_cae_batch(self, invoices, extra=None):

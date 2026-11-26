@@ -80,7 +80,7 @@ class TestCaeBatch(TestFiscalWsCommon):
         def _fail(mapping, records, extra=None):
             raise FiscalWsError("El servicio no responde")
 
-        with patch.object(type(self.env["l10n_ar.fiscal.ws.mapping"]), "call_batch", _fail):
+        with patch.object(type(self.env["l10n_ar.fiscal.ws.mapping"]), "_call_batch", _fail):
             results = invoices._l10n_ar_request_cae()
         self.assertEqual([values["l10n_ar_fiscal_result"] for values in results], ["R", "R"])
         self.assertIn("no responde", results[0]["l10n_ar_fiscal_message"])

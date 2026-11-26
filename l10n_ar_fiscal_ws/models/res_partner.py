@@ -80,7 +80,7 @@ class ResPartner(models.Model):
         self.ensure_one()
         self.ensure_vat()
         mapping = self.env["l10n_ar.fiscal.ws.mapping"]._get_mapping("ws_sr_padron_a5", "person")
-        response, _xml = mapping.call(self)
+        response, _xml = mapping._call(self)
         census = getattr(response, "datosGenerales", None)
         if not census or not census.apellido and not census.razonSocial:
             raise UserError(
@@ -92,6 +92,6 @@ class ResPartner(models.Model):
         """Whether this contact must be invoiced with a credit invoice, and from which amount."""
         for record in self.filtered("l10n_ar_vat"):
             mapping = self.env["l10n_ar.fiscal.ws.mapping"]._get_mapping("wsfecred", "obliged_amount")
-            response, _xml = mapping.call(record, {"date": fields.Date.context_today(record)})
+            response, _xml = mapping._call(record, {"date": fields.Date.context_today(record)})
             record.mipyme_required = response.obligado == "S"
             record.mipyme_from_amount = float(response.montoDesde or 0)

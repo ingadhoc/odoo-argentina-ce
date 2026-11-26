@@ -98,8 +98,8 @@ class L10nArFiscalWsConnection(models.Model):
         required=True,
     )
     unique_id = fields.Char(readonly=True)
-    token = fields.Text(readonly=True)
-    sign = fields.Text(readonly=True)
+    token = fields.Text(readonly=True, groups="base.group_system")
+    sign = fields.Text(readonly=True, groups="base.group_system")
     generation_time = fields.Datetime(readonly=True)
     expiration_time = fields.Datetime(readonly=True)
     service_url = fields.Char(compute="_compute_service_url")
@@ -113,18 +113,20 @@ class L10nArFiscalWsConnection(models.Model):
         self.ensure_one()
         return build_client(self.env, self.service_url)
 
-    def auth_payload(self, style="block"):
+    def _auth_payload(self, style="block"):
         """Credentials, in the shape the called method expects them."""
         self.ensure_one()
         if style == "none":
             return {}
         vat = self.company_id.partner_id.ensure_vat()
-        credentials = {"token": self.token, "sign": self.sign, "cuitRepresentada": vat}
+        # the credentials are restricted to admins, but every user of the services sends them
+        ticket = self.sudo()
+        credentials = {"token": ticket.token, "sign": ticket.sign, "cuitRepresentada": vat}
         if style == "plain":
             return credentials
         if style == "request":
             return {"authRequest": credentials}
-        return {"Auth": {"Token": self.token, "Sign": self.sign, "Cuit": vat}}
+        return {"Auth": {"Token": ticket.token, "Sign": ticket.sign, "Cuit": vat}}
 
     def call(self, method_name, payload):
         """Call a method of this service with the credentials of this ticket."""
